@@ -1,0 +1,3 @@
+LIBRARY _quisk.pyd
+EXPORTS
+init_quisk
