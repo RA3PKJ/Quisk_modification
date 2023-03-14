@@ -1,0 +1,33 @@
+# Windows mingw32.exe build commands for quisk-4.2.17 and following:
+#
+# NOTE:  There are new -D entries required in the compile commands for all .c files,
+#        one for QUISK_HAVE_WASAPI, and one for QUISK_HAVE_DIRECTX!  Quisk built for
+#        Windows uses either WASAPI or DIRECTX, and Jim suggests building them both
+#        into _quisk.pyd.  Even though it might not be likely that, e.g. sound_alsa.c
+#        would reference, e.g., an #ifdef QUISK_HAVE_WASAPI, Jim suggests including
+#        both -D entries in build commands for *all* .c files, just in case he
+#        ends up needing to reference them in other files for some future reason.
+#        Without these -D entries, it will still build, but you will not hear any sound,
+#        nor see any graph or waterfall results, because all the calls will be dummies!
+#
+# SANITY CHECK:  executing "which gcc" in MinGW terminal should show:  /mingw32/bin/gcc
+#
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c import_quisk_api.c -o build/temp.win32-3.8/Release/import_quisk_api.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c quisk.c -o build/temp.win32-3.8/Release/quisk.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c quisk_wdsp.c -o build/temp.win32-3.8/Release/quisk_wdsp.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound.c -o build/temp.win32-3.8/Release/sound.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound_alsa.c -o build/temp.win32-3.8/Release/sound_alsa.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound_portaudio.c -o build/temp.win32-3.8/Release/sound_portaudio.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound_pulseaudio.c -o build/temp.win32-3.8/Release/sound_pulseaudio.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound_directx.c -o build/temp.win32-3.8/Release/sound_directx.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c sound_wasapi.c -o build/temp.win32-3.8/Release/sound_wasapi.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c is_key_down.c -o build/temp.win32-3.8/Release/is_key_down.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c microphone.c -o build/temp.win32-3.8/Release/microphone.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c utility.c -o build/temp.win32-3.8/Release/utility.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c filter.c -o build/temp.win32-3.8/Release/filter.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c extdemod.c -o build/temp.win32-3.8/Release/extdemod.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c freedv.c -o build/temp.win32-3.8/Release/freedv.o
+gcc -mdll -O -Wall -DMS_WIN32 -DQUISK_HAVE_WASAPI -DQUISK_HAVE_DIRECTX -I. -I../fftw-3.3.5-dll32 -I../python38_32/include -I../python38_32/PC -c ./ac2yd/remote.c -o build/temp.win32-3.8/Release/remote.o
+
+
+gcc -shared -s build/temp.win32-3.8/Release/import_quisk_api.o build/temp.win32-3.8/Release/quisk.o build/temp.win32-3.8/Release/quisk_wdsp.o build/temp.win32-3.8/Release/sound.o build/temp.win32-3.8/Release/sound_alsa.o build/temp.win32-3.8/Release/sound_portaudio.o build/temp.win32-3.8/Release/sound_pulseaudio.o build/temp.win32-3.8/Release/sound_directx.o build/temp.win32-3.8/Release/sound_wasapi.o build/temp.win32-3.8/Release/is_key_down.o build/temp.win32-3.8/Release/microphone.o build/temp.win32-3.8/Release/utility.o build/temp.win32-3.8/Release/filter.o build/temp.win32-3.8/Release/extdemod.o build/temp.win32-3.8/Release/freedv.o build/temp.win32-3.8/Release/remote.o -L../python38_32/libs -L../fftw-3.3.5-dll32 -lfftw3-3 -lWS2_32 -lDxguid -lDsound -liphlpapi -lole32 -lavrt -lwinmm -lpython38 -o _quisk.pyd
