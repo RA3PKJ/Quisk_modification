@@ -69,7 +69,7 @@ int remote_control_head;
 int remote_control_slave;
 
 struct sound_conf quisk_sound_state;	// Current sound status
-//struct sound_conf * pt_quisk_sound_state = &quisk_sound_state;
+//struct sound_conf * pt_quisk_sound_state = &quisk_sound_state;//--------------- удалено, т.к. где-то дублируется ------------------- 2 RA3PKJ
 
 // Keep this array of names up to date with quisk.h
 char * sound_format_names[4] = {"Int32", "Int16", "Float32", "Int24"} ;
