@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+# привет
 #!/usr/bin/env python3
 
 # All QUISK software is Copyright (C) 2006-2021 by James C. Ahlstrom.
