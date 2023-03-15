@@ -3339,7 +3339,7 @@ class QMainFrame(wx.Frame):
   def SetConfigText(self, text):
     if len(text) > 100:
       text = text[0:80] + '|||' + text[-17:]
-    self.SetTitle("Radio %s   %s   %s" % (application.local_conf.RadioName, self.title, text))
+    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # -------------------- заголовок окна ---------------- 3 RA3PKJ
 
 class Spacer(wx.Window):
   """Create a bar between the graph screen and the controls"""
