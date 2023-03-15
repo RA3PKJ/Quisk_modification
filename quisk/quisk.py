@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
-# привет
+
 #!/usr/bin/env python3
 
 # All QUISK software is Copyright (C) 2006-2021 by James C. Ahlstrom.
@@ -1722,7 +1722,7 @@ class GraphDisplay(wx.Window):
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
 
-    if sys.platform == 'win32':#------------------------------------ wheel -------------------------- 1 RA3PKJ
+    if sys.platform == 'win32':#------------------------------------ колесо мыши -------------------------- 1 RA3PKJ
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
 
     if wxVersion in ('2', '3'):
@@ -1730,7 +1730,7 @@ class GraphDisplay(wx.Window):
     else:
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
-  def OnEnter(self, event):#---------------------------------------- wheel -------------------------- 1 RA3PKJ
+  def OnEnter(self, event):#---------------------------------------- колесо мыши -------------------------- 1 RA3PKJ
     if not application.w_phase:
       self.SetFocus()    # Set focus so we get mouse wheel events
 
