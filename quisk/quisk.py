@@ -198,13 +198,13 @@ def round(x):	# round float to nearest integer
     return int(x + 0.5)
   else:
     return - int(-x + 0.5)
-    
+
 def str2freq (freq):
   if '.' in freq:
     freq = int(float(freq) * 1E6 + 0.1)
   else:
     freq = int(freq)
-  return freq    
+  return freq
 
 def get_filter_tx(mode):	# Return the bandwidth, center of the Tx filters
   if mode in ('LSB', 'USB'):
@@ -1015,7 +1015,7 @@ class HamlibHandlerRig2:	# Test with telnet localhost 4532
       else:
         self.split_vfo = 'VFO'
       # If there are no multi receivers, this sets split Rx/Tx mode.
-      if not self.app.multi_rx_screen.receiver_list:	
+      if not self.app.multi_rx_screen.receiver_list:
         self.app.splitButton.SetValue(split, True)
   def GetInfo(self):
     self.Reply("Info", self.app.main_frame.title, 0)
@@ -1719,10 +1719,19 @@ class GraphDisplay(wx.Window):
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
+
+    if sys.platform == 'win32':#------------------------------------ wheel -------------------------- 1 RA3PKJ
+      self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+
     if wxVersion in ('2', '3'):
       self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
     else:
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+
+  def OnEnter(self, event):#---------------------------------------- wheel -------------------------- 1 RA3PKJ
+    if not application.w_phase:
+      self.SetFocus()    # Set focus so we get mouse wheel events
+
   def OnPaint(self, event):
     #print 'GraphDisplay', self.GetUpdateRegion().GetBox()
     dc = wx.AutoBufferedPaintDC(self)
@@ -1943,7 +1952,7 @@ class GraphScreen(wx.Window):
         w, h = dc.GetTextExtent(t)
         # draw text on Y axis
         if y - y_old > h:
-          if y + h // 2 <= self.originY:	
+          if y + h // 2 <= self.originY:
             dc.DrawText(repr(i), x1 - w, y - h // 2)
           elif h < self.scale:
             dc.DrawText(repr(i), x1 - w, self.originY - h)
@@ -2278,7 +2287,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
       self.stationInfo = wx.TextCtrl(self.stationWindow, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_NO_VSCROLL)
       self.stationInfo.SetFont(wx.Font(conf.status_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
-      self.stationWindow.Hide(); 
+      self.stationWindow.Hide();
       self.firstStationInRange = None
       self.lastStationX = 0
       self.nrStationInRange = 0
@@ -2301,13 +2310,13 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
     for i in range (self.lines):
       dc.DrawLine(originX, y, endX, y)
       y += hl + self.lineMargin
-    # create a sorted list of favorites in the frequency range  
+    # create a sorted list of favorites in the frequency range
     freq1 = VFO - sample_rate // 2
     freq2 = VFO + sample_rate // 2
     self.stationList = []
     fav = application.config_screen.favorites
     for row in range (fav.GetNumberRows()):
-      fav_f = fav.GetCellValue(row, 1) 
+      fav_f = fav.GetCellValue(row, 1)
       if fav_f:
         try:
           fav_f = str2freq(fav_f)
@@ -2315,7 +2324,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
             self.stationList.append((fav_f, conf.Xsym_stat_fav, fav.GetCellValue(row, 0),
                 fav.GetCellValue(row, 2), fav.GetCellValue(row, 3)))
         except ValueError:
-          pass            
+          pass
     # add memory stations
     for mem_f, mem_band, mem_vfo, mem_txfreq, mem_mode in application.memoryState:
       if freq1 < mem_f < freq2:
@@ -2328,7 +2337,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
             descr = entry.getSpotter(i) + '\t' + entry.getTime(i) + '\t' + entry.getLocation(i) + '\n' + entry.getComment(i)
             if i < entry.getLen()-1:
               descr += '\n'
-          self.stationList.append((entry.freq, conf.Xsym_stat_dx, entry.dx, '', descr))           
+          self.stationList.append((entry.freq, conf.Xsym_stat_dx, entry.dx, '', descr))
     # draw stations on graph
     self.stationList.sort()
     lastX = []
@@ -2341,12 +2350,12 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
       w, h = dc.GetTextExtent(statName)
       # shorten name until it fits into remaining space
       maxLen = 25
-      tName = statName 
+      tName = statName
       while (w > lastX[line] - statX - ws - 4) and maxLen > 0:
         maxLen -= 1
         tName = statName[:maxLen] + '..'
         w, h = dc.GetTextExtent(tName)
-      dc.DrawLine(statX, line * (hl+self.lineMargin), statX, line * (hl+self.lineMargin) + 4)                    
+      dc.DrawLine(statX, line * (hl+self.lineMargin), statX, line * (hl+self.lineMargin) + 4)
       dc.DrawText(symbol + ' ' + tName, statX - ws//2, line * (hl+self.lineMargin) + self.lineMargin//2+1)
       lastX[line] = statX
       line = (line+1)%self.lines
@@ -2354,7 +2363,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
     if self.firstStationInRange != None:
       # tune to station
       if self.tunedStation >= self.nrStationInRange:
-        self.tunedStation = 0      
+        self.tunedStation = 0
       freq, symbol, name, mode, dscr = self.stationList[self.firstStationInRange+self.tunedStation]
       self.tunedStation += 1
       if mode != '': # information about mode available
@@ -2367,7 +2376,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
     application.isTuning = False
     # show detailed station info
     if abs(self.lastStationX - mouse_x) > 30:
-      self.firstStationInRange = None   
+      self.firstStationInRange = None
     found = False
     graph = self.graph
     sample_rate = int(graph.sample_rate * graph.zoom)
@@ -2376,7 +2385,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
       for index in range (0, len(self.stationList)):
         statFreq, symbol, statName, statMode, statDscr = self.stationList[index]
         statX = graph.x0 + int(float(statFreq - VFO) / sample_rate * graph.data_width)
-        if abs(mouse_x-statX) < 10: 
+        if abs(mouse_x-statX) < 10:
           self.lastStationX = mouse_x
           if found == False:
             self.firstStationInRange = index
@@ -2406,7 +2415,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
           height += self.stationInfo.GetCharHeight() // 2
           self.stationInfo.SetSize(wx.Size(width, height))
           self.stationWindow.SetClientSize((width, height))
-          self.mouse_x = mouse_x   
+          self.mouse_x = mouse_x
     if self.firstStationInRange != None:
       w, h = self.stationInfo.GetSize()
       # convert coordinates to screen
@@ -2417,8 +2426,8 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
     else:
       self.stationWindow.Hide()
   def OnLeaveWindow(self, event):
-    self.stationWindow.Hide() 
-                              
+    self.stationWindow.Hide()
+
 
 class WaterfallDisplay(wx.Window):
   """Create a waterfall display within the waterfall screen."""
@@ -2572,7 +2581,7 @@ class WaterfallScreen(wx.SplitterWindow):
     self.pane2.SetTxFreq(tx_freq, rx_freq)
   def SetVFO(self, vfo):
     self.pane1.SetVFO(vfo)
-    self.pane2.SetVFO(vfo) 
+    self.pane2.SetVFO(vfo)
   def ChangeYscale(self, y_scale):		# Test if the shift key is down
     if wx.GetKeyState(wx.WXK_SHIFT):	# Set graph screen
       self.pane1.ChangeYscale(y_scale)
@@ -3359,7 +3368,7 @@ class App(wx.App):
   StateNames = [		# Names of state attributes to save and restore
   'bandState', 'bandAmplPhase', 'lastBand', 'VFO', 'txFreq', 'mode',
   'vardecim_set', 'filterAdjBw1', 'levelAGC', 'levelOffAGC', 'volumeAudio', 'levelSpot',
-  'levelSquelch', 'levelSquelchSSB', 'levelVOX', 'timeVOX', 'sidetone_volume', 
+  'levelSquelch', 'levelSquelchSSB', 'levelVOX', 'timeVOX', 'sidetone_volume',
   'txAudioClipUsb', 'txAudioClipAm','txAudioClipFm', 'txAudioClipFdv',
   'txAudioPreemphUsb', 'txAudioPreemphAm', 'txAudioPreemphFm', 'txAudioPreemphFdv',
   'wfallScaleZ', 'wfallGrScaleZ', 'graphScaleZ', 'split_rxtx_play', 'modeFilter',
@@ -3448,7 +3457,7 @@ class App(wx.App):
     self.local_conf.UpdateConf()
     # Choose whether to use Unicode or text symbols
     for k in ('sym_stat_mem', 'sym_stat_fav', 'sym_stat_dx',
-        'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec', 
+        'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec',
 		'btn_text_file_play', 'btn_text_fav_add',
         'btn_text_fav_recall', 'btn_text_mem_add', 'btn_text_mem_next', 'btn_text_mem_del'):
       if conf.use_unicode_symbols:
@@ -4179,7 +4188,7 @@ class App(wx.App):
     DEV_DRIVER_WASAPI = 5
     DEV_DRIVER_WASAPI2 = 6
     for name, is_play, index in sound_cards:
-      value = getattr(conf, name)	
+      value = getattr(conf, name)
       if not value:
         QS.set_sound_name(index, is_play, DEV_DRIVER_NONE, '', '')
         continue
@@ -4897,9 +4906,9 @@ class App(wx.App):
       gbs.Add(b_freqenter,  (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
       gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND)
       gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND)
-      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)        
-      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)        
-      gbs.Add(b_addrx,      (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)        
+      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)
+      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)
+      gbs.Add(b_addrx,      (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)
       gbs.Add(b_smeter,     (0, button_start_col + 21), (1, 4), flag=wx.EXPAND)
       gbs.Add(b_rit,        (0, button_start_col + 25), (1, 2), flag=wx.EXPAND)
       col = button_start_col + 28
@@ -4926,10 +4935,10 @@ class App(wx.App):
 
       gbs.Add(b_membtn, (1, button_start_col + 2), (1, 3), flag = wx.EXPAND)
       gbs.Add(b_fav,    (1, button_start_col + 5), (1, 2), flag = wx.EXPAND)
-      gbs.Add(b_tmprec, (1, button_start_col + 7), (1, 2), flag=wx.EXPAND)        
+      gbs.Add(b_tmprec, (1, button_start_col + 7), (1, 2), flag=wx.EXPAND)
       b = QuiskPushbutton(frame, None, '')
-      gbs.Add(b,        (1, button_start_col + 9), (1, 1), flag=wx.EXPAND)        
-      gbs.Add(b_rit,    (1, button_start_col + 10), (1, 2), flag=wx.EXPAND)        
+      gbs.Add(b,        (1, button_start_col + 9), (1, 1), flag=wx.EXPAND)
+      gbs.Add(b_rit,    (1, button_start_col + 10), (1, 2), flag=wx.EXPAND)
 
       row = 2
       col = button_start_col
@@ -4996,7 +5005,7 @@ class App(wx.App):
     self.smeter_db_sum += x		# sum for average
     if self.timer - self.smeter_db_time0 > self.smeter_avg_seconds:		# average time reached
       self.smeter_db = self.smeter_db_sum / self.smeter_db_count
-      self.smeter_db_count = self.smeter_db_sum = 0 
+      self.smeter_db_count = self.smeter_db_sum = 0
       self.smeter_db_time0 = self.timer
     if self.smeter_sunits < x:		# S-meter moves to peak value
       self.smeter_sunits = x
@@ -5939,7 +5948,7 @@ class App(wx.App):
           else:			# move down
             l = list(freq60)
             l.reverse()
-            for f in l: 
+            for f in l:
               if f < vfo + self.txFreq:
                 freq = f
                 break
