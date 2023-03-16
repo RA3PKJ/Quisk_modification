@@ -1701,13 +1701,15 @@ class GraphDisplay(wx.Window):
     self.graph_width = graph_width
     self.display_text = ""
     self.line = [(0, 0), (1,1)]		# initial fake graph data
-    self.SetBackgroundColour(conf.color_graph)
+    #self.SetBackgroundColour(conf.color_graph)
+    self.SetBackgroundColour('#06354F') # ----- взамен ----- цвет фона на панораме --------- картинка на панораме ------- 4 RA3PKJ
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, parent.OnLeftDown)
     self.Bind(wx.EVT_RIGHT_DOWN, parent.OnRightDown)
     self.Bind(wx.EVT_LEFT_UP, parent.OnLeftUp)
     self.Bind(wx.EVT_MOTION, parent.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, parent.OnWheel)
+    self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground) # ------- добавлено --------- картинка на панораме ------- 4 RA3PKJ
     self.tune_tx = graph_width // 2	# Current X position of the Tx tuning line
     self.tune_rx = 0				# Current X position of Rx tuning line or zero
     self.scale = 20				# pixels per 10 dB
@@ -1720,23 +1722,31 @@ class GraphDisplay(wx.Window):
     self.tuningPenTx = wx.Pen(conf.color_txline, 1)
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
-    self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
+    #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен -------- цвет шторки ---------- картинка на панораме ----------- 4 RA3PKJ
+    #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
+    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----- взамен ----- цвет горизонтальных линий на панораме ----- картинка на панораме --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
-
-    if sys.platform == 'win32':#------------------------------------ колесо мыши -------------------------- 1 RA3PKJ
-      self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
-
     if wxVersion in ('2', '3'):
       self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
     else:
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
-  def OnEnter(self, event):#---------------------------------------- колесо мыши -------------------------- 1 RA3PKJ
+    #-------------------------------------------------- добавлено ----------- колесо мыши ---------------------------- 1 RA3PKJ
+    if sys.platform == 'win32':
+      self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+  def OnEnter(self, event):
     if not application.w_phase:
       self.SetFocus()    # Set focus so we get mouse wheel events
+
+  # --------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 4 RA3PKJ
+  def OnEraseBackground (self, evt):
+    dc = evt.GetDC()
+    bmp = wx.Image('Pano_2.jpg', wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth * 0.86, MyDisplayHeight * 0.42)
+    bmp_ = wx.BitmapFromImage(bmp)
+    dc.DrawBitmap(bmp_, 0, 0)
 
   def OnPaint(self, event):
     #print 'GraphDisplay', self.GetUpdateRegion().GetBox()
@@ -1746,7 +1756,8 @@ class GraphDisplay(wx.Window):
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
     self.DrawFilter(dc)
-    dc.SetPen(wx.Pen(conf.color_graphline, 1))
+    #dc.SetPen(wx.Pen(conf.color_graphline, 1))
+    dc.SetPen(wx.Pen('white', 1)) # -------- взамен -------- цвет шумовой дорожки --------картинка на панораме -------- 4 RA3PKJ
     dc.DrawLines(self.line)
     dc.SetPen(self.horizPen)
     for y in self.parent.y_ticks:
@@ -1837,7 +1848,8 @@ class GraphScreen(wx.Window):
     self.data_width = data_width
     self.graph_width = graph_width
     self.doResize = False
-    self.pen_tick = wx.Pen(conf.color_graphticks, 1)
+    #self.pen_tick = wx.Pen(conf.color_graphticks, 1)
+    self.pen_tick = wx.Pen('#646464', 1) # ------ взамен -------- цвет рисок вокруг панорамы --------- картинка на панораме --------- 4 RA3PKJ
     self.pen_center = wx.Pen(conf.color_graphticks, 3)
     self.font = wx.Font(conf.graph_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
@@ -1860,7 +1872,8 @@ class GraphScreen(wx.Window):
     self.SetSize((self.width, self.height))
     self.SetSizeHints(self.width, 1, self.width)
     self.SetBackgroundColour(conf.color_graph)
-    self.backgroundBrush = wx.Brush(conf.color_graph)
+    #self.backgroundBrush = wx.Brush(conf.color_graph)
+    self.backgroundBrush = wx.Brush('#000B10') # ------- взамен -------- цвет вокруг панорамы -------- картинка на панораме ------- 4 RA3PKJ
     self.Bind(wx.EVT_SIZE, self.OnSize)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -1884,7 +1897,8 @@ class GraphScreen(wx.Window):
     dc.SetBackground(self.backgroundBrush)
     dc.Clear()
     dc.SetFont(self.font)
-    dc.SetTextForeground(conf.color_graphlabels)
+    #dc.SetTextForeground(conf.color_graphlabels)
+    dc.SetTextForeground('yellow') # ------- взамен -------- цвет оцифровки вокруг панорамы --------- картинка на панораме -------- 4 RA3PKJ
     if self.in_splitter:
       self.MakeYTicks(dc)
     else:
@@ -2463,7 +2477,8 @@ class WaterfallDisplay(wx.Window):
     self.tuningPen = wx.Pen('White', 3)
     self.tuningPenTx = wx.Pen(conf.color_txline, 3)
     self.tuningPenRx = wx.Pen(conf.color_rxline, 3)
-    self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
+    #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен -------- цвет шторки ---------- картинка на панораме ----------- 4 RA3PKJ
     #self.backgroundBrush = wx.Brush(conf.color_graph)
     # Size of top faster scroll region is (top_key + 2) * (top_key - 1) // 2
     self.top_key = 8
@@ -3431,6 +3446,12 @@ class App(wx.App):
     return key in self.keys_down
   def OnInit(self):
     """Perform most initialization of the app here (called by wxPython on startup)."""
+
+    # ---------- получить разрешение дисплея ("system dpi aware") --------- добавлено ------- картинка на панораме --------------- 4 RA3PKJ
+    global MyDisplayWidth
+    global MyDisplayHeight
+    (MyDisplayWidth, MyDisplayHeight) = wx.GetDisplaySize()
+
     wx.lib.colourdb.updateColourDB()	# Add additional color names
     import quisk_widgets		# quisk_widgets needs the application object
     quisk_widgets.application = self
