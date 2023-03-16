@@ -1702,14 +1702,13 @@ class GraphDisplay(wx.Window):
     self.display_text = ""
     self.line = [(0, 0), (1,1)]		# initial fake graph data
     #self.SetBackgroundColour(conf.color_graph)
-    self.SetBackgroundColour('#06354F') # ----- взамен ----- цвет фона на панораме --------- оформление панорамы ------- 4 RA3PKJ
+    self.SetBackgroundColour('#06354F') # -------------- взамен ----- цвет фона на панораме --------- оформление панорамы ------- 4 RA3PKJ
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, parent.OnLeftDown)
     self.Bind(wx.EVT_RIGHT_DOWN, parent.OnRightDown)
     self.Bind(wx.EVT_LEFT_UP, parent.OnLeftUp)
     self.Bind(wx.EVT_MOTION, parent.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, parent.OnWheel)
-    self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground) # ------- добавлено --------- картинка на панораме ------- 5 RA3PKJ
     self.tune_tx = graph_width // 2	# Current X position of the Tx tuning line
     self.tune_rx = 0				# Current X position of Rx tuning line or zero
     self.scale = 20				# pixels per 10 dB
@@ -1723,7 +1722,7 @@ class GraphDisplay(wx.Window):
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен -------- цвет шторки ---------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ---- цвет шторки -------- оформление панорамы ----------- 4 RA3PKJ
     #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
     self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----- взамен ----- цвет горизонтальных линий на панораме ----- оформление панорамы --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
@@ -1741,31 +1740,25 @@ class GraphDisplay(wx.Window):
     if not application.w_phase:
       self.SetFocus()    # Set focus so we get mouse wheel events
 
-  # --------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
-  def OnEraseBackground (self, evt):
-    dc = evt.GetDC()
-    bmp = wx.Image('Pano_2.jpg', wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth * 0.86, MyDisplayHeight * 0.42)
-    bmp_ = wx.BitmapFromImage(bmp)
-    dc.DrawBitmap(bmp_, 0, 0)
-
   def OnPaint(self, event):
-    #print 'GraphDisplay', self.GetUpdateRegion().GetBox()
+    #print ('GraphDisplay', self.GetUpdateRegion().GetBox())
     dc = wx.AutoBufferedPaintDC(self)
     dc.Clear()
     # Draw the tuning line and filter display to the screen.
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
+
+    # --------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
+    bmp = wx.Image('Pano_2.jpg', wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
+    bmp_ = wx.Bitmap(bmp)
+    dc.DrawBitmap(bmp_, 0, 0)
+
     self.DrawFilter(dc)
-
-    # -------------------- перенесено вниз --------------------- цвет шумовой дорожки ----- оформление панорамы -------- 4 RA3PKJ
-    #dc.SetPen(wx.Pen(conf.color_graphline, 1))
-    #dc.DrawLines(self.line)
-
     dc.SetPen(self.horizPen)
     for y in self.parent.y_ticks:
       dc.DrawLine(0, y, self.graph_width, y)	# y line
 
-    dc.SetPen(wx.Pen('white', 1)) # -------- перенесено -------- цвет шумовой дорожки ----- оформление панорамы -------- 4 RA3PKJ
+    dc.SetPen(wx.Pen('white', 1)) # ---- перенесено и изменено ---- цвет шумовой дорожки ----- оформление панорамы ----- 4 RA3PKJ
     dc.DrawLines(self.line)
 
     if self.display_text:
