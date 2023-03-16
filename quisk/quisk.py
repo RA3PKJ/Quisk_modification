@@ -17,6 +17,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
+# ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
+global version_quisk
+version_quisk = 'QUISK v4.2.17.1 modif. by N7DDC, RA3PKJ'
+
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
 # and to find ./__init__.py and ./help.html.
@@ -3318,9 +3322,11 @@ class HelpScreen(wx.html.HtmlWindow):
 class QMainFrame(wx.Frame):
   """Create the main top-level window."""
   def __init__(self, width, height):
-    fp = open('__init__.py')		# Read in the title
-    self.title = fp.readline().strip()[1:]
-    fp.close()
+    # --------------------------------------------------- удалено ------ заголовок окна ----------------- 3 RA3PKJ
+    #fp = open('__init__.py')		# Read in the title
+    #self.title = fp.readline().strip()[1:]
+    #fp.close()
+    self.title = version_quisk # ------------------------ взамен ------ заголовок окна ------------------ 3 RA3PKJ
     x = conf.window_posX
     y = conf.window_posY
     wx.Frame.__init__(self, None, -1, self.title, (x, y),
@@ -3339,7 +3345,7 @@ class QMainFrame(wx.Frame):
   def SetConfigText(self, text):
     if len(text) > 100:
       text = text[0:80] + '|||' + text[-17:]
-    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # -------------------- заголовок окна ---------------- 3 RA3PKJ
+    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # ---------- изменено ---------- заголовок окна ---------- 3 RA3PKJ
 
 class Spacer(wx.Window):
   """Create a bar between the graph screen and the controls"""
