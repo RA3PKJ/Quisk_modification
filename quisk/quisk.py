@@ -2473,9 +2473,12 @@ class WaterfallDisplay(wx.Window):
     self.tune_tx = graph_width // 2	# Current X position of the Tx tuning line
     self.tune_rx = 0				# Current X position of Rx tuning line or zero
     self.marginPen = wx.Pen(conf.color_graph, 1)
-    self.tuningPen = wx.Pen('White', 3)
-    self.tuningPenTx = wx.Pen(conf.color_txline, 3)
-    self.tuningPenRx = wx.Pen(conf.color_rxline, 3)
+    #self.tuningPen = wx.Pen('White', 3)
+    self.tuningPen = wx.Pen('#82B3C8', 1) # ---- взамен ---- цвет и ширина вертикальной линии на водопаде ---- оформление панорамы ------- 4 RA3PKJ
+    #self.tuningPenTx = wx.Pen(conf.color_txline, 3)
+    self.tuningPenTx = wx.Pen(conf.color_txline, 2) # -- взамен -- цвет и ширина вертикального тонкого огрызка на водопаде (TX) -- оформление панорамы -- 4 RA3PKJ
+    #self.tuningPenRx = wx.Pen(conf.color_rxline, 3)
+    self.tuningPenRx = wx.Pen(conf.color_rxline, 2) # -- взамен -- цвет и ширина вертикального тонкого огрызка на водопаде (RX) -- оформление панорамы -- 4 RA3PKJ
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
     self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен -------- цвет шторки ---------- оформление панорамы ----------- 4 RA3PKJ
     # Size of top faster scroll region is (top_key + 2) * (top_key - 1) // 2
