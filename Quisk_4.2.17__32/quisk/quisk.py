@@ -1734,7 +1734,8 @@ class GraphDisplay(wx.Window):
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
     #-------------------------------------------------- добавлено ----------- колесо мыши ---------------------------- 1 RA3PKJ
-    if sys.platform == 'win32':
+    #if sys.platform == 'win32':
+    if sys.platform.lower().startswith('win'):
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
   def OnEnter(self, event):
     if not application.w_phase:
