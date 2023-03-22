@@ -35,7 +35,7 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-1
 - папка fftw-3.3.5-dll32 с 32-битной версией fftw (источник - www.fftw.org/install/windows.html).
 - папка python38_32 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-3810/):
     - \include (взята целиком из исходника Python-3.8.10.tgz, пункт Gzipped source tarball на указанной выше странице). 
-    - \PC (взята целиком аналогично). 
+    - \PC (взята целиком аналогично). Примечание. в файле pyconfig.h закомментирована строчка //#define MS_WIN32 /* only support win32 and greater. */ 
     - \libs (взята python38.dll из python-3.8.10-embed-win32.zip, пункт Windows embeddable package (32-bit) на указанной выше странице).
 - папка quisk с исходным кодом из архива quisk-4.2.17.tar.gz (https://pypi.org/project/quisk/4.2.17/#files).
 
