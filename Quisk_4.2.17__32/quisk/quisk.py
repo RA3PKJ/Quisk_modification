@@ -5030,9 +5030,40 @@ class App(wx.App):
       snr = 0.0
     t = "  SNR %3.0f" % snr
     self.smeter.SetLabel(t)
+
+# -------------------------------- удалена функция -------------------------------------------- расчёт S-метра -------------- 6 RA3PKJ
+##  def NewSmeter(self):
+##    self.smeter_db_count += 1		# count for average
+##    x = QS.get_smeter()
+##    self.smeter_db_sum += x		# sum for average
+##    if self.timer - self.smeter_db_time0 > self.smeter_avg_seconds:		# average time reached
+##      self.smeter_db = self.smeter_db_sum / self.smeter_db_count
+##      self.smeter_db_count = self.smeter_db_sum = 0
+##      self.smeter_db_time0 = self.timer
+##    if self.smeter_sunits < x:		# S-meter moves to peak value
+##      self.smeter_sunits = x
+##    else:			# S-meter decays at this time constant
+##      self.smeter_sunits -= (self.smeter_sunits - x) * (self.timer - self.smeter_sunits_time0)
+##    self.smeter_sunits_time0 = self.timer
+##    s = self.smeter_sunits / 6.0	# change to S units; 6db per S unit
+##    s += Hardware.correct_smeter	# S-meter correction for the gain, band, etc.
+##    if s < 0:
+##      s = 0
+##    if s >= 9.5:
+##      s = (s - 9.0) * 6
+##      t = "  S9+%2.0f %7.2f dB" % (s, self.smeter_db)
+##    else:
+##      t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
+##    self.smeter.SetLabel(t)
+# --------------------------------- добавлена взамен функция ------------ changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
   def NewSmeter(self):
     self.smeter_db_count += 1		# count for average
-    x = QS.get_smeter()
+    try:
+      if Hardware.rf_gain == None:
+        x = QS.get_smeter() + Hardware.correct_smeter
+      else: x = QS.get_smeter() + Hardware.correct_smeter - Hardware.rf_gain  # S-meter correction for the gain, band, etc.
+    except:
+      x = QS.get_smeter() + Hardware.correct_smeter  # S-meter correction for the gain, band, etc.
     self.smeter_db_sum += x		# sum for average
     if self.timer - self.smeter_db_time0 > self.smeter_avg_seconds:		# average time reached
       self.smeter_db = self.smeter_db_sum / self.smeter_db_count
@@ -5043,8 +5074,11 @@ class App(wx.App):
     else:			# S-meter decays at this time constant
       self.smeter_sunits -= (self.smeter_sunits - x) * (self.timer - self.smeter_sunits_time0)
     self.smeter_sunits_time0 = self.timer
-    s = self.smeter_sunits / 6.0	# change to S units; 6db per S unit
-    s += Hardware.correct_smeter	# S-meter correction for the gain, band, etc.
+# ------------------------------------------------------------------------------------ было у rolin -------- будет удалено ------------------------- RA3PKJ
+    if self.smeter_sunits < -127: # the start of S-scale is -127dbm
+      s = 0
+    else:
+      s = (self.smeter_sunits + 127) / 6.0
     if s < 0:
       s = 0
     if s >= 9.5:
@@ -5053,6 +5087,7 @@ class App(wx.App):
     else:
       t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
     self.smeter.SetLabel(t)
+
   def MakeFilterButtons(self, args):
     # Change the filter selections depending on the mode: CW, SSB, etc.
     # Do not change the adjustable filter buttons.
