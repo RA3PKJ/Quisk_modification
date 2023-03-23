@@ -1768,6 +1768,54 @@ class GraphDisplay(wx.Window):
       dc.SetTextForeground(conf.color_graph_msg_fg)
       dc.SetBackgroundMode(wx.SOLID)
       dc.DrawText(self.display_text, 0, 0)
+
+    # --------------------- добавлено ----------------------------------------------- S-метр на панораме --------------- 7 RA3PKJ
+    if self.display_text == "":
+    # красный указатель S-метра на панораме
+      application.NewSmeter()
+      SmtrX = 30 # X-position (изначальная позиция S-метра по оси Х)
+      smeter_int = round(SmtrX - 15 + (application.smeter_sunits + 127) * 2.5) #вычислить новое положение бегунка S-метра по оси Х
+      dc.SetPen(wx.Pen('red', 2)) #цвет бегунка S-метра
+      dc.DrawLine(smeter_int, 38, smeter_int, 48) #отрисовка нового положения бегунка S-метра (указаны координаты начала и конца вертикальной чёрточки бегунка)
+    # оцифровка S-метра на панораме, и другое
+      dc.SetPen(wx.Pen('white', 1))
+      dc.DrawLine(SmtrX, 30, SmtrX, 35)
+      dc.DrawLine(SmtrX + 15, 30, SmtrX + 15, 35)
+      dc.DrawLine(SmtrX + 30, 30, SmtrX + 30, 35)
+      dc.DrawLine(SmtrX + 45, 30, SmtrX + 45, 35)
+      dc.DrawLine(SmtrX + 60, 30, SmtrX + 60, 35)
+      dc.DrawLine(SmtrX + 75, 30, SmtrX + 75, 35)
+      dc.DrawLine(SmtrX + 90, 30, SmtrX + 90, 35)
+      dc.DrawLine(SmtrX + 105, 30, SmtrX + 105, 35)
+      dc.DrawLine(SmtrX + 120, 30, SmtrX + 120, 35)
+      dc.DrawLine(SmtrX + 145, 30, SmtrX + 145, 35)
+      dc.DrawLine(SmtrX + 170, 30, SmtrX + 170, 35)
+      dc.DrawLine(SmtrX + 195, 30, SmtrX + 195, 35)
+      dc.DrawLine(SmtrX + 220, 30, SmtrX + 220, 35)
+      dc.DrawLine(SmtrX + 245, 30, SmtrX + 245, 35)
+      dc.DrawLine(SmtrX + 270, 30, SmtrX + 270, 35)
+      dc.SetTextForeground('green')
+      dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+      dc.DrawText('1', SmtrX - 5, 10)
+      dc.DrawText('2', SmtrX + 10, 10)
+      dc.DrawText('3', SmtrX + 25, 10)
+      dc.DrawText('4', SmtrX + 40, 10)
+      dc.DrawText('5', SmtrX + 55, 10)
+      dc.DrawText('6', SmtrX + 70, 10)
+      dc.DrawText('7', SmtrX + 85, 10)
+      dc.DrawText('8', SmtrX + 100, 10)
+      dc.DrawText('9', SmtrX + 115, 10)
+      dc.DrawText('+10', SmtrX + 128, 10)
+      dc.DrawText('+20', SmtrX + 153, 10)
+      dc.DrawText('+30', SmtrX + 178, 10)
+      dc.DrawText('+40', SmtrX + 203, 10)
+      dc.DrawText('+50', SmtrX + 228, 10)
+      dc.DrawText('+60', SmtrX + 253, 10)
+
+      #dc.SetTextForeground('yellow')
+      #dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
+      #dc.DrawText(application.measure_audio_set + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
     dc.SetLogicalFunction(wx.COPY)
