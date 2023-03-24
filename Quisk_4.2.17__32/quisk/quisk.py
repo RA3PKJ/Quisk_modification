@@ -1811,10 +1811,10 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+40', SmtrX + 203, 10)
       dc.DrawText('+50', SmtrX + 228, 10)
       dc.DrawText('+60', SmtrX + 253, 10)
-
-      #dc.SetTextForeground('yellow')
-      #dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
-      #dc.DrawText(application.measure_audio_set + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+    # ------------------------------------------------------------ добавлено ------------------ вынос из малого окошка ------ 8 RA3PKJ
+      dc.SetTextForeground('yellow')
+      dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
+      dc.DrawText(application.measure_audio_set + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
@@ -3622,7 +3622,13 @@ class App(wx.App):
     self.smeter_db = 0
     self.smeter_avg_seconds = 1.0	# seconds for S-meter average
     self.smeter_sunits = -87.0
-    self.smeter_usage = "smeter"	# specify use of s-meter display
+
+    #self.smeter_usage = "smeter" # ----------------------------------------- удалено ---------- вынос из малого окошка ------- 8 RA3PKJ
+    # ---------------------------------------------------------------------- добавлено --------- вынос из малого окошка ------- 8 RA3PKJ
+    self.smeter_usage = "freq"          #по умолчанию режим отображения частоты в малом окошке частоты
+    self.measure_audio_set = ''         #значение напряжения аудио
+
+
     self.timer = time.time()		# A seconds clock
     self.heart_time0 = self.timer	# timer to call HeartBeat at intervals
     self.save_time0 = self.timer
@@ -4503,33 +4509,34 @@ class App(wx.App):
     if mode == 'EXT':
       return conf.FilterBwEXT
     return conf.FilterBwSSB
-  def OnSmeterRightDown(self, event):
-    try:
-      pos = event.GetPosition()		# works for right-click
-      self.smeter.TextCtrl.PopupMenu(self.smeter_menu, pos)
-    except:
-      btn = event.GetEventObject()	# works for button
-      btn.PopupMenu(self.smeter_menu, (0,0))
-  def OnSmeterMeterA(self, event):
-    self.smeter_avg_seconds = 1.0
-    self.smeter_usage = "smeter"
-    QS.measure_frequency(0)
-  def OnSmeterMeterB(self, event):
-    self.smeter_avg_seconds = 5.0
-    self.smeter_usage = "smeter"
-    QS.measure_frequency(0)
-  def OnSmeterFrequencyA(self, event):
-    self.smeter_usage = "freq"
-    QS.measure_frequency(2)
-  def OnSmeterFrequencyB(self, event):
-    self.smeter_usage = "freq"
-    QS.measure_frequency(10)
-  def OnSmeterAudioA(self, event):
-    self.smeter_usage = "audio"
-    QS.measure_audio(1)
-  def OnSmeterAudioB(self, event):
-    self.smeter_usage = "audio"
-    QS.measure_audio(5)
+# ------------------------------------------------------------- удалено --------------- вынос из малого окошка -------------- 8 RA3PKJ
+##  def OnSmeterRightDown(self, event):
+##    try:
+##      pos = event.GetPosition()		# works for right-click
+##      self.smeter.TextCtrl.PopupMenu(self.smeter_menu, pos)
+##    except:
+##      btn = event.GetEventObject()	# works for button
+##      btn.PopupMenu(self.smeter_menu, (0,0))
+##  def OnSmeterMeterA(self, event):
+##    self.smeter_avg_seconds = 1.0
+##    self.smeter_usage = "smeter"
+##    QS.measure_frequency(0)
+##  def OnSmeterMeterB(self, event):
+##    self.smeter_avg_seconds = 5.0
+##    self.smeter_usage = "smeter"
+##    QS.measure_frequency(0)
+##  def OnSmeterFrequencyA(self, event):
+##    self.smeter_usage = "freq"
+##    QS.measure_frequency(2)
+##  def OnSmeterFrequencyB(self, event):
+##    self.smeter_usage = "freq"
+##    QS.measure_frequency(10)
+##  def OnSmeterAudioA(self, event):
+##    self.smeter_usage = "audio"
+##    QS.measure_audio(1)
+##  def OnSmeterAudioB(self, event):
+##    self.smeter_usage = "audio"
+##    QS.measure_audio(5)
   def QuiskNewId(self):
     try:
       ref = wx.NewIdRef()
@@ -4906,24 +4913,26 @@ class App(wx.App):
       szr.Add(e, 1, flag=wx.ALIGN_CENTER_VERTICAL)
       frame.Bind(wx.EVT_TEXT_ENTER, self.FreqEntry, source=e)
     # S-meter
-    self.smeter = QuiskText(frame, ' S9+23 -166.00 dB ', bh, 0, True)
-    from quisk_widgets import _bitmap_menupop
-    b = QuiskBitmapButton(frame, self.OnSmeterRightDown, _bitmap_menupop)
+    self.smeter = QuiskText(frame, ' Frequency 2 ', bh, 0, True) # -------------- изменено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    # ---------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    #from quisk_widgets import _bitmap_menupop
+    #b = QuiskBitmapButton(frame, self.OnSmeterRightDown, _bitmap_menupop)
     szr = wx.BoxSizer(wx.HORIZONTAL)
     b_smeter = szr
     szr.Add(self.smeter, 1, flag=wx.ALIGN_CENTER_VERTICAL)
-    szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
-    self.smeter.TextCtrl.Bind(wx.EVT_RIGHT_DOWN, self.OnSmeterRightDown)
+    # ---------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    #szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
+    #self.smeter.TextCtrl.Bind(wx.EVT_RIGHT_DOWN, self.OnSmeterRightDown)
     self.smeter.TextCtrl.SetBackgroundColour(conf.color_freq)
     self.smeter.TextCtrl.SetForegroundColour(conf.color_freq_txt)
-    # Make a popup menu for the s-meter
-    self.smeter_menu = QuiskMenu("smeter_menu")
-    self.smeter_menu.AppendRadioItem('S-meter 1', self.OnSmeterMeterA)
-    self.smeter_menu.AppendRadioItem('S-meter 5', self.OnSmeterMeterB)
-    self.smeter_menu.AppendRadioItem('Frequency 2',  self.OnSmeterFrequencyA)
-    self.smeter_menu.AppendRadioItem('Frequency 10', self.OnSmeterFrequencyB)
-    self.smeter_menu.AppendRadioItem('Audio 1', self.OnSmeterAudioA)
-    self.smeter_menu.AppendRadioItem('Audio 5', self.OnSmeterAudioB)
+# ----------------------------------------- удалено ------------------------------------------------- вынос из малого окошка ---------- 8 RA3PKJ
+##    self.smeter_menu = QuiskMenu("smeter_menu")
+##    self.smeter_menu.AppendRadioItem('S-meter 1', self.OnSmeterMeterA)
+##    self.smeter_menu.AppendRadioItem('S-meter 5', self.OnSmeterMeterB)
+##    self.smeter_menu.AppendRadioItem('Frequency 2',  self.OnSmeterFrequencyA)
+##    self.smeter_menu.AppendRadioItem('Frequency 10', self.OnSmeterFrequencyB)
+##    self.smeter_menu.AppendRadioItem('Audio 1', self.OnSmeterAudioA)
+##    self.smeter_menu.AppendRadioItem('Audio 5', self.OnSmeterAudioB)
     # Make a popup menu for the memory buttons
     self.memory_menu = wx.Menu()
     # Place the buttons on the screen
@@ -5058,16 +5067,25 @@ class App(wx.App):
   def MeasureAudioVoltage(self):
     v = QS.measure_audio(-1)
     t = "%11.3f" % v
-    t = t[0:1] + ' ' + t[1:4] + ' ' + t[4:] + ' uV'
-    self.smeter.SetLabel(t)
+    # ------------------------------------------------------------ удалено ------------------ вынос из малого окошка ------ 8 RA3PKJ
+    #t = t[0:1] + ' ' + t[1:4] + ' ' + t[4:] + ' uV'
+    #self.smeter.SetLabel(t)
+    self.measure_audio_set = t #строка напряжения аудио # --- взамен образована переменная --- вынос из малого окошка ----- 8 RA3PKJ
   def MeasureFrequency(self):
     vfo = Hardware.ReturnVfoFloat()
     if vfo is None:
       vfo = self.VFO
     vfo += Hardware.transverter_offset
-    t = '%13.2f' % (QS.measure_frequency(-1) + vfo)
-    t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
+# ------------------------- Не надо измерять частоту для второго окошка частоты ---- удалено --- вынос из малого окошка --- 8 RA3PKJ
+    #t = '%13.2f' % (QS.measure_frequency(-1) + vfo)
+    #t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
+    #self.smeter.SetLabel(t)
+# ----------------------------------------------------------------- взамен --------------------- частота в малое окошко --- 9 RA3PKJ
+    t = '%13.2f' % (self.rxFreq + vfo)
+    t = '  ' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
     self.smeter.SetLabel(t)
+    self.freqDisplay.Display(self.txFreq + self.VFO)
+
   def NewDVmeter(self):
     if conf.add_freedv_button:
       snr = QS.freedv_get_snr()
@@ -5122,19 +5140,19 @@ class App(wx.App):
     else:			# S-meter decays at this time constant
       self.smeter_sunits -= (self.smeter_sunits - x) * (self.timer - self.smeter_sunits_time0)
     self.smeter_sunits_time0 = self.timer
-# ------------------------------------------------------------------------------------ было у rolin -------- будет удалено ------------------------- RA3PKJ
-    if self.smeter_sunits < -127: # the start of S-scale is -127dbm
-      s = 0
-    else:
-      s = (self.smeter_sunits + 127) / 6.0
-    if s < 0:
-      s = 0
-    if s >= 9.5:
-      s = (s - 9.0) * 6
-      t = "  S9+%2.0f %7.2f dB" % (s, self.smeter_db)
-    else:
-      t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
-    self.smeter.SetLabel(t)
+# ------------------------------------ было у rolin -------- удалено ------------  вынос из малого окошка (s-метр) ------------ 8 RA3PKJ
+##    if self.smeter_sunits < -127: # the start of S-scale is -127dbm
+##      s = 0
+##    else:
+##      s = (self.smeter_sunits + 127) / 6.0
+##    if s < 0:
+##      s = 0
+##    if s >= 9.5:
+##      s = (s - 9.0) * 6
+##      t = "  S9+%2.0f %7.2f dB" % (s, self.smeter_db)
+##    else:
+##      t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
+##    self.smeter.SetLabel(t)
 
   def MakeFilterButtons(self, args):
     # Change the filter selections depending on the mode: CW, SSB, etc.
@@ -6512,10 +6530,16 @@ class App(wx.App):
             self.NewDVmeter()
           else:
             self.NewSmeter()
-        elif self.smeter_usage == "freq":
-          self.MeasureFrequency()	# display measured frequency
-        else:
-          self.MeasureAudioVoltage()		# display audio voltage
+# ------------------------------------------------------------------------- удалено ------------ вынос из малого окошка -------------- 8 RA3PKJ
+##        elif self.smeter_usage == "freq":
+##          self.MeasureFrequency()	# display measured frequency
+##        else:
+##          self.MeasureAudioVoltage()		# display audio voltage
+# ------------------------------------------------------------------------- взамен ------------- вынос из малого окошка -------------- 8 RA3PKJ
+        if self.smeter_usage == "freq":
+          self.MeasureFrequency()     #функция измерения частоты, показываемой в окошке "частота/аудио"
+        self.MeasureAudioVoltage()    #функция измерения напряжения
+
         if self.screen == self.config_screen:
           pass
         elif self.screen == self.bandscope_screen:
