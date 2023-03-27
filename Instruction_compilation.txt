@@ -24,7 +24,7 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-1
 Нажать везде ОК.
 
 5) Проверить, что консольная оболочка видит компилятор, для чего запустить оболочку C:\msys64\msys2.exe
-и в её окне вставить команду: gcc --version. Должна высветиться версия компилятора gcc 12.2.0
+и в её окне вставить команду: gcc --version. Должна высветиться версия компилятора gcc 12.2.0 или выше.
 Закрыть оболочку.
 
 
@@ -33,14 +33,14 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-1
 6) Скачать архив проекта с Гитхаба. Распаковать архив на диск C:\ . Появится папка C:\Quisk_4.2.17_modification-main\Quisk_4.2.17__32\  
 В папке должны присутствовать: 
 - папка fftw-3.3.5-dll32 с 32-битной версией fftw (источник - www.fftw.org/install/windows.html).
-- папка python38_32 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-3810/):
-    - \include (взята целиком из исходника Python-3.8.10.tgz, пункт Gzipped source tarball на указанной выше странице). 
+- папка python39_32 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-395/):
+    - \include (взята целиком из исходника Python-3.9.5.tgz, пункт Gzipped source tarball на указанной выше странице). 
     - \PC (взята целиком аналогично). Примечание. В файле pyconfig.h закомментирована строчка //#define MS_WIN32 /* only support win32 and greater. */ 
-    - \libs (взята python38.dll из python-3.8.10-embed-win32.zip, пункт Windows embeddable package (32-bit) на указанной выше странице).
+    - \libs (взята python39.dll из python-3.9.5-embed-win32.zip, пункт Windows embeddable package (32-bit) на указанной выше странице).
 - папка quisk с исходным кодом из архива quisk-4.2.17.tar.gz (https://pypi.org/project/quisk/4.2.17/#files).
 
 7) В папке quisk в свою очередь должны присутствовать:
-- папка build, в которой должна быть папка temp.win32-3.8, а в ней папка Release. 
+- папка build, в которой должна быть папка temp.win32-3.9, а в ней папка Release. 
 - файл сценария сборки build_quiskpyd .
 
 
