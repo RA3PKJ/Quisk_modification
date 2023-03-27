@@ -5091,12 +5091,12 @@ class App(wx.App):
 # ----------------------------------------------------------------- взамен --------------------- частота в малое окошко --- 9 RA3PKJ
     self.ab = self.rx2Button.GetValue() #проверить нажата ли кнопка RX2
     if self.ab == True:#если кнопка RX2 нажата
-      t = '%13.2f' % (self.rxFreq + vfo)
+      t = '%13.2f' % (self.rxFreq + vfo + 0.5)
       t = 'RX2' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
       self.smeter.SetLabel(t)
       self.freqDisplay.Display(self.txFreq + self.VFO)
       return
-    t = '%13.2f' % (self.rxFreq + vfo)
+    t = '%13.2f' % (self.rxFreq + vfo + 0.5)
     t = '  ' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
     self.smeter.SetLabel(t)
     self.freqDisplay.Display(self.txFreq + self.VFO)
