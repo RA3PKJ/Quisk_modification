@@ -3779,8 +3779,13 @@ class App(wx.App):
     self.filter_bandwidth = 1000    # filter bandwidth
     self.zoom_deltaf = 0
     self.zooming = False
-    self.rx2_rxtx = False		# Are we in split Rx/Tx mode? # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-    #self.split_locktx = False	# Split mode Tx frequency is fixed. # ------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    #self.split_rxtx = False		# Are we in split Rx/Tx mode? # --------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    self.split_locktx = False   # Flag Tx frequency is fixed
+
+    # ----------------------------------------------------------------------- добавлено --------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    self.rx2_rxtx = False	# Are we in split Rx/Tx mode?
+    self.new_split = False
+
     #self.split_lockrx = False	# Split mode Rx frequency is fixed. # ------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
     self.split_rxtx_play = 2    # Play 1=both, high on Right; 2=both, high on Left; 3=only Rx; 4=only Tx
     self.split_offset = 0	# current frequency difference when using Split
