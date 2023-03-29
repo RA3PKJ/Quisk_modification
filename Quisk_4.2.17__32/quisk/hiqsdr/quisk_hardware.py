@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # This is a sample hardware file for UDP control.  Use this file for my 2010 transceiver
 # described in QEX and for the improved version HiQSDR.  To turn on the extended
 # features in HiQSDR, update your FPGA firmware to version 1.1 or later and use use_rx_udp = 2.
@@ -128,7 +130,15 @@ class Hardware(BaseHardware):
     # conf.rx_udp_port + 1 is used for control
     self.rx_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     self.rx_udp_socket.setblocking(0)
-    self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
+
+    #self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1)) # --- удалено --- ошибка настройки сетевого адаптера --- 11 RA3PKJ
+    # ---------------------------------------------------------------------------------- взамен --- ошибка настройки сетевого адаптера --- 11 RA3PKJ
+    try:
+      self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
+    except:
+      dlg = wx.MessageBox('Please check the network adapter setup and LAN-connection', 'Error',
+			     wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
+
     return QS.open_rx_udp(self.conf.rx_udp_ip, self.conf.rx_udp_port)
   def close(self):
     if self.rx_udp_socket:
@@ -366,7 +376,7 @@ class Hardware(BaseHardware):
     else:
       self.index = index
     dec = self.decimations[self.index]
-    if dec >= 128: 
+    if dec >= 128:
       self.rx_control = dec // 64 - 1		# Second stage decimation less one
       QS.set_sample_bytes(3)
     else:
