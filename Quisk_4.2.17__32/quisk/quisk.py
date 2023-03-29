@@ -2201,11 +2201,12 @@ class GraphScreen(wx.Window):
     x = mouse_x - self.originX
     if self.split_unavailable:
       self.mouse_is_rx = False
-# ------------------------------------------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-##    elif application.split_rxtx and application.split_locktx:
-##      self.mouse_is_rx = True
-##    elif application.split_rxtx and application.split_lockrx:
-##      self.mouse_is_rx = False
+# ------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    #elif application.split_rxtx and application.split_locktx:
+      #self.mouse_is_rx = True
+    #elif application.split_rxtx and application.split_lockrx:
+      #self.mouse_is_rx = False
+
     elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
       self.mouse_is_rx = True
     else:
@@ -2291,11 +2292,11 @@ class GraphScreen(wx.Window):
     x = mouse_x - self.originX
     if self.split_unavailable:
       self.mouse_is_rx = False
-# ------------------------------------------------------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-##    elif application.split_rxtx and application.split_locktx:
-##      self.mouse_is_rx = True
-##    elif application.split_rxtx and application.split_lockrx:
-##      self.mouse_is_rx = False
+# ------------------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    #elif application.split_rxtx and application.split_locktx:
+      #self.mouse_is_rx = True
+    #elif application.split_rxtx and application.split_lockrx:
+      #self.mouse_is_rx = False
     elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
       self.mouse_is_rx = True
     else:
@@ -4572,7 +4573,8 @@ class App(wx.App):
     flag = wx.EXPAND
     # Add band buttons
     if conf.button_layout == 'Large screen':
-      self.widget_row = 4		# Next available row for widgets
+      #self.widget_row = 4 # Next available row for widgets # -------------- удалено ------------------------ реформа кнопок ----- 12 RA3PKJ
+      self.widget_row = 6  # Next available row for widgets # --- взамен -- добавлен нижний ряд кнопок ------ реформа кнопок ----- 12 RA3PKJ
       shortcuts = []
       for label in conf.bandLabels:
         if isinstance(label, (list, tuple)):
@@ -4891,6 +4893,30 @@ class App(wx.App):
     b_tmprec = szr
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
+
+
+    # ------------------------------------------------------------------- Split button ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
+    b_newsplit = szr #дать своё имя образцу кнопки
+    self.newsplitButton = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
+    szr.Add(self.newsplitButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.newsplitButton.SetLabel("Split")
+    self.newsplitButton.Refresh()
+    # --------------------------------------------------------------------A<>B button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
+    b_vfoAB = szr
+    self.vfoABButton = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
+    szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.vfoABButton.SetLabel("A<>B")
+    self.vfoABButton.Refresh()
+    # ---------------------------------------------------------------- Lock TX VFO button ---- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_lockVFO = szr
+    self.lockVFOButton = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
+    szr.Add(self.lockVFOButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.lockVFOButton.SetLabel("Lock")
+    self.lockVFOButton.Refresh()
+
     # RIT button
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_rit = szr
@@ -4994,29 +5020,61 @@ class App(wx.App):
         gbs.Add(b, (3, col), (1, 2), flag=flag)
         self.idName2Button[b.idName] = b
         col += 2
+
+      #ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
       gbs.Add(b_onoff,      (0, button_start_col), (1, 1),
          flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
       self.idName2Button[b_onoff.idName] = b_onoff
-      gbs.Add(b_freqdisp,   (0, button_start_col + 1), (1, 5),
-         flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
-      gbs.Add(b_freqenter,  (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
-      gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND)
-      gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND)
-      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)
-      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)
-      gbs.Add(b_addrx,      (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)
-      gbs.Add(b_smeter,     (0, button_start_col + 21), (1, 4), flag=wx.EXPAND)
-      gbs.Add(b_rit,        (0, button_start_col + 25), (1, 2), flag=wx.EXPAND)
+      gbs.Add(b_freqdisp,   (0, button_start_col + 1), (1, 5), flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border) # цифровая шкала
+      gbs.Add(b_freqenter,  (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5) # ручной ввод частоты
+      gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND) # сдвиг панорамы влево-вправо
+      gbs.Add(b_lockVFO,    (0, button_start_col + 10), (1, 1), flag=wx.EXPAND) # ------------ добавлена кнопка Lock ----- реформа кнопок --------- 12 RA3PKJ
+      gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
+# ----------------------------------------------------------------------------------------------- удалено ---------------- реформа кнопок --------- 12 RA3PKJ
+##      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)
+##      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)
+##      gbs.Add(b_addrx,       (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)
+##      gbs.Add(b_smeter,      (0, button_start_col + 21), (1, 4), flag=wx.EXPAND)
+##      gbs.Add(b_rit,         (0, button_start_col + 25), (1, 2), flag=wx.EXPAND)
+      # ------------------------------------------------------------------------------------------ взамен ---------------- реформа кнопок --------- 12 RA3PKJ
+      gbs.Add(b_smeter,     (0, button_start_col + 15), (1, 5), flag=wx.EXPAND)   # малое окошко частоты
+      gbs.Add(b_newsplit,   (0, button_start_col + 20), (1, 2), flag=wx.EXPAND)   # кнопка Split
+      gbs.Add(b_vfoAB,      (0, button_start_col + 22), (1, 1), flag=wx.EXPAND)   # кнопка A<>B
+      gbs.Add(b_addrx,      (0, button_start_col + 23), (1, 2), flag=wx.EXPAND)   #
+      gbs.Add(b_rit,        (0, button_start_col + 25), (1, 3), flag=wx.EXPAND)   # кнопка RIT
+
       col = button_start_col + 28
       self.slider_columns += [col, col + 1, col + 2, col + 3]
       gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
       gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
       gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
       gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
+
+      #gbs.Add(b_ReStart, (4, button_start_col), (1, 2), flag=wx.EXPAND)         # кнопка ReStart
+      #gbs.Add(b_Palette, (4, button_start_col + 2), (1, 2), flag=wx.EXPAND)    # кнопка WFall Palette
+      gbs.Add(b_fav,        (4, button_start_col + 4), (1, 4), flag=wx.EXPAND)  # кнопка добавления любимых частот
+      #gbs.Add(b_Empty1,     (4, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
+      gbs.Add(b_tmprec,     (4, button_start_col + 10), (1, 4), flag=wx.EXPAND) # кнопки быстрой записи/воспроизведения звука
+
+      # вставить пробелы скольео влезет
+      while col < 14:
+        col = 13
+        b = QuiskCheckbutton(frame, None, text='')
+        gbs.Add(b, (4, button_start_col + col), (1, 1), flag=flag)
+        col += 1
+
+      #gbs.Add(b_Empty2,     (4, button_start_col + 15), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      #gbs.Add(b_Empty3,     (4, button_start_col + 17), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      #gbs.Add(b_Empty4,     (4, button_start_col + 19), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      #gbs.Add(b_Empty5,     (4, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      #gbs.Add(b_Empty6,     (4, button_start_col + 23), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      #gbs.Add(b_Help,     (4, button_start_col + 25), (1, 2), flag=wx.EXPAND) # кнопка Help
+
       for i in range(button_start_col, button_start_col + 14):
         gbs.AddGrowableCol(i,1)
       for i in range(button_start_col + 15, button_start_col + 27):
         gbs.AddGrowableCol(i,1)
+
     else:	# Small screen
       gbs.Add(b_freqdisp, (0, button_start_col), (1, 6),
          flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
@@ -5583,6 +5641,20 @@ class App(wx.App):
       QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
       QS.set_sidetone(self.sidetone_volume, self.sidetone_0to1, self.ritFreq, conf.keyupDelay)
 
+  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
+    rx = self.rxFreq
+    self.rxFreq = self.txFreq
+    self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
+  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnLockVFO(self, event): # обработчик нажатия кнопки Lock
+    self.lock_vfo = self.lockVFOButton.GetValue() # See that button turn On or Off?
+    if self.lock_vfo:
+      self.split_locktx = True #глобальный флаг для операций мыши на панораме
+    else:
+      self.split_locktx = False
+    self.lockVFOButton.Refresh()
+
 # ---------------------------------------------------------- удалено -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##  def OnBtnSplit(self, event):
 ##    self.split_rxtx = self.ЫздшеButton.GetValue()
@@ -5633,6 +5705,50 @@ class App(wx.App):
 
     else:
       self.rx2Button.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
+
+  # ----------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)
+      self.aa = self.rx2Button.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
+      if self.aa == False:
+        self.new_split = self.newsplitButton.GetValue() #проверить нажата или отжата кнопка Split после клика
+        if self.new_split == False: #кнопка отжата после клика
+          #Rx and Tx reverse
+          rx = self.rxFreq
+          self.rxFreq = self.txFreq
+          self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
+          QS.set_split_rxtx(0)
+          self.oldRxFreq = self.rxFreq
+          self.rxFreq = self.txFreq
+
+        self.rx2_rxtx = self.new_split #????????????????????????????????????--------------------------------------------------------
+
+        if self.new_split: #кнопка нажата после клика
+          #added by RA3PKJ to avoid a possible match between Rx frequency and Tx frequency when starting Quisk
+          if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
+            self.rxFreq = self.txFreq + 4000
+          else:
+            self.rxFreq = self.oldRxFreq
+
+          #added by RA3PKJ, if rxFreq outside of sample_rate, then move rxFreq on-screen into sample_rate
+          d = self.sample_rate * 49 // 100
+          if self.rxFreq < -d:
+            self.rxFreq = -d
+          elif self.rxFreq > d:
+            self.rxFreq = d
+
+          #added by RA3PKJ
+          QS.set_split_rxtx(0)
+          #Rx and Tx reverse
+          tx = self.rxFreq
+          self.rxFreq = self.txFreq
+          self.ChangeHwFrequency(tx, self.VFO, 'FreqEntry')
+
+        self.screen.SetTxFreq(self.txFreq, self.rxFreq)
+        QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
+
+      else:
+        self.newsplitButton.SetValue(False) #выключить нажимаемую сейчас кнопку Split, т.к. оказалось, что уже включена кнопка RX2
+
 
 # ------------------------------------------------------------- удалено ------------ чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##  def OnMenuSplitPlay1(self, event):
