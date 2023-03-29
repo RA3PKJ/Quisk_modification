@@ -2188,6 +2188,12 @@ class GraphScreen(wx.Window):
       tune = self.FreqRound(tune, vfo)
       self.ChangeHwFrequency(tune, vfo, 'MouseBtn3', event=event)
   def OnLeftDown(self, event):
+    # ------------------------------------------------------------- добавлено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
+    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
+      return #ничего не делать и молча выскочить
+
     sample_rate = int(self.sample_rate * self.zoom)
     mouse_x, mouse_y = self.GetMousePosition(event)
     if mouse_x <= self.originX:		# click left of Y axis
@@ -2199,18 +2205,31 @@ class GraphScreen(wx.Window):
       mouse_x -= self.filter_center * self.data_width / sample_rate
     self.mouse_x = mouse_x
     x = mouse_x - self.originX
+
+    #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
+    #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
     if self.split_unavailable:
       self.mouse_is_rx = False
-# ------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
-    #elif application.split_rxtx and application.split_locktx:
+
+    #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика, то...
+    #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    elif (application.rx2_rxtx or application.new_split) and application.split_locktx: # --- взамен --- реформа мышиного управления шторками --- 13 RA3PKJ
+    # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
       #self.mouse_is_rx = True
     #elif application.split_rxtx and application.split_lockrx:
       #self.mouse_is_rx = False
+      # --------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+      if abs(x - self.display.tune_tx) < abs(x - self.display.tune_rx): #если клик мыши ближе к передатчику, то...
+        self.mouse_is_rx = True #в исходное положение, чтобы не возникало артефактов в других режимах
+        return #ничего не делать
+      else:    #если клик мыши ближе к приёмнику, то...
+        self.mouse_is_rx = True #сдвинуть приёмник
 
-    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
-      self.mouse_is_rx = True
+    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx): #если клик мыши далеко от передатчика, то...
+      self.mouse_is_rx = True #сдвинуть приёмник
     else:
-      self.mouse_is_rx = False
+      self.mouse_is_rx = False #если все вышеприведённые условия не имеют место быть, то сдвинуть передатчик
+
     if mouse_y < self.originY:		# click above X axis
       freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
       freq = int(freq)
@@ -2260,6 +2279,12 @@ class GraphScreen(wx.Window):
       if freq != self.txFreq:
         self.ChangeHwFrequency(freq, self.VFO, 'MouseMotion', event=event)
   def OnMotion(self, event):
+    # ---------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
+    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
+      return #ничего не делать и молча выскочить
+
     sample_rate = int(self.sample_rate * self.zoom)
     if event.Dragging() and event.LeftIsDown():
       mouse_x, mouse_y = self.GetMousePosition(event)
@@ -2284,23 +2309,43 @@ class GraphScreen(wx.Window):
         else:					# Mouse motion changes the transmit frequency
           self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
   def OnWheel(self, event):
+    # ----------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
+    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
+      return #ничего не делать и молча выскочить
+
     if conf.freq_spacing:
       wm = conf.freq_spacing
     else:
       wm = self.WheelMod		# Round frequency when using mouse wheel
     mouse_x, mouse_y = self.GetMousePosition(event)
     x = mouse_x - self.originX
+
+    #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
+    #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
     if self.split_unavailable:
       self.mouse_is_rx = False
-# ------------------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
-    #elif application.split_rxtx and application.split_locktx:
+
+    #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика
+    #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    elif (application.rx2_rxtx or application.new_split) and application.split_locktx: # --- взамен --- реформа мышиного управления шторками --- 13 RA3PKJ
+    # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
       #self.mouse_is_rx = True
     #elif application.split_rxtx and application.split_lockrx:
       #self.mouse_is_rx = False
-    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
-      self.mouse_is_rx = True
+      # --------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+      if abs(x - self.display.tune_tx) < abs(x - self.display.tune_rx): #если колесо мыши ближе к передатчику, то...
+        self.mouse_is_rx = True #в исходное положение, чтобы не возникало артефактов в других режимах
+        return #ничего не делать
+      else:    #если колесо мыши ближе к приёмнику, то...
+        self.mouse_is_rx = True #сдвинуть приёмник
+
+    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx): #если колесо мыши далеко от передатчика, то...
+      self.mouse_is_rx = True #сдвинуть приёмник
     else:
-      self.mouse_is_rx = False
+      self.mouse_is_rx = False #если все вышеприведённые условия не имеют место быть, то сдвинуть передатчик
+
     if self.mouse_is_rx:
       freq = application.rxFreq + self.VFO + wm * event.GetWheelRotation() // event.GetWheelDelta()
       if conf.freq_spacing:
@@ -5147,6 +5192,13 @@ class App(wx.App):
     #t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
     #self.smeter.SetLabel(t)
 # ----------------------------------------------------------------- взамен --------------------- частота в малое окошко --- 9 RA3PKJ
+    self.ab = self.newsplitButton.GetValue() #проверить нажата ли кнопка Split
+    if self.ab == True:#если кнопка Split нажата
+      t = '%13.2f' % (self.txFreq + vfo)
+      t = ' TX' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
+      self.smeter.SetLabel(t)
+      self.freqDisplay.Display(self.rxFreq + self.VFO)
+      return
     self.ab = self.rx2Button.GetValue() #проверить нажата ли кнопка RX2
     if self.ab == True:#если кнопка RX2 нажата
       t = '%13.2f' % (self.rxFreq + vfo + 0.5)
@@ -5675,7 +5727,7 @@ class App(wx.App):
 ##    self.screen.SetTxFreq(self.txFreq, self.rxFreq)
  # ----------------------------------------------------------- взамен -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
   def OnBtnRX2(self, event):
-    self.aa = False #self.newsplitButton.GetValue() #See that Split button turn On or Off?
+    self.aa = self.newsplitButton.GetValue() #See that Split button turn On or Off?
     if self.aa == False:
       self.rx2_rxtx = self.rx2Button.GetValue() #See that RX2 button turn On or Off?
       if self.rx2_rxtx: #if button turn On
