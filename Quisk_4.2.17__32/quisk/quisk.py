@@ -4978,7 +4978,7 @@ class App(wx.App):
     # Frequency display
     bw, bh = b_mute.GetMinSize()
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 15 // 10)
-    self.freqDisplay.Display(self.txFreq + self.VFO)
+    #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------------------ удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
     # On/Off button
     if conf.button_layout == 'Large screen':
       b_onoff = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77DD77')
@@ -6085,7 +6085,7 @@ class App(wx.App):
     The hardware will reply with the updated frequencies which may be different
     from those requested; use and display the returned tune and vfo.
     """
-    if not self.rx2_rxtx: # -------------------- изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if not self.rx2_rxtx: # -------------------- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
       self.rxFreq = tune	# rxFreq must be correct before the call to Hardware.ChangeFrequency()
     elif rx_freq is not None:
       self.rxFreq = rx_freq
@@ -6101,7 +6101,7 @@ class App(wx.App):
     if tune != self.txFreq or new_rxfreq:
       change = 1
       self.txFreq = tune
-      if not self.rx2_rxtx: # ------------------- изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+      if not self.rx2_rxtx: # ------------------- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
         self.rxFreq = self.txFreq
       if self.screen == self.bandscope_screen:
         self.screen.SetFrequency(tune + vfo)
@@ -6122,7 +6122,7 @@ class App(wx.App):
         QS.set_ampl_phase(ampl, phase, 0)
         ampl, phase = self.GetAmplPhase('tx')
         QS.set_ampl_phase(ampl, phase, 1)
-      self.freqDisplay.Display(self.txFreq + self.VFO)
+      #self.freqDisplay.Display(self.txFreq + self.VFO) # --------------------- удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
       self.fldigi_new_freq = self.txFreq + self.VFO
     return change
   def ChangeRxTxFrequency(self, rx_freq=None, tx_freq=None):
@@ -6398,7 +6398,7 @@ class App(wx.App):
     self.waterfall.SetVFO(self.VFO)
     self.station_screen.Refresh()
     self.screen.SetTxFreq(self.txFreq, self.rxFreq)
-    self.freqDisplay.Display(self.txFreq + self.VFO)
+    #self.freqDisplay.Display(self.txFreq + self.VFO) # -------------- удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
   def OnBtnDownBand(self, event):
     self.band_up_down = 1
     self.OnBtnUpDnBandDelta(event, True)
