@@ -4944,7 +4944,62 @@ class App(wx.App):
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
-
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty0 = szr
+    self.Empty0 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty0, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty0.SetLabel(" ")
+    self.Empty0.Refresh()
+    # --------------------------------------------------------------- WFallPalette  button --- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Palette = szr
+    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "WFall Palette")
+    szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.PaletteButton.SetLabel("WFall Palette")
+    self.PaletteButton.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty1 = szr
+    self.Empty1 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty1, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty1.SetLabel(" ")
+    self.Empty1.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty2 = szr
+    self.Empty2 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty2, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty2.SetLabel(" ")
+    self.Empty2.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty3 = szr
+    self.Empty3 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty3, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty3.SetLabel(" ")
+    self.Empty3.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty4 = szr
+    self.Empty4 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty4, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty4.SetLabel(" ")
+    self.Empty4.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty5 = szr
+    self.Empty5 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty5, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty5.SetLabel(" ")
+    self.Empty5.Refresh()
+    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty6 = szr
+    self.Empty6 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty6, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty6.SetLabel(" ")
+    self.Empty6.Refresh()
     # ------------------------------------------------------------------- Split button ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_newsplit = szr #дать своё имя образцу кнопки
@@ -4959,6 +5014,13 @@ class App(wx.App):
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
     self.vfoABButton.Refresh()
+    # ------------------------------------------------------------------- кнопка Help -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Help = szr
+    self.Help = QuiskPushbutton(frame, self.OnBtnHelp, "Help")
+    szr.Add(self.Help, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Help.SetLabel("Help")
+    self.Help.Refresh()
     # ---------------------------------------------------------------- Lock TX VFO button ---- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
@@ -4967,7 +5029,7 @@ class App(wx.App):
     self.lockVFOButton.SetLabel("Lock")
     self.lockVFOButton.Refresh()
 
-    # RIT button
+    # --------------------------------------------------------------------- RIT button
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_rit = szr
     self.ritButton = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
@@ -4975,7 +5037,7 @@ class App(wx.App):
     szr.Add(self.ritButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.ritButton.SetLabel("RIT %d" % self.ritFreq)
     self.ritButton.Refresh()
-    # Frequency display
+    # ------------------------------------------------------------------- Frequency display
     bw, bh = b_mute.GetMinSize()
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 15 // 10)
     #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------------------ удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
@@ -4985,7 +5047,7 @@ class App(wx.App):
       b_onoff.SetValue(True, do_cmd=False)
       h = b_freqdisp.height
       b_onoff.SetSizeHints(h, h, h, h)
-    # Frequency entry
+    # ------------------------------------------------------------------- Frequency entry
     if conf.button_layout == 'Large screen':
       e = wx.TextCtrl(frame, -1, '', size=(10, bh), style=wx.TE_PROCESS_ENTER)
       font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
@@ -4997,19 +5059,19 @@ class App(wx.App):
       szr.Add(e, 1, flag=wx.ALIGN_CENTER_VERTICAL)
       frame.Bind(wx.EVT_TEXT_ENTER, self.FreqEntry, source=e)
     # S-meter
-    self.smeter = QuiskText(frame, ' Frequency 2 ', bh, 0, True) # -------------- изменено ---------- вынос из малого окошка ---------- 8 RA3PKJ
-    # ---------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    self.smeter = QuiskText(frame, ' Frequency 2 ', bh, 0, True) # --------------------- изменено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    # ----------------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
     #from quisk_widgets import _bitmap_menupop
     #b = QuiskBitmapButton(frame, self.OnSmeterRightDown, _bitmap_menupop)
     szr = wx.BoxSizer(wx.HORIZONTAL)
     b_smeter = szr
     szr.Add(self.smeter, 1, flag=wx.ALIGN_CENTER_VERTICAL)
-    # ---------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
+    # ----------------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
     #szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
     #self.smeter.TextCtrl.Bind(wx.EVT_RIGHT_DOWN, self.OnSmeterRightDown)
     self.smeter.TextCtrl.SetBackgroundColour(conf.color_freq)
     self.smeter.TextCtrl.SetForegroundColour(conf.color_freq_txt)
-# ----------------------------------------- удалено ------------------------------------------------- вынос из малого окошка ---------- 8 RA3PKJ
+# ----------------------------------------- удалено -------------------------------------------------------- вынос из малого окошка ---------- 8 RA3PKJ
 ##    self.smeter_menu = QuiskMenu("smeter_menu")
 ##    self.smeter_menu.AppendRadioItem('S-meter 1', self.OnSmeterMeterA)
 ##    self.smeter_menu.AppendRadioItem('S-meter 5', self.OnSmeterMeterB)
@@ -5080,6 +5142,7 @@ class App(wx.App):
       gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND) # сдвиг панорамы влево-вправо
       gbs.Add(b_lockVFO,    (0, button_start_col + 10), (1, 1), flag=wx.EXPAND) # ------------ добавлена кнопка Lock ----- реформа кнопок --------- 12 RA3PKJ
       gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
+
 # ----------------------------------------------------------------------------------------------- удалено ---------------- реформа кнопок --------- 12 RA3PKJ
 ##      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)
 ##      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)
@@ -5100,25 +5163,24 @@ class App(wx.App):
       gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
       gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
 
-      #gbs.Add(b_ReStart, (4, button_start_col), (1, 2), flag=wx.EXPAND)         # кнопка ReStart
-      #gbs.Add(b_Palette, (4, button_start_col + 2), (1, 2), flag=wx.EXPAND)    # кнопка WFall Palette
+      # ---------------------------------------------------------------------------------------- добавлено ---------------- реформа кнопок --------- 12 RA3PKJ
+      gbs.Add(b_Empty0,     (4, button_start_col), (1, 2), flag=wx.EXPAND)      # пустая кнопка
+      gbs.Add(b_Palette,    (4, button_start_col + 2), (1, 2), flag=wx.EXPAND)  # кнопка WFall Palette
       gbs.Add(b_fav,        (4, button_start_col + 4), (1, 4), flag=wx.EXPAND)  # кнопка добавления любимых частот
-      #gbs.Add(b_Empty1,     (4, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
+      gbs.Add(b_Empty1,     (4, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
       gbs.Add(b_tmprec,     (4, button_start_col + 10), (1, 4), flag=wx.EXPAND) # кнопки быстрой записи/воспроизведения звука
-
       # вставить пробелы скольео влезет
       while col < 14:
         col = 13
         b = QuiskCheckbutton(frame, None, text='')
         gbs.Add(b, (4, button_start_col + col), (1, 1), flag=flag)
         col += 1
-
-      #gbs.Add(b_Empty2,     (4, button_start_col + 15), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      #gbs.Add(b_Empty3,     (4, button_start_col + 17), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      #gbs.Add(b_Empty4,     (4, button_start_col + 19), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      #gbs.Add(b_Empty5,     (4, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      #gbs.Add(b_Empty6,     (4, button_start_col + 23), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      #gbs.Add(b_Help,     (4, button_start_col + 25), (1, 2), flag=wx.EXPAND) # кнопка Help
+      gbs.Add(b_Empty2,     (4, button_start_col + 15), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      gbs.Add(b_Empty3,     (4, button_start_col + 17), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      gbs.Add(b_Empty4,     (4, button_start_col + 19), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      gbs.Add(b_Empty5,     (4, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      gbs.Add(b_Empty6,     (4, button_start_col + 23), (1, 2), flag=wx.EXPAND) # пустая кнопка
+      gbs.Add(b_Help,       (4, button_start_col + 25), (1, 2), flag=wx.EXPAND) # кнопка Help
 
       for i in range(button_start_col, button_start_col + 14):
         gbs.AddGrowableCol(i,1)
@@ -5699,6 +5761,10 @@ class App(wx.App):
       QS.set_sidetone(self.sidetone_volume, self.sidetone_0to1, self.ritFreq, conf.keyupDelay)
 
   # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnWaterFallPalette(self, event): # обработчик нажатия кнопки Palette
+    pass
+    #self.multi_rx_screen.ChangePalette()
+  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
     rx = self.rxFreq
     self.rxFreq = self.txFreq
@@ -6268,6 +6334,15 @@ class App(wx.App):
   def OnBtnFavoritesNew(self, event):
     self.config_screen.favorites.AddNewFavorite()
     self.OnBtnFavoritesShow(event)
+
+  # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
+  def OnBtnEmpty(self, event): # ------------ для пустых кнопок
+    pass
+  # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
+  def OnBtnHelp(self, event): # --------- обработчик нажатия кнопки Help
+    import webbrowser
+    webbrowser.open("help.html") # ---------- открыть в браузере
+
   def OnBtnBand(self, event):
     band = self.lastBand	# former band in use
     try:
