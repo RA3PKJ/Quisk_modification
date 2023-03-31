@@ -4998,9 +4998,11 @@ class App(wx.App):
     # --------------------------------------------------------------- WFallPalette  button --- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
-    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "WFall Palette")
+    #self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "WFall Palette")
+    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, " ") # ------------------ временно
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.PaletteButton.SetLabel("WFall Palette")
+    #self.PaletteButton.SetLabel("WFall Palette")
+    self.PaletteButton.SetLabel(" ") # ------------------ временно
     self.PaletteButton.Refresh()
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
