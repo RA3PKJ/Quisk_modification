@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -391,10 +392,14 @@ class Configuration:
     if isinstance(page, RadioNotebook):
       if not page.pages:
         page.MakePages()
-  def AddPages(self, notebk, width):	# Called sixth to add pages Help, Radios, all radio names
+
+  # --------------------------------------------------- пункты меню на кнопке Radios ----- добавлено ----- кнопка Radios ---------- 15 RA3PKJ
+  def AddPagesRadios(self, notebk, width):
     global win_width
     win_width = width
     self.notebk = notebk
+    page = RadiosHelp(notebk)
+    notebk.AddPage(page, "Information")
     self.radio_page = Radios(notebk)
     notebk.AddPage(self.radio_page, "Radios")
     self.radios_page_start = notebk.GetPageCount()
@@ -405,6 +410,25 @@ class Configuration:
         notebk.AddPage(page, "*%s*" % name)
       else:
         notebk.AddPage(page, name)
+
+  #def AddPages(self, notebk, width):	# Called sixth to add pages # --------- удалено ------------------- кнопка Radios ---------- 15 RA3PKJ
+  def AddPagesConfig(self, notebk, width):	# Called sixth to add pages # ------ взамен ------------------- кнопка Radios ---------- 15 RA3PKJ
+    global win_width
+    win_width = width
+    self.notebk = notebk
+    # ----------- пока не добавлять никакие дополнительные пункты меню --------- удалено ------------------ кнопка Radios ---------- 15 RA3PKJ
+    #self.radio_page = Radios(notebk)
+    #notebk.AddPage(self.radio_page, "Radios")
+    self.radios_page_start = notebk.GetPageCount()
+    notebk.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanging, notebk)
+ # ---------------------------------------------------------------------------- удалено ------------------- кнопка Radios ---------- 15 RA3PKJ
+##    for name in Settings[2]:
+##      page = RadioNotebook(notebk, name)
+##      if name == Settings[1]:
+##        notebk.AddPage(page, "*%s*" % name)
+##      else:
+##        notebk.AddPage(page, name)
+
   def GuessType(self):
     udp = conf.use_rx_udp
     if conf.use_sdriq:
@@ -693,16 +717,17 @@ class Configuration:
         count -= 1
     return count
 
-class xxConfigHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
-  """Create the help screen for the configuration tabs."""
-  def __init__(self, parent):
-    wx.html.HtmlWindow.__init__(self, parent, -1, size=(win_width, 100))
-    if "gtk2" in wx.PlatformInfo:
-      self.SetStandardFonts()
-    self.SetFonts("", "", [10, 12, 14, 16, 18, 20, 22])
-    self.SetBackgroundColour(parent.bg_color)
-    # read in text from file help_conf.html in the directory of this module
-    self.LoadFile('help_conf.html')
+# -------------------------------------------- удалено ------------------------------------- кнопка Radios -------------------- 15 RA3PKJ
+##class xxConfigHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
+##  """Create the help screen for the configuration tabs."""
+##  def __init__(self, parent):
+##    wx.html.HtmlWindow.__init__(self, parent, -1, size=(win_width, 100))
+##    if "gtk2" in wx.PlatformInfo:
+##      self.SetStandardFonts()
+##    self.SetFonts("", "", [10, 12, 14, 16, 18, 20, 22])
+##    self.SetBackgroundColour(parent.bg_color)
+##    # read in text from file help_conf.html in the directory of this module
+##    self.LoadFile('help_conf.html')
 
 class QPowerMeterCalibration(wx.Frame):
   """Create a window to enter the power output and corresponding ADC value AIN1/2"""
@@ -1060,6 +1085,17 @@ class ListEditDialog(wx.Dialog):	# Display a dialog with a List-Edit control, pl
     self.SetClientSize(wx.Size(width, y + bsize.height * 14 // 10))
   def GetValue(self):
     return self.combo.GetValue()
+
+# ---------------------------------------------------------- добавлено ---------------------------------- кнопка Radios --------- 15 RA3PKJ
+class RadiosHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
+  """Create the help screen for the configuration tabs."""
+  def __init__(self, parent):
+    wx.html.HtmlWindow.__init__(self, parent, -1, size=(win_width, 100))
+    if "gtk2" in wx.PlatformInfo:
+      self.SetStandardFonts()
+    self.SetFonts("", "", [10, 12, 14, 16, 18, 20, 22])
+    # read in text from file help_conf.html in the directory of this module
+    self.LoadFile('help_conf.html')
 
 class RadioNotebook(wx.Notebook):	# The second-level notebook for each radio name
   def __init__(self, parent, radio_name):
@@ -1433,7 +1469,8 @@ class MidiButton(QuiskControl):
       elif idName in ("CW U/L", "CWL", "CWU", "SSB U/L", "LSB", "USB", "AM", "FM", "DGT",
                       "DGT-U", "DGT-L", "DGT-FM", "DGT-IQ", "FDV", "FDV-U", "IMD", ):
         item = modes.Append(-1, idName)
-      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Help"):
+      #elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Help"):# --- удалено --- кнопка Radios --- 15 RA3PKJ
+      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Radios"):# --- взамен --- кнопка Radios --- 15 RA3PKJ
         item = screens.Append(-1, idName)
       else:
         item = None
@@ -3951,7 +3988,7 @@ class xxRadioFilters(BaseWindow):		# The Filters page in the second-level notebo
       radio_dict[name] = "False"
       setattr(conf, name, False)
     local_conf.settings_changed = True
-    
+
 class BandPlanDlg(wx.Dialog, ControlMixin):
   # BandPlan in the application and the config file is a list of [integer hertz, color] and the color is None for "End".
   # BandPlan in Settings[4] (global settings) is a list of [string freq in MHz, mode].
@@ -4198,7 +4235,7 @@ The mode begins at the start frequency and ends at the next frequency.'
     self.EndModal(wx.ID_OK)
   def OnCancel(self, event):
     self.EndModal(wx.ID_CANCEL)
-    
+
 class WsjtxDlg(wx.Dialog, ControlMixin):
   def __init__(self, parent):
     txt = 'Configure WSJT-X'
