@@ -1875,9 +1875,9 @@ Ubtn_text_file_rec = "File" + u"\u25CF"        # Record to file
 Ubtn_text_file_play = "File"                   # Play from file
 Ubtn_text_fav_add    = "Favor" + u"\u2713"     # Add to favorites
 Ubtn_text_fav_recall = "Favor" + u"\u2630"     # Jump to favorites screen
-Ubtn_text_mem_add  = "M" + u"\u25CF"           # Add to memory
+Ubtn_text_mem_add  = "M+"           # Add to memory
 Ubtn_text_mem_next = "M" + u"\u27B2"           # Next memory
-Ubtn_text_mem_del  = "M" + u"\u2613"           # Delete from memory
+Ubtn_text_mem_del  = "M-"           # Delete from memory
 
 # These are the text symbols to display on buttons.
 Tbtn_text_range_dn = "Dn"
