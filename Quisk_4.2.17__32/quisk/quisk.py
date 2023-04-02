@@ -4127,24 +4127,25 @@ class App(wx.App):
       self.dxCluster.setListener(self.OnDxClChange)
       self.dxCluster.start()
     # Create shortcut keys for buttons
-    if conf.button_layout == 'Large screen':
-      for button in self.modeButns.GetButtons():	# mode buttons
-        self.idName2Button[button.idName] = button
-        if button.char_shortcut:
-          rid = self.QuiskNewId()
-          self.main_frame.Bind(wx.EVT_MENU, self.modeButns.Shortcut, id=rid)
-          self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
-      for button in self.bandBtnGroup.GetButtons():	# band buttons
-        self.idName2Button[button.idName] = button
-        if button.char_shortcut:
-          rid = self.QuiskNewId()
-          self.main_frame.Bind(wx.EVT_MENU, self.bandBtnGroup.Shortcut, id=rid)
-          self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
-    else:	# Small screen
-      for button in self.modeButns.GetButtons():	# mode buttons
-        self.idName2Button[button.idName] = self.modeButns
-      for button in self.bandBtnGroup.GetButtons():	# band buttons
-        self.idName2Button[button.idName] = self.bandBtnGroup
+    #if conf.button_layout == 'Large screen':# ------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    for button in self.modeButns.GetButtons():	# mode buttons
+      self.idName2Button[button.idName] = button
+      if button.char_shortcut:
+        rid = self.QuiskNewId()
+        self.main_frame.Bind(wx.EVT_MENU, self.modeButns.Shortcut, id=rid)
+        self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
+    for button in self.bandBtnGroup.GetButtons():	# band buttons
+      self.idName2Button[button.idName] = button
+      if button.char_shortcut:
+        rid = self.QuiskNewId()
+        self.main_frame.Bind(wx.EVT_MENU, self.bandBtnGroup.Shortcut, id=rid)
+        self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
+# --------------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##    else:	# Small screen
+##      for button in self.modeButns.GetButtons():	# mode buttons
+##        self.idName2Button[button.idName] = self.modeButns
+##      for button in self.bandBtnGroup.GetButtons():	# band buttons
+##        self.idName2Button[button.idName] = self.bandBtnGroup
     self.main_frame.SetAcceleratorTable(wx.AcceleratorTable(self.accel_list))
     self.modeButns.SetLabel(self.mode, True)
   #  self.OnTestTimer(None)
@@ -4665,18 +4666,19 @@ class App(wx.App):
     self.sliderZo.SetValue(0)
     flag = wx.EXPAND
     # Add band buttons
-    if conf.button_layout == 'Large screen':
-      #self.widget_row = 4 # Next available row for widgets # -------------- удалено ------------------------ реформа кнопок ----- 12 RA3PKJ
-      self.widget_row = 6  # Next available row for widgets # --- взамен -- добавлен нижний ряд кнопок ------ реформа кнопок ----- 12 RA3PKJ
-      shortcuts = []
-      for label in conf.bandLabels:
-        if isinstance(label, (list, tuple)):
-          label = label[0]
-        shortcuts.append(conf.bandShortcuts.get(label, ''))
-      self.bandBtnGroup = RadioButtonGroup(frame, self.OnBtnBand, conf.bandLabels, None, shortcuts)
-    else:
-      self.widget_row = 6		# Next available row for widgets
-      self.bandBtnGroup = RadioBtnPopup(frame, self.OnBtnBand, conf.bandLabels, None, 'bandBtnGroup')
+    #if conf.button_layout == 'Large screen': # --------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    #self.widget_row = 4 # Next available row for widgets # --------- удалено -------------------------------- реформа кнопок ----- 12 RA3PKJ
+    self.widget_row = 6  # Next available row for widgets # ----- взамен --- добавлен нижний ряд кнопок ------ реформа кнопок ----- 12 RA3PKJ
+    shortcuts = []
+    for label in conf.bandLabels:
+      if isinstance(label, (list, tuple)):
+        label = label[0]
+      shortcuts.append(conf.bandShortcuts.get(label, ''))
+    self.bandBtnGroup = RadioButtonGroup(frame, self.OnBtnBand, conf.bandLabels, None, shortcuts)
+# ------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##    else:
+##      self.widget_row = 6		# Next available row for widgets
+##      self.bandBtnGroup = RadioBtnPopup(frame, self.OnBtnBand, conf.bandLabels, None, 'bandBtnGroup')
     self.bandBtnGroup.idName = 'bandBtnGroup'
     # Add sliders on the left
     gbs.Add(self.sliderVol, (0, 0), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
@@ -4763,7 +4765,7 @@ class App(wx.App):
       b_test1 = None
     # Transmit button row: Spot
     left_row3=[]
-    bt = self.spotButton = QuiskCheckbutton(frame, self.OnBtnSpot, 'Spot', color=conf.color_test)
+    bt = self.spotButton = QuiskCheckbutton(frame, self.OnBtnSpot, 'Tune', color=conf.color_test)
     b = WrapSlider(bt, self.OnBtnSpot, slider_value=self.levelSpot, display=True)
     self.midiControls["SpotSlider"] = (b, None)
     if hasattr(Hardware, 'OnSpot'):
@@ -4863,14 +4865,15 @@ class App(wx.App):
       shortcuts.append('')
     mode_names.sort()
     self.config_screen.favorites.SetModeEditor(mode_names)
-    if conf.button_layout == 'Large screen':
-      self.modeButns = RadioButtonGroup(frame, self.OnBtnMode, labels, None, shortcuts)
-      self.modeButns.buttons[0].idName = "CW U/L"
-      self.modeButns.buttons[1].idName = "SSB U/L"
-      self.modeButns.buttons[4].idName = "DGT"
-    else:
-      labels = ['CWL', 'CWU', 'LSB', 'USB', 'AM', 'FM', 'DGT-U', 'DGT-L', 'DGT-FM', 'DGT-IQ', 'FDV-U', 'IMD']
-      self.modeButns = RadioBtnPopup(frame, self.OnBtnMode, labels, None, 'modeButns')
+    #if conf.button_layout == 'Large screen':# ------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    self.modeButns = RadioButtonGroup(frame, self.OnBtnMode, labels, None, shortcuts)
+    self.modeButns.buttons[0].idName = "CW U/L"
+    self.modeButns.buttons[1].idName = "SSB U/L"
+    self.modeButns.buttons[4].idName = "DGT"
+# --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##    else:
+##      labels = ['CWL', 'CWU', 'LSB', 'USB', 'AM', 'FM', 'DGT-U', 'DGT-L', 'DGT-FM', 'DGT-IQ', 'FDV-U', 'IMD']
+##      self.modeButns = RadioBtnPopup(frame, self.OnBtnMode, labels, None, 'modeButns')
     self.modeButns.idName = "modeButns"
     self.freedv_menu_items = {}
     if conf.add_freedv_button:
@@ -4882,14 +4885,15 @@ class App(wx.App):
         self.freedv_menu_items[index] = item
         if mode == self.freedv_mode:	# Restore mode
           QS.freedv_set_options(mode=index)
-      if conf.button_layout == 'Large screen':
-        b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
-        b.idName = "FDV"
-        b.char_shortcut = 'F'
-        self.btnFreeDV = WrapMenu(b, self.freedv_menu)
-        self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
-      else:
-        self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
+      #if conf.button_layout == 'Large screen':# ---------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+      b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
+      b.idName = "FDV"
+      b.char_shortcut = 'F'
+      self.btnFreeDV = WrapMenu(b, self.freedv_menu)
+      self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+# --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##      else:
+##        self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
       try:
         ok = QS.freedv_open()
       except:
@@ -4897,21 +4901,23 @@ class App(wx.App):
         ok = 0
       if not ok:
         conf.add_freedv_button = False
-        if conf.button_layout == 'Large screen':
-          self.modeButns.GetButtons()[n_freedv].Enable(0)
-        else:
-          self.modeButns.Enable('FDV-U', False)
+        #if conf.button_layout == 'Large screen':# -------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+        self.modeButns.GetButtons()[n_freedv].Enable(0)
+# --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##        else:
+##          self.modeButns.Enable('FDV-U', False)
     if conf.add_imd_button:
       val = 500
       QS.set_imd_level(val)
-      if conf.button_layout == 'Large screen':
-        b = QuiskCheckbutton(frame, None, 'IMD', color=conf.color_test)
-        b.char_shortcut = 'I'
-        b = WrapSlider(b, self.OnImdSlider, slider_value=val, display=True)
-        self.midiControls["IMDSlider"] = (b, None)
-        self.modeButns.ReplaceButton(n_imd, b)
-      else:
-        self.modeButns.AddSlider('IMD', self.OnImdSlider, slider_value=val, display=True)
+      #if conf.button_layout == 'Large screen':# ---------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+      b = QuiskCheckbutton(frame, None, 'IMD', color=conf.color_test)
+      b.char_shortcut = 'I'
+      b = WrapSlider(b, self.OnImdSlider, slider_value=val, display=True)
+      self.midiControls["IMDSlider"] = (b, None)
+      self.modeButns.ReplaceButton(n_imd, b)
+# --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##      else:
+##        self.modeButns.AddSlider('IMD', self.OnImdSlider, slider_value=val, display=True)
     labels = ('2000', '2000', '2000', '2000', '2000', '2000')
     self.filterButns = RadioButtonGroup(frame, self.OnBtnFilter, labels, None)
     self.filterButns.idName = "filterButns"
@@ -4933,16 +4939,17 @@ class App(wx.App):
       t = "Bscope"
     else:
       t = "RX Filter"
-    if conf.button_layout == 'Large screen':
-      #labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Help') # --- удалено --- кнопка Radios --- 15 RA3PKJ
-      labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Radios') # --- взамен --- кнопка Radios --- 15 RA3PKJ
-      self.screenBtnGroup = RadioButtonGroup(frame, self.OnBtnScreen, labels, conf.default_screen)
-      right_row3 = self.screenBtnGroup.GetButtons()
-    else:
-      labels = ('Graph', 'GraphP1', 'GraphP2', 'WFall', 'WFallP1', 'WFallP2', 'Scope', 'Config', t)
-      self.screenBtnGroup = RadioBtnPopup(frame, self.OnBtnScreen, labels, conf.default_screen, 'screenBtnGroup')
-      for button in self.screenBtnGroup.GetButtons():
-        self.idName2Button[button.idName] = self.screenBtnGroup
+    #if conf.button_layout == 'Large screen':# ------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    #labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Help') # --- удалено --- кнопка Radios --- 15 RA3PKJ
+    labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Radios') # --- взамен --- кнопка Radios --- 15 RA3PKJ
+    self.screenBtnGroup = RadioButtonGroup(frame, self.OnBtnScreen, labels, conf.default_screen)
+    right_row3 = self.screenBtnGroup.GetButtons()
+# --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##    else:
+##      labels = ('Graph', 'GraphP1', 'GraphP2', 'WFall', 'WFallP1', 'WFallP2', 'Scope', 'Config', t)
+##      self.screenBtnGroup = RadioBtnPopup(frame, self.OnBtnScreen, labels, conf.default_screen, 'screenBtnGroup')
+##      for button in self.screenBtnGroup.GetButtons():
+##        self.idName2Button[button.idName] = self.screenBtnGroup
     self.screenBtnGroup.idName = "screenBtnGroup"
     # Top row -----------------
     # Band down button
@@ -5088,22 +5095,23 @@ class App(wx.App):
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 15 // 10)
     #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------------------ удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
     # On/Off button
-    if conf.button_layout == 'Large screen':
-      b_onoff = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77DD77')
-      b_onoff.SetValue(True, do_cmd=False)
-      h = b_freqdisp.height
-      b_onoff.SetSizeHints(h, h, h, h)
+    #if conf.button_layout == 'Large screen':# -------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    b_onoff = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77DD77')
+    b_onoff.SetValue(True, do_cmd=False)
+    h = b_freqdisp.height
+    b_onoff.SetSizeHints(h, h, h, h)
     # ------------------------------------------------------------------- Frequency entry
-    if conf.button_layout == 'Large screen':
-      e = wx.TextCtrl(frame, -1, '', size=(10, bh), style=wx.TE_PROCESS_ENTER)
-      font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
-      e.SetFont(font)
-      e.SetBackgroundColour(conf.color_entry)
-      e.SetForegroundColour(conf.color_entry_txt)
-      szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
-      b_freqenter = szr
-      szr.Add(e, 1, flag=wx.ALIGN_CENTER_VERTICAL)
-      frame.Bind(wx.EVT_TEXT_ENTER, self.FreqEntry, source=e)
+    #if conf.button_layout == 'Large screen':# -------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    e = wx.TextCtrl(frame, -1, '', size=(10, bh), style=wx.TE_PROCESS_ENTER)
+    font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
+    e.SetFont(font)
+    e.SetBackgroundColour(conf.color_entry)
+    e.SetForegroundColour(conf.color_entry_txt)
+    szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
+    b_freqenter = szr
+    szr.Add(e, 1, flag=wx.ALIGN_CENTER_VERTICAL)
+    frame.Bind(wx.EVT_TEXT_ENTER, self.FreqEntry, source=e)
+
     # S-meter
     self.smeter = QuiskText(frame, ' Frequency 2 ', bh, 0, True) # --------------------- изменено ---------- вынос из малого окошка ---------- 8 RA3PKJ
     # ----------------------------------------------------------------------------------- удалено ---------- вынос из малого окошка ---------- 8 RA3PKJ
@@ -5128,165 +5136,165 @@ class App(wx.App):
     # Make a popup menu for the memory buttons
     self.memory_menu = wx.Menu()
     # Place the buttons on the screen
-    if conf.button_layout == 'Large screen':
-      # There are fourteen columns, a small gap column, and then twelve more columns
-      band_buttons = self.bandBtnGroup.buttons
-      if len(band_buttons) <= 7:
-        bmax = 7
-        span = 2
+    #if conf.button_layout == 'Large screen': # --------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    # There are fourteen columns, a small gap column, and then twelve more columns
+    band_buttons = self.bandBtnGroup.buttons
+    if len(band_buttons) <= 7:
+      bmax = 7
+      span = 2
+    else:
+      bmax = 14
+      span = 1
+    col = 0
+    for b in band_buttons[0:bmax]:
+      self.idName2Button[b.idName] = b
+      gbs.Add(b, (1, button_start_col + col), (1, span), flag=flag)
+      col += span
+    while col < 14:
+      b = QuiskCheckbutton(frame, None, text='')
+      gbs.Add(b, (1, button_start_col + col), (1, span), flag=flag)
+      col += span
+    col = button_start_col
+    for b in left_row2:
+      self.idName2Button[b.idName] = b
+      if b.idName in ("Mute", "NR2"):
+        gbs.Add(b, (2, col), (1, 1), flag=flag)
+        col += 1
       else:
-        bmax = 14
-        span = 1
-      col = 0
-      for b in band_buttons[0:bmax]:
-        self.idName2Button[b.idName] = b
-        gbs.Add(b, (1, button_start_col + col), (1, span), flag=flag)
-        col += span
-      while col < 14:
-        b = QuiskCheckbutton(frame, None, text='')
-        gbs.Add(b, (1, button_start_col + col), (1, span), flag=flag)
-        col += span
-      col = button_start_col
-      for b in left_row2:
-        self.idName2Button[b.idName] = b
-        if b.idName in ("Mute", "NR2"):
-          gbs.Add(b, (2, col), (1, 1), flag=flag)
-          col += 1
-        else:
-          gbs.Add(b, (2, col), (1, 2), flag=flag)
-          col += 2
-      col = button_start_col
-      for b in left_row3:
-        self.idName2Button[b.idName] = b
-        gbs.Add(b, (3, col), (1, 2), flag=flag)
-        col += 2
-      col = 15
-      for b in  self.modeButns.GetButtons():
-        self.idName2Button[b.idName] = b
-        if col in (19, 20):		# single column
-          gbs.Add(b, (1, button_start_col + col), flag=flag)
-          col += 1
-        else:						# double column
-          gbs.Add(b, (1, button_start_col + col), (1, 2), flag=flag)
-          col += 2
-      col = button_start_col + 15
-      for i in range(0, 6):
-        b = right_row2[i]
         gbs.Add(b, (2, col), (1, 2), flag=flag)
-        self.idName2Button[b.idName] = b
-        b = right_row3[i]
-        gbs.Add(b, (3, col), (1, 2), flag=flag)
-        self.idName2Button[b.idName] = b
         col += 2
+    col = button_start_col
+    for b in left_row3:
+      self.idName2Button[b.idName] = b
+      gbs.Add(b, (3, col), (1, 2), flag=flag)
+      col += 2
+    col = 15
+    for b in  self.modeButns.GetButtons():
+      self.idName2Button[b.idName] = b
+      if col in (19, 20):		# single column
+        gbs.Add(b, (1, button_start_col + col), flag=flag)
+        col += 1
+      else:						# double column
+        gbs.Add(b, (1, button_start_col + col), (1, 2), flag=flag)
+        col += 2
+    col = button_start_col + 15
+    for i in range(0, 6):
+      b = right_row2[i]
+      gbs.Add(b, (2, col), (1, 2), flag=flag)
+      self.idName2Button[b.idName] = b
+      b = right_row3[i]
+      gbs.Add(b, (3, col), (1, 2), flag=flag)
+      self.idName2Button[b.idName] = b
+      col += 2
 
-      #ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
-      gbs.Add(b_onoff,      (0, button_start_col), (1, 1),
-         flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
-      self.idName2Button[b_onoff.idName] = b_onoff
-      gbs.Add(b_freqdisp,   (0, button_start_col + 1), (1, 5), flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border) # цифровая шкала
-      gbs.Add(b_freqenter,  (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5) # ручной ввод частоты
-      gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND) # сдвиг панорамы влево-вправо
-      gbs.Add(b_lockVFO,    (0, button_start_col + 10), (1, 1), flag=wx.EXPAND) # ------------ добавлена кнопка Lock ----- реформа кнопок --------- 12 RA3PKJ
-      gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
+    #ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
+    gbs.Add(b_onoff,      (0, button_start_col), (1, 1),
+       flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
+    self.idName2Button[b_onoff.idName] = b_onoff
+    gbs.Add(b_freqdisp,   (0, button_start_col + 1), (1, 5), flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border) # цифровая шкала
+    gbs.Add(b_freqenter,  (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5) # ручной ввод частоты
+    gbs.Add(b_bandupdown, (0, button_start_col + 8), (1, 2), flag=wx.EXPAND) # сдвиг панорамы влево-вправо
+    gbs.Add(b_lockVFO,    (0, button_start_col + 10), (1, 1), flag=wx.EXPAND) # ------------ добавлена кнопка Lock ----- реформа кнопок --------- 12 RA3PKJ
+    gbs.Add(b_membtn,     (0, button_start_col + 11), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
 
-# ----------------------------------------------------------------------------------------------- удалено ---------------- реформа кнопок --------- 12 RA3PKJ
+# --------------------------------------------------------------------------------------------- удалено ---------------- реформа кнопок --------- 12 RA3PKJ
 ##      gbs.Add(b_fav,        (0, button_start_col + 15), (1, 2), flag=wx.EXPAND)
 ##      gbs.Add(b_tmprec,     (0, button_start_col + 17), (1, 2), flag=wx.EXPAND)
 ##      gbs.Add(b_addrx,       (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)
 ##      gbs.Add(b_smeter,      (0, button_start_col + 21), (1, 4), flag=wx.EXPAND)
 ##      gbs.Add(b_rit,         (0, button_start_col + 25), (1, 2), flag=wx.EXPAND)
-      # ------------------------------------------------------------------------------------------ взамен ---------------- реформа кнопок --------- 12 RA3PKJ
-      gbs.Add(b_smeter,     (0, button_start_col + 15), (1, 5), flag=wx.EXPAND)   # малое окошко частоты
-      gbs.Add(b_newsplit,   (0, button_start_col + 20), (1, 2), flag=wx.EXPAND)   # кнопка Split
-      gbs.Add(b_vfoAB,      (0, button_start_col + 22), (1, 1), flag=wx.EXPAND)   # кнопка A<>B
-      gbs.Add(b_addrx,      (0, button_start_col + 23), (1, 2), flag=wx.EXPAND)   #
-      gbs.Add(b_rit,        (0, button_start_col + 25), (1, 3), flag=wx.EXPAND)   # кнопка RIT
+    # ------------------------------------------------------------------------------------------ взамен ---------------- реформа кнопок --------- 12 RA3PKJ
+    gbs.Add(b_smeter,     (0, button_start_col + 15), (1, 5), flag=wx.EXPAND)   # малое окошко частоты
+    gbs.Add(b_newsplit,   (0, button_start_col + 20), (1, 2), flag=wx.EXPAND)   # кнопка Split
+    gbs.Add(b_vfoAB,      (0, button_start_col + 22), (1, 1), flag=wx.EXPAND)   # кнопка A<>B
+    gbs.Add(b_addrx,      (0, button_start_col + 23), (1, 2), flag=wx.EXPAND)   #
+    gbs.Add(b_rit,        (0, button_start_col + 25), (1, 3), flag=wx.EXPAND)   # кнопка RIT
 
-      col = button_start_col + 28
-      self.slider_columns += [col, col + 1, col + 2, col + 3]
-      gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
-      gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
-      gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
-      gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
+    col = button_start_col + 28
+    self.slider_columns += [col, col + 1, col + 2, col + 3]
+    gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
+    gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
+    gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
+    gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
 
-      # ---------------------------------------------------------------------------------------- добавлено ---------------- реформа кнопок --------- 12 RA3PKJ
-      gbs.Add(b_Empty0,     (4, button_start_col), (1, 2), flag=wx.EXPAND)      # пустая кнопка
-      gbs.Add(b_Palette,    (4, button_start_col + 2), (1, 2), flag=wx.EXPAND)  # кнопка WFall Palette
-      gbs.Add(b_fav,        (4, button_start_col + 4), (1, 4), flag=wx.EXPAND)  # кнопка добавления любимых частот
-      gbs.Add(b_Empty1,     (4, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
-      gbs.Add(b_tmprec,     (4, button_start_col + 10), (1, 4), flag=wx.EXPAND) # кнопки быстрой записи/воспроизведения звука
-      # вставить пробелы скольео влезет
-      while col < 14:
-        col = 13
-        b = QuiskCheckbutton(frame, None, text='')
-        gbs.Add(b, (4, button_start_col + col), (1, 1), flag=flag)
-        col += 1
-      gbs.Add(b_Empty2,     (4, button_start_col + 15), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      gbs.Add(b_Empty3,     (4, button_start_col + 17), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      gbs.Add(b_Empty4,     (4, button_start_col + 19), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      gbs.Add(b_Empty5,     (4, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      gbs.Add(b_Empty6,     (4, button_start_col + 23), (1, 2), flag=wx.EXPAND) # пустая кнопка
-      gbs.Add(b_Help,       (4, button_start_col + 25), (1, 2), flag=wx.EXPAND) # кнопка Help
+    # ---------------------------------------------------------------------------------------- добавлено ---------------- реформа кнопок --------- 12 RA3PKJ
+    gbs.Add(b_Empty0,     (4, button_start_col), (1, 2), flag=wx.EXPAND)      # пустая кнопка
+    gbs.Add(b_Palette,    (4, button_start_col + 2), (1, 2), flag=wx.EXPAND)  # кнопка WFall Palette
+    gbs.Add(b_fav,        (4, button_start_col + 4), (1, 4), flag=wx.EXPAND)  # кнопка добавления любимых частот
+    gbs.Add(b_Empty1,     (4, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
+    gbs.Add(b_tmprec,     (4, button_start_col + 10), (1, 4), flag=wx.EXPAND) # кнопки быстрой записи/воспроизведения звука
+    # вставить пробелы скольео влезет
+    while col < 14:
+      col = 13
+      b = QuiskCheckbutton(frame, None, text='')
+      gbs.Add(b, (4, button_start_col + col), (1, 1), flag=flag)
+      col += 1
+    gbs.Add(b_Empty2,     (4, button_start_col + 15), (1, 2), flag=wx.EXPAND) # пустая кнопка
+    gbs.Add(b_Empty3,     (4, button_start_col + 17), (1, 2), flag=wx.EXPAND) # пустая кнопка
+    gbs.Add(b_Empty4,     (4, button_start_col + 19), (1, 2), flag=wx.EXPAND) # пустая кнопка
+    gbs.Add(b_Empty5,     (4, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
+    gbs.Add(b_Empty6,     (4, button_start_col + 23), (1, 2), flag=wx.EXPAND) # пустая кнопка
+    gbs.Add(b_Help,       (4, button_start_col + 25), (1, 2), flag=wx.EXPAND) # кнопка Help
 
-      for i in range(button_start_col, button_start_col + 14):
-        gbs.AddGrowableCol(i,1)
-      for i in range(button_start_col + 15, button_start_col + 27):
-        gbs.AddGrowableCol(i,1)
-
-    else:	# Small screen
-      gbs.Add(b_freqdisp, (0, button_start_col), (1, 6),
-         flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
-      gbs.Add(b_bandupdown, (0, button_start_col + 6), (1, 2), flag=wx.EXPAND)
-      gbs.Add(b_smeter,    (0, button_start_col + 8), (1, 4), flag=wx.EXPAND)
-
-      gbs.Add(self.bandBtnGroup.GetPopControl(),   (1, button_start_col), (1, 2), flag=flag)
-      gbs.Add(self.modeButns.GetPopControl(),      (3, button_start_col), (1, 2), flag=flag)
-      gbs.Add(self.screenBtnGroup.GetPopControl(), (4, button_start_col), (1, 2), flag=flag)
-      b = QuiskCheckbutton(frame, self.OnBtnHelp, 'Help')
-      gbs.Add(b, (5, button_start_col), (1, 2), flag=flag)
-
-      gbs.Add(b_membtn, (1, button_start_col + 2), (1, 3), flag = wx.EXPAND)
-      gbs.Add(b_fav,    (1, button_start_col + 5), (1, 2), flag = wx.EXPAND)
-      gbs.Add(b_tmprec, (1, button_start_col + 7), (1, 2), flag=wx.EXPAND)
-      b = QuiskPushbutton(frame, None, '')
-      gbs.Add(b,        (1, button_start_col + 9), (1, 1), flag=wx.EXPAND)
-      gbs.Add(b_rit,    (1, button_start_col + 10), (1, 2), flag=wx.EXPAND)
-
-      row = 2
-      col = button_start_col
-      for b in self.filterButns.GetButtons():
-        self.idName2Button[b.idName] = b
-        gbs.Add(b, (row, col), (1, 2), flag=flag)
-        col += 2
-
-      buttons = left_row2 + left_row3
-      if b_test1:
-        buttons.remove(b_test1)
-        buttons += [b_test1, b_addrx]
-      else:
-        buttons += [b_addrx]
-      row = 3
-      col = 2
-      for b in buttons:
-        if hasattr(b, "idName"):
-          self.idName2Button[b.idName] = b
-        if hasattr(b, "idName") and b.idName in ("Mute", "NR2"):
-          gbs.Add(b, (row, button_start_col + col), (1, 1), flag=flag)
-          col += 1
-        else:
-          gbs.Add(b, (row, button_start_col + col), (1, 2), flag=flag)
-          col += 2
-        if col >= 12:
-          row += 1
-          col = 2
-      col = button_start_col + 12
-      self.slider_columns += [col, col + 1, col + 2, col + 3]
-      gbs.Add(self.ritScale, (0, col), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
-      gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
-      gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
-      gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
-      for i in range(button_start_col, button_start_col + 12):
-        gbs.AddGrowableCol(i,1)
+    for i in range(button_start_col, button_start_col + 14):
+      gbs.AddGrowableCol(i,1)
+    for i in range(button_start_col + 15, button_start_col + 27):
+      gbs.AddGrowableCol(i,1)
+# ------------------------------------------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+##    else:	# Small screen
+##      gbs.Add(b_freqdisp, (0, button_start_col), (1, 6),
+##         flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
+##      gbs.Add(b_bandupdown, (0, button_start_col + 6), (1, 2), flag=wx.EXPAND)
+##      gbs.Add(b_smeter,    (0, button_start_col + 8), (1, 4), flag=wx.EXPAND)
+##
+##      gbs.Add(self.bandBtnGroup.GetPopControl(),   (1, button_start_col), (1, 2), flag=flag)
+##      gbs.Add(self.modeButns.GetPopControl(),      (3, button_start_col), (1, 2), flag=flag)
+##      gbs.Add(self.screenBtnGroup.GetPopControl(), (4, button_start_col), (1, 2), flag=flag)
+##      b = QuiskCheckbutton(frame, self.OnBtnHelp, 'Help')
+##      gbs.Add(b, (5, button_start_col), (1, 2), flag=flag)
+##
+##      gbs.Add(b_membtn, (1, button_start_col + 2), (1, 3), flag = wx.EXPAND)
+##      gbs.Add(b_fav,    (1, button_start_col + 5), (1, 2), flag = wx.EXPAND)
+##      gbs.Add(b_tmprec, (1, button_start_col + 7), (1, 2), flag=wx.EXPAND)
+##      b = QuiskPushbutton(frame, None, '')
+##      gbs.Add(b,        (1, button_start_col + 9), (1, 1), flag=wx.EXPAND)
+##      gbs.Add(b_rit,    (1, button_start_col + 10), (1, 2), flag=wx.EXPAND)
+##
+##      row = 2
+##      col = button_start_col
+##      for b in self.filterButns.GetButtons():
+##        self.idName2Button[b.idName] = b
+##        gbs.Add(b, (row, col), (1, 2), flag=flag)
+##        col += 2
+##
+##      buttons = left_row2 + left_row3
+##      if b_test1:
+##        buttons.remove(b_test1)
+##        buttons += [b_test1, b_addrx]
+##      else:
+##        buttons += [b_addrx]
+##      row = 3
+##      col = 2
+##      for b in buttons:
+##        if hasattr(b, "idName"):
+##          self.idName2Button[b.idName] = b
+##        if hasattr(b, "idName") and b.idName in ("Mute", "NR2"):
+##          gbs.Add(b, (row, button_start_col + col), (1, 1), flag=flag)
+##          col += 1
+##        else:
+##          gbs.Add(b, (row, button_start_col + col), (1, 2), flag=flag)
+##          col += 2
+##        if col >= 12:
+##          row += 1
+##          col = 2
+##      col = button_start_col + 12
+##      self.slider_columns += [col, col + 1, col + 2, col + 3]
+##      gbs.Add(self.ritScale, (0, col), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
+##      gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
+##      gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
+##      gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
+##      for i in range(button_start_col, button_start_col + 12):
+##        gbs.AddGrowableCol(i,1)
     self.button_start_col = button_start_col
   def MeasureAudioVoltage(self):
     v = QS.measure_audio(-1)

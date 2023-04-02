@@ -1520,7 +1520,7 @@ window_posX = -1
 window_posY = -1
 #window_posY = 0
 
-## button_layout				Button layout, text choice
+# button_layout				Button layout, text choice # ---------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
 # This option controls how many buttons are displayed on the screen.  The large screen
 # layout is meant for a PC.  The small screen layout is meant for small touch screens, and
 # small screens used in embedded systems.
