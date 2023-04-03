@@ -1870,14 +1870,14 @@ Tsym_stat_dx = 'Dx'
 Ubtn_text_range_dn = u"\u25C0" + u"\u2500"	   # Down band, left arrow
 Ubtn_text_range_up = u"\u2500" + u"\u25B6"	   # Up band, right arrow
 Ubtn_text_play = "Play"		                   # Play button
-Ubtn_text_rec = "Record" + u"\u25CF"		   # Record button, a filled dot
+Ubtn_text_rec = "Rec" + u"\u25CF"		   # Record button, a filled dot
 Ubtn_text_file_rec = "File" + u"\u25CF"        # Record to file
 Ubtn_text_file_play = "File"                   # Play from file
 Ubtn_text_fav_add    = "Favor" + u"\u2713"     # Add to favorites
 Ubtn_text_fav_recall = "Favor" + u"\u2630"     # Jump to favorites screen
-Ubtn_text_mem_add  = "M+"           # Add to memory
-Ubtn_text_mem_next = "M" + u"\u27B2"           # Next memory
-Ubtn_text_mem_del  = "M-"           # Delete from memory
+Ubtn_text_mem_add  = "Mem"                    # Add to memory
+Ubtn_text_mem_next = "Rest"                    # Next memory
+Ubtn_text_mem_del  = "Del"                     # Delete from memory
 
 # These are the text symbols to display on buttons.
 Tbtn_text_range_dn = "Dn"
@@ -1904,9 +1904,10 @@ btn_text_switch = u"\u21C4"		# Character to switch left-right
 ## color_scheme				Color scheme, text choice
 # This controls the color scheme used by Quisk.  The default color scheme is A, and you can change this scheme
 # in your config file.  Other color schemes are available here.
-color_scheme = 'A'
+color_scheme = 'C' # ------------------------------------------------------------------------ начальные условия запуска --------- 17 RA3PKJ
+#color_scheme = 'A'
 #color_scheme = 'B'
-#color_scheme = 'C'
+
 
 ## waterfall_palette			Waterfall colors, text choice
 # This controls the colors used in the waterfall.  The default color scheme is A, and you can change this scheme
