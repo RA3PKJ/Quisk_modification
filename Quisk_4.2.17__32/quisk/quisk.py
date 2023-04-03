@@ -4653,11 +4653,14 @@ class App(wx.App):
     # Make one or two sliders on the left
     self.sliderVol = SliderBoxV(frame, 'Vol', self.volumeAudio, 1000, self.ChangeVolume)
     self.ChangeVolume()		# set initial volume level
-    if conf.use_sidetone:
-      self.sliderSto = SliderBoxV(frame, 'STo', self.sidetone_volume, 1000, self.ChangeSidetone)
-      self.ChangeSidetone()
-    else:
-      self.sliderSto = None
+
+    # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    #if conf.use_sidetone:
+    self.sliderSto = SliderBoxV(frame, 'STo', self.sidetone_volume, 1000, self.ChangeSidetone)
+    self.ChangeSidetone()
+    #else:
+      #self.sliderSto = None
+
     # Make four sliders on the right
     self.ritScale = SliderBoxV(frame, 'Rit', self.ritFreq, 2000, self.OnRitScale, False, themin=-2000)
     self.sliderYs = SliderBoxV(frame, 'Ys', 0, 160, self.ChangeYscale, True)
@@ -4682,13 +4685,16 @@ class App(wx.App):
     self.bandBtnGroup.idName = 'bandBtnGroup'
     # Add sliders on the left
     gbs.Add(self.sliderVol, (0, 0), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
-    if conf.use_sidetone:
-      button_start_col = 2
-      self.slider_columns = [0, 1]
-      gbs.Add(self.sliderSto, (0, 1), (self.widget_row, 1), flag=flag)
-    else:
-      self.slider_columns = [0]
-      button_start_col = 1
+
+    # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    #if conf.use_sidetone:
+    button_start_col = 2
+    self.slider_columns = [0, 1]
+    gbs.Add(self.sliderSto, (0, 1), (self.widget_row, 1), flag=flag)
+    #else:
+      #self.slider_columns = [0]
+      #button_start_col = 1
+
     # Receive button row: Mute, NR2, AGC
     left_row2 = []
 
@@ -4856,11 +4862,14 @@ class App(wx.App):
       count += 1
       labels.append('FDV-U')
       shortcuts.append('F')
-    if conf.add_imd_button:
-      n_imd = count
-      count += 1
-      labels.append('IMD')
-      shortcuts.append('I')
+
+    # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    #if conf.add_imd_button:
+    n_imd = count
+    count += 1
+    labels.append('IMD')
+    shortcuts.append('I')
+
     if count < 7 and conf.add_extern_demod:
       count += 1
       labels.append(conf.add_extern_demod)
@@ -4913,18 +4922,21 @@ class App(wx.App):
 # --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
 ##        else:
 ##          self.modeButns.Enable('FDV-U', False)
-    if conf.add_imd_button:
-      val = 500
-      QS.set_imd_level(val)
-      #if conf.button_layout == 'Large screen':# ---------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
-      b = QuiskCheckbutton(frame, None, 'IMD', color=conf.color_test)
-      b.char_shortcut = 'I'
-      b = WrapSlider(b, self.OnImdSlider, slider_value=val, display=True)
-      self.midiControls["IMDSlider"] = (b, None)
-      self.modeButns.ReplaceButton(n_imd, b)
+
+    # ----------------------------------- изменено -------------------------------- инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    #if conf.add_imd_button:
+    val = 500
+    QS.set_imd_level(val)
+    #if conf.button_layout == 'Large screen':# ------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    b = QuiskCheckbutton(frame, None, 'IMD', color=conf.color_test)
+    b.char_shortcut = 'I'
+    b = WrapSlider(b, self.OnImdSlider, slider_value=val, display=True)
+    self.midiControls["IMDSlider"] = (b, None)
+    self.modeButns.ReplaceButton(n_imd, b)
 # --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
-##      else:
-##        self.modeButns.AddSlider('IMD', self.OnImdSlider, slider_value=val, display=True)
+#      else:
+#        self.modeButns.AddSlider('IMD', self.OnImdSlider, slider_value=val, display=True)
+
     labels = ('2000', '2000', '2000', '2000', '2000', '2000')
     self.filterButns = RadioButtonGroup(frame, self.OnBtnFilter, labels, None)
     self.filterButns.idName = "filterButns"
@@ -5232,10 +5244,10 @@ class App(wx.App):
     gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
     gbs.Add(b_membtn,      (1, button_start_col + 15), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
     gbs.Add(b_rit,         (1, button_start_col + 18), (1, 3), flag=wx.EXPAND)   # кнопка RIT
-    gbs.Add(b_fav,         (2, button_start_col + 15), (1, 3), flag=wx.EXPAND)  # кнопка добавления любимых частот
-    gbs.Add(b_tmprec,      (2, button_start_col + 18), (1, 3), flag=wx.EXPAND) # кнопки быстрой записи/воспроизведения звука
-    gbs.Add(b_Palette,     (4, button_start_col + 12), (1, 2), flag=wx.EXPAND)  # кнопка WFall Palette
-    gbs.Add(b_Help,        (2, button_start_col + 12), (1, 2), flag=wx.EXPAND) # кнопка Help
+    gbs.Add(b_Help,        (2, button_start_col + 12), (1, 2), flag=wx.EXPAND)   # кнопка Help
+    gbs.Add(b_fav,         (2, button_start_col + 15), (1, 3), flag=wx.EXPAND)   # кнопка добавления любимых частот
+    gbs.Add(b_tmprec,      (2, button_start_col + 18), (1, 3), flag=wx.EXPAND)   # кнопки быстрой записи/воспроизведения звука
+    gbs.Add(b_Palette,     (4, button_start_col + 12), (1, 2), flag=wx.EXPAND)   # кнопка WFall Palette
 
     # вставить пробелы скольео влезет
     while col < 14:
@@ -5254,7 +5266,7 @@ class App(wx.App):
 
     for i in range(button_start_col, button_start_col + 14):
       gbs.AddGrowableCol(i,1)
-    for i in range(button_start_col + 15, button_start_col + 24):
+    for i in range(button_start_col + 15, button_start_col + 21):
       gbs.AddGrowableCol(i,1)
 # ------------------------------------------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
 ##    else:	# Small screen

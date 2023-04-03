@@ -1662,10 +1662,11 @@ cwTone = 600
 #cwTone = 400
 #cwTone = 800
 
-## use_sidetone				Use sidetone, integer choice
+# ---- SideTone ------------------------------- удалено ------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+# ## use_sidetone				Use sidetone, integer choice
 # This controls whether Quisk will display a sidetone volume control
 # and generate a CW sidetone.
-use_sidetone = 0
+#use_sidetone = 0
 #use_sidetone = 1
 
 ## use_fast_sound		Use fast sound, boolean
@@ -1727,24 +1728,25 @@ graph_peak_hold_1 = 0.25
 # of the Graph button.  Lower numbers give a longer time constant.
 graph_peak_hold_2 = 0.10
 
-
-## add_imd_button			Add IMD button, integer choice
+# ---- IMD ------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+# ## add_imd_button			Add IMD button, integer choice
 # If you want Quisk to add a button to generate a 2-tone IMD test signal,
 # set this to 1.
-add_imd_button = 0
+#add_imd_button = 0
 #add_imd_button = 1
 
+# ---- WFM
 ## add_extern_demod			Add ext demod button, text
 # If you want to write your own I/Q filter and demodulation module, set
 # this to the name of the button to add, and change extdemod.c.
-add_extern_demod = ""
-#add_extern_demod = "WFM"
+#add_extern_demod = ""
+add_extern_demod = "WFM"
 
 ## add_fdx_button			Add FDX button, integer choice
 # If you want Quisk to add a full duplex button (transmit and receive at the
 # same time), set this to 1.
-add_fdx_button = 0
-#add_fdx_button = 1
+# add_fdx_button = 0
+add_fdx_button = 1
 
 ## add_freedv_button		Add FreeDv button, integer choice
 # These buttons add up to two additional mode buttons after CW, USB, etc.

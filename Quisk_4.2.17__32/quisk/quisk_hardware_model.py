@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # Please do not change this hardware control module for Quisk.
 # You should use it as a base class for your own hardware modules.
 
@@ -20,7 +22,7 @@ class Hardware:
     self.conf = conf				# Config file module
     self.rf_gain_labels = ()			# Do not add the Rf Gain button
     self.correct_smeter = conf.correct_smeter	# Default correction for S-meter
-    self.use_sidetone = conf.use_sidetone	# Copy from the config file
+    #self.use_sidetone = conf.use_sidetone	# Copy from the config file # -------------- удалено -------- инициализация скрытых кнопок ---------- 18 RA3PKJ
     self.transverter_offset = 0			# Calculate the transverter offset in Hertz for each band
     self.hermes_ip = ''				# Should not be necessary
   def pre_open(self):		# Quisk calls this once before open() is called
