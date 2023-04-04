@@ -4671,7 +4671,7 @@ class App(wx.App):
     # Add band buttons
     #if conf.button_layout == 'Large screen': # --------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
     #self.widget_row = 4 # Next available row for widgets # --------- удалено -------------------------------- реформа кнопок ----- 12 RA3PKJ
-    self.widget_row = 6  # Next available row for widgets # ----- взамен --- добавлен нижний ряд кнопок ------ реформа кнопок ----- 12 RA3PKJ
+    self.widget_row = 7  # Next available row for widgets # ----- взамен --- добавлен нижний ряд кнопок ------ реформа кнопок ----- 12 RA3PKJ
     shortcuts = []
     for label in conf.bandLabels:
       if isinstance(label, (list, tuple)):
