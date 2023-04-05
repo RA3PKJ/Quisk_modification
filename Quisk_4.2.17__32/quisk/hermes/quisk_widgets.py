@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # Please do not change this widgets module for Quisk.  Instead copy
 # it to your own quisk_widgets.py and make changes there.
 #
@@ -31,46 +33,47 @@ class BottomWidgets:	# Add extra widgets to the bottom of the screen
     app.midiControls["RfLna"]	= (self.sliderLNA,	self.OnLNA)
     hardware.ChangeLNA(init)
     gbs.Add(self.sliderLNA, (start_row, self.start_col + 2), (1, 8), flag=wx.EXPAND)
-    if conf.button_layout == "Small screen":
-      # Display four data items in a single window
-      self.text_temperature = app.QuiskText1(frame, '', bh)
-      self.text_pa_current = app.QuiskText1(frame, '', bh)
-      self.text_fwd_power = app.QuiskText1(frame, '', bh)
-      self.text_swr = app.QuiskText1(frame, '', bh)
-      self.text_data = self.text_temperature
-      self.text_pa_current.Hide()
-      self.text_fwd_power.Hide()
-      self.text_swr.Hide()
-      b = app.QuiskPushbutton(frame, self.OnTextDataMenu, '..')
-      szr = self.data_sizer = wx.BoxSizer(wx.HORIZONTAL)
-      szr.Add(self.text_data, 1, flag=wx.ALIGN_CENTER_VERTICAL)
-      szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
-      gbs.Add(szr, (start_row, self.start_col + 10), (1, 2), flag=wx.EXPAND)
-      # Make a popup menu for the data window
-      self.text_data_menu = wx.Menu()
-      item = self.text_data_menu.Append(-1, 'Temperature')
-      app.Bind(wx.EVT_MENU, self.OnDataTemperature, item)
-      item = self.text_data_menu.Append(-1, 'PA Current')
-      app.Bind(wx.EVT_MENU, self.OnDataPaCurrent, item)
-      item = self.text_data_menu.Append(-1, 'Fwd Power')
-      app.Bind(wx.EVT_MENU, self.OnDataFwdPower, item)
-      item = self.text_data_menu.Append(-1, 'SWR')
-      app.Bind(wx.EVT_MENU, self.OnDataSwr, item)
-    else:
-      szr = wx.BoxSizer(wx.HORIZONTAL)
-      gbs.Add(szr, (start_row, self.start_col + 10), (1, 18), flag=wx.EXPAND)
-      text_temperature = wx.StaticText(frame, -1, ' Temp 100DC XX', style=wx.ST_NO_AUTORESIZE)
-      size = text_temperature.GetBestSize()
-      text_temperature.Destroy()
-      self.text_temperature = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
-      self.text_pa_current = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
-      self.text_fwd_power = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
-      self.text_swr = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
-      flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-      szr.Add(self.text_temperature, 0, flag=flag)
-      szr.Add(self.text_pa_current, 0, flag=flag)
-      szr.Add(self.text_fwd_power, 0, flag=flag)
-      szr.Add(self.text_swr, 0, flag=flag)
+# --------------------------------------------------- удалено ------------------------------ удаление маленького экрана ------ 16 RA3PKJ
+##    if conf.button_layout == "Small screen":
+##      # Display four data items in a single window
+##      self.text_temperature = app.QuiskText1(frame, '', bh)
+##      self.text_pa_current = app.QuiskText1(frame, '', bh)
+##      self.text_fwd_power = app.QuiskText1(frame, '', bh)
+##      self.text_swr = app.QuiskText1(frame, '', bh)
+##      self.text_data = self.text_temperature
+##      self.text_pa_current.Hide()
+##      self.text_fwd_power.Hide()
+##      self.text_swr.Hide()
+##      b = app.QuiskPushbutton(frame, self.OnTextDataMenu, '..')
+##      szr = self.data_sizer = wx.BoxSizer(wx.HORIZONTAL)
+##      szr.Add(self.text_data, 1, flag=wx.ALIGN_CENTER_VERTICAL)
+##      szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
+##      gbs.Add(szr, (start_row, self.start_col + 10), (1, 2), flag=wx.EXPAND)
+##      # Make a popup menu for the data window
+##      self.text_data_menu = wx.Menu()
+##      item = self.text_data_menu.Append(-1, 'Temperature')
+##      app.Bind(wx.EVT_MENU, self.OnDataTemperature, item)
+##      item = self.text_data_menu.Append(-1, 'PA Current')
+##      app.Bind(wx.EVT_MENU, self.OnDataPaCurrent, item)
+##      item = self.text_data_menu.Append(-1, 'Fwd Power')
+##      app.Bind(wx.EVT_MENU, self.OnDataFwdPower, item)
+##      item = self.text_data_menu.Append(-1, 'SWR')
+##      app.Bind(wx.EVT_MENU, self.OnDataSwr, item)
+##    else:
+    szr = wx.BoxSizer(wx.HORIZONTAL)
+    gbs.Add(szr, (start_row, self.start_col + 10), (1, 18), flag=wx.EXPAND)
+    text_temperature = wx.StaticText(frame, -1, ' Temp 100DC XX', style=wx.ST_NO_AUTORESIZE)
+    size = text_temperature.GetBestSize()
+    text_temperature.Destroy()
+    self.text_temperature = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
+    self.text_pa_current = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
+    self.text_fwd_power = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
+    self.text_swr = wx.StaticText(frame, -1, '', size=size, style=wx.ST_NO_AUTORESIZE)
+    flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+    szr.Add(self.text_temperature, 0, flag=flag)
+    szr.Add(self.text_pa_current, 0, flag=flag)
+    szr.Add(self.text_fwd_power, 0, flag=flag)
+    szr.Add(self.text_swr, 0, flag=flag)
   def OnAGC(self, event):
     btn = event.GetEventObject()
     value = btn.GetValue()
