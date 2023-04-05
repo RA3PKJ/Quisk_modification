@@ -4096,7 +4096,8 @@ class App(wx.App):
         i = self.bottom_widgets.num_rows_added		# No way to get total rows until ver 2.9 !!
       except:
         i = 1
-      rows = self.widget_row + i + 1
+      #rows = self.widget_row + i # --------------------- удалено -------- устранение ошибки нижнего ряда в Hermes --------- 19 RA3PKJ
+      rows = self.widget_row + i + 1 # ------------------- взамен -------- устранение ошибки нижнего ряда в Hermes --------- 19 RA3PKJ
       for i in self.slider_columns:
         item = gbs.FindItemAtPosition((0, i))
         item.SetSpan((rows, 1))
@@ -4813,11 +4814,13 @@ class App(wx.App):
     left_row3.append(self.rx2Button)
 
     b = QuiskCheckbutton(frame, self.OnBtnFDX, 'FDX', color=conf.color_test)
-    if conf.add_fdx_button:
-      b.char_shortcut = 'X'
-      self.MakeAccel(b)
-    else:
-      b.Enable(False)
+    # ----------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    #if conf.add_fdx_button:
+    b.char_shortcut = 'X'
+    self.MakeAccel(b)
+    #else:
+      #b.Enable(False)
+
     left_row3.append(b)
     bt = QuiskCheckbutton(frame, self.OnButtonPTT, 'PTT', color='red')
     self.pttButton = bt
@@ -6039,12 +6042,13 @@ class App(wx.App):
       value = -1
     QS.set_spot_level(value)
     Hardware.OnSpot(value)
-    if conf.spot_button_keys_tx:
-      Hardware.OnButtonPTT(event)
-      if btn.GetValue():
-        QS.set_key_down(1)
-      else:
-        QS.set_key_down(0)
+    # ----------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    #if conf.spot_button_keys_tx:
+    Hardware.OnButtonPTT(event)
+    if btn.GetValue():
+      QS.set_key_down(1)
+      #else:
+        #QS.set_key_down(0)
   def OnBtnTmpRecord(self, event):
     btn = event.GetEventObject()
     if btn.GetValue():

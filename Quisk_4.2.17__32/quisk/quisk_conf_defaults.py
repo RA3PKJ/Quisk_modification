@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
-
 from __future__ import absolute_import
 from __future__ import division
 #  ** This is the file quisk_conf_defaults.py which contains defaults for Quisk. **
-#
+#  
 # NOTE: You probably do not want to use a configuration file. Configuration files are obsolete
 #       because almost all configuration is done from the configuration screens in Quisk.
 #
@@ -281,7 +279,7 @@ sndp_active = True
 #use_rx_udp = 10
 
 ## udp_rx_ip		Hermes known IP, text
-# Leave this blank to find the Hermes hardware with the usual UDP broadcast method.
+# Leave this blank to find the Hermes hardware with the usual UDP broadcast method. 
 # But this will not work on a VPN or when broadcasts are not routed
 # to remote networks. In that case, enter the known IP address of the Hermes hardware.
 udp_rx_ip = ''
@@ -476,10 +474,10 @@ hermes_iob_rxin = 'J10 available'
 
 # These are known power meter calibration tables. This table is not present in the JSON settings file.
 power_meter_std_calibrations = {}
-power_meter_std_calibrations['HL2FilterE3'] = [[ 0, 0.0 ], [ 25.865384615384617, 0.0025502539351328003 ], [ 101.02453987730061, 0.012752044999999998 ],
-          [ 265.2901234567901, 0.050600930690879994 ], [ 647.9155844155844, 0.21645831264800003 ], [ 1196.5935483870967, 0.66548046472992 ],
-          [ 1603.7032258064517, 1.1557229391679997 ], [ 2012.3271604938273, 1.811892166688 ], [ 2616.7727272727275, 3.0085848760319993 ],
-          [ 3173.818181818182, 4.3927428485119995 ], [ 3382.7922077922076, 4.9791328857920005 ], [ 3721.0714285714284, 6.024750791808321 ],
+power_meter_std_calibrations['HL2FilterE3'] = [[ 0, 0.0 ], [ 25.865384615384617, 0.0025502539351328003 ], [ 101.02453987730061, 0.012752044999999998 ], 
+          [ 265.2901234567901, 0.050600930690879994 ], [ 647.9155844155844, 0.21645831264800003 ], [ 1196.5935483870967, 0.66548046472992 ], 
+          [ 1603.7032258064517, 1.1557229391679997 ], [ 2012.3271604938273, 1.811892166688 ], [ 2616.7727272727275, 3.0085848760319993 ], 
+          [ 3173.818181818182, 4.3927428485119995 ], [ 3382.7922077922076, 4.9791328857920005 ], [ 3721.0714285714284, 6.024750791808321 ], 
           [ 4093.1785714285716, 7.28994845808807 ], [ 4502.496428571429, 8.820837634286566 ], [ 4952.746071428572, 10.673213537486745 ] ]
 #power_meter_std_calibrations['HL2FilterE1'] = [[0, 0.0], [9.07, 0.002], [54.98, 0.014], [148.6, 0.057],
 #          [328.0, 0.208], [611.1, 0.646], [807.0, 1.098], [982.1, 1.6], [1223.3, 2.471], [1517.7, 3.738], [1758.7, 5.02]]
@@ -1520,7 +1518,7 @@ window_posX = -1
 window_posY = -1
 #window_posY = 0
 
-# button_layout				Button layout, text choice # ---------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+## button_layout				Button layout, text choice
 # This option controls how many buttons are displayed on the screen.  The large screen
 # layout is meant for a PC.  The small screen layout is meant for small touch screens, and
 # small screens used in embedded systems.
@@ -1564,7 +1562,7 @@ settings_file_path = ''
 ## lin_latency_millisecs		Play latency msec, integer
 # Play latency determines how many samples are in the radio sound play buffer.
 # A larger number makes it less likely that you will run out of samples to play,
-# but increases latency.  It is OK to suffer a certain number of play buffer
+# but increases latency.  It is OK to suffer a certain number of play buffer 
 # underruns in order to get lower latency.
 lin_latency_millisecs = 150
 #lin_latency_millisecs =  50
@@ -1574,7 +1572,7 @@ lin_latency_millisecs = 150
 ## win_latency_millisecs		Play latency msec, integer
 # Play latency determines how many samples are in the radio sound play buffer.
 # A larger number makes it less likely that you will run out of samples to play,
-# but increases latency.  It is OK to suffer a certain number of play buffer
+# but increases latency.  It is OK to suffer a certain number of play buffer 
 # underruns in order to get lower latency.
 win_latency_millisecs = 150
 #win_latency_millisecs =  50
@@ -1662,11 +1660,10 @@ cwTone = 600
 #cwTone = 400
 #cwTone = 800
 
-# ---- SideTone ------------------------------- удалено ------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
-# ## use_sidetone				Use sidetone, integer choice
+## use_sidetone				Use sidetone, integer choice
 # This controls whether Quisk will display a sidetone volume control
 # and generate a CW sidetone.
-#use_sidetone = 0
+use_sidetone = 0
 #use_sidetone = 1
 
 ## use_fast_sound		Use fast sound, boolean
@@ -1728,25 +1725,24 @@ graph_peak_hold_1 = 0.25
 # of the Graph button.  Lower numbers give a longer time constant.
 graph_peak_hold_2 = 0.10
 
-# ---- IMD ------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
-# ## add_imd_button			Add IMD button, integer choice
+
+## add_imd_button			Add IMD button, integer choice
 # If you want Quisk to add a button to generate a 2-tone IMD test signal,
 # set this to 1.
-#add_imd_button = 0
+add_imd_button = 0
 #add_imd_button = 1
 
-# ---- WFM
 ## add_extern_demod			Add ext demod button, text
 # If you want to write your own I/Q filter and demodulation module, set
 # this to the name of the button to add, and change extdemod.c.
-#add_extern_demod = ""
-add_extern_demod = "WFM"
+add_extern_demod = ""
+#add_extern_demod = "WFM"
 
 ## add_fdx_button			Add FDX button, integer choice
 # If you want Quisk to add a full duplex button (transmit and receive at the
 # same time), set this to 1.
-# add_fdx_button = 0
-add_fdx_button = 1
+add_fdx_button = 0
+#add_fdx_button = 1
 
 ## add_freedv_button		Add FreeDv button, integer choice
 # These buttons add up to two additional mode buttons after CW, USB, etc.
@@ -1761,7 +1757,7 @@ freedv_tx_msg = ''
 
 
 # This is the list of FreeDV modes and their index number.  The starting mode is the first listed.
-freedv_modes = (('Mode 1600', 0),
+freedv_modes = (('Mode 1600', 0), 
 		('Mode 2400A', 3), ('Mode 2400B', 4), ('Mode 800XA', 5),
 		('Mode 700C', 6), ('Mode 700D', 7), ('Mode 2020', 8), ('Mode 700E', 13))
 
@@ -1853,34 +1849,19 @@ Usym_stat_dx = u"\u25B2"	# Symbol for DX Cluster stations, a Delta
 Tsym_stat_fav = 'F'
 Tsym_stat_mem = 'M'
 Tsym_stat_dx = 'Dx'
-
-# ------------------------------------------------------------------------------------- удалено --------- реформа кнопок ---- 12 RA3PKJ
+#
 # These are the Unicode symbols to display on buttons.  Thanks to Christof, DJ4CM.
-##Ubtn_text_range_dn = u"\u2B07"				    # Down band, left arrow
-##Ubtn_text_range_up = u"\u2B06"				    # Up band, right arrow
-##Ubtn_text_play = u"\u25BA"				    # Play button
-##Ubtn_text_rec = u"\u25CF"						# Record button, a filled dot
-##Ubtn_text_file_rec = "File " + u"\u25CF"      # Record to file
-##Ubtn_text_file_play = "File " + u"\u25BA"     # Play from file
-##Ubtn_text_fav_add    = u"\u2605" + u"\u2191"  # Add to favorites
-##Ubtn_text_fav_recall = u"\u2605" + u"\u2193"  # Jump to favorites screen
-##Ubtn_text_mem_add  = u"\u24C2" + u"\u2191"    # Add to memory
-##Ubtn_text_mem_next = u"\u24C2" + u"\u27B2"    # Next memory
-##Ubtn_text_mem_del  = u"\u24C2" + u"\u2613"    # Delete from memory
-# ------------------------------------------------------------------------------------- взамен --------- реформа кнопок ---- 12 RA3PKJ
-
-Ubtn_text_range_dn = u"\u25C0" + u"\u2500"	   # Down band, left arrow
-Ubtn_text_range_up = u"\u2500" + u"\u25B6"	   # Up band, right arrow
-Ubtn_text_play = "Play"		                   # Play button
-Ubtn_text_rec = "Rec" + u"\u25CF"		   # Record button, a filled dot
-Ubtn_text_file_rec = "File" + u"\u25CF"        # Record to file
-Ubtn_text_file_play = "File"                   # Play from file
-Ubtn_text_fav_add    = "Favor" + u"\u2713"     # Add to favorites
-Ubtn_text_fav_recall = "Favor" + u"\u2630"     # Jump to favorites screen
-Ubtn_text_mem_add  = "Mem"                    # Add to memory
-Ubtn_text_mem_next = "Rest"                    # Next memory
-Ubtn_text_mem_del  = "Del"                     # Delete from memory
-
+Ubtn_text_range_dn = u"\u2B07"						# Down band, left arrow
+Ubtn_text_range_up = u"\u2B06"						# Up band, right arrow
+Ubtn_text_play = u"\u25BA"							# Play button
+Ubtn_text_rec = u"\u25CF"							# Record button, a filled dot
+Ubtn_text_file_rec = "File " + u"\u25CF"           # Record to file
+Ubtn_text_file_play = "File " + u"\u25BA"          # Play from file
+Ubtn_text_fav_add    = u"\u2605" + u"\u2191"  # Add to favorites
+Ubtn_text_fav_recall = u"\u2605" + u"\u2193"  # Jump to favorites screen
+Ubtn_text_mem_add  = u"\u24C2" + u"\u2191"    # Add to memory
+Ubtn_text_mem_next = u"\u24C2" + u"\u27B2"    # Next memory
+Ubtn_text_mem_del  = u"\u24C2" + u"\u2613"    # Delete from memory
 # These are the text symbols to display on buttons.
 Tbtn_text_range_dn = "Dn"
 Tbtn_text_range_up = "Up"
@@ -1906,10 +1887,9 @@ btn_text_switch = u"\u21C4"		# Character to switch left-right
 ## color_scheme				Color scheme, text choice
 # This controls the color scheme used by Quisk.  The default color scheme is A, and you can change this scheme
 # in your config file.  Other color schemes are available here.
-color_scheme = 'C' # ------------------------------------------------------------------------ начальные условия запуска --------- 17 RA3PKJ
-#color_scheme = 'A'
+color_scheme = 'A'
 #color_scheme = 'B'
-
+#color_scheme = 'C'
 
 ## waterfall_palette			Waterfall colors, text choice
 # This controls the colors used in the waterfall.  The default color scheme is A, and you can change this scheme
@@ -1923,7 +1903,7 @@ waterfall_palette = 'A'
 
 ################ Colors
 # Thanks to Steve Murphy, KB8RWQ for the patch adding additional color control.
-# Thanks to Christof, DJ4CM for the patch adding additional color control.
+# Thanks to Christof, DJ4CM for the patch adding additional color control. 
 # Define colors used by all widgets in wxPython colour format.
 # This is the default color scheme, color scheme A.  You can change these colors in your config file:
 color_bg			= 'light steel blue'	# Lower screen background
@@ -2066,7 +2046,7 @@ waterfallPaletteB = (	# from David Fainitski
 (227, 255, 125, 0),
 (241, 255, 59, 0),
 (255, 255, 0, 0)
-)
+) 
 
 waterfallPaletteC = (	# from David Fainitski
 (0, 0, 0, 0),
@@ -2078,7 +2058,7 @@ waterfallPaletteC = (	# from David Fainitski
 (192, 116, 141, 43),
 (224, 195, 198, 35),
 (255, 245, 99, 3)
-)
+) 
 
 # This is the data used to draw colored lines on the frequency X axis to
 # indicate CW and Phone sub-bands.  You can make it anything you want.
@@ -2311,7 +2291,7 @@ BandEdge = {
 	'137k':( 135700,   137800),	'500k':( 472000,   479000),
 	'160':( 1800000,  2000000),	'80' :( 3500000,  4000000),
 	'60' :( 5300000,  5430000),	'40' :( 7000000,  7300000),
-	'30' :(10100000, 10150000),	'20' :(14000000, 14350000),
+	'30' :(10100000, 10150000),	'20' :(14000000, 14350000),	
 	'17' :(18068000, 18168000), '15' :(21000000, 21450000),
 	'12' :(24890000, 24990000),	'10' :(28000000, 29700000),
 	'6'     :(  50000000,   54000000),
