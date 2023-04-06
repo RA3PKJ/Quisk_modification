@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.17.2 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.17.3 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -4788,8 +4788,8 @@ class App(wx.App):
     else:
       b.Enable(False)
     left_row3.append(b)
+
     # Split button (теперь кнопка называется RX2)
-    self.split_menu = wx.Menu() # ------------------- добавлено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 # ----------------------------------------------------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##    self.split_menu = QuiskMenu("split_menu")
 ##    pl = self.split_rxtx_play

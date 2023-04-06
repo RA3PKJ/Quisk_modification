@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # THIS IS THE ENTIRE "RADIO" FOR QUISK RUNNING AS A CONTROL HEAD
 # No real radio hardware is attached to the control_head computer.
 #
@@ -75,7 +77,7 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
     self.graph_data_port = self.remote_ctl_base_port + 1
     self.remote_radio_sound_port = self.remote_ctl_base_port + 2
     self.thread_lock = threading.Lock()
-    self.remote_radio_ip = socket.gethostbyname(self.conf.remote_radio_ip)	# Allow either host name or IP address
+    self.remote_radio_ip = socket.gethostbyname(self.conf.remote_radio_ip)	#В Allow either host name or IP address
     self.first_heartbeat = True
 
     self.cw_keydown = 0
@@ -367,7 +369,7 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
     # Frequency and decimation
     self.ChangeFrequency(app.txFreq + app.VFO, app.VFO, "NewDecim")
     # Band
-    self.RemoteCtlSend("%s;1\n" % app.lastBand)	
+    self.RemoteCtlSend("%s;1\n" % app.lastBand)
     # Mode
     btn = app.modeButns.GetSelectedButton()
     if btn:
@@ -392,10 +394,11 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
     value = app.midiControls[idName][0].button.slider_value
     self.RemoteCtlSend("%s;%d\n" % (idName, value))
     # Various buttons
-    for idName in ("Mute", "NR2", "AGC", "Sqlch", "NB 1", "Notch", "Test 1", "Spot", "FDX", "PTT", "VOX"):
+    for idName in ("Mute", "NR2", "AGC", "Sqlch", "NB 1", "Notch", "Test 1", "Tune", "FDX", "PTT", "VOX"): # ----- изменено ---- реформа кнопок ---- 12 RA3PKJ
       self.RemoteCtlSend("%s;%d\n" % (idName, app.idName2Button[idName].GetIndex()))
     # Menus
-    for menu in (app.NB_menu, app.split_menu, app.freedv_menu, app.smeter_menu):
+    #for menu in (app.NB_menu, app.split_menu, app.freedv_menu, app.smeter_menu): # ------------------------------- удалено ---- реформа кнопок ---- 12 RA3PKJ
+    for menu in (app.NB_menu, app.freedv_menu): # ------------------------------------------------------------------ взамен ---- реформа кнопок ---- 12 RA3PKJ
       if menu:
         for nid in menu.id2data:
           menu_item = menu.FindItemById(nid)
