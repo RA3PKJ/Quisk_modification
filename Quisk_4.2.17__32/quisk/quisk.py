@@ -6909,7 +6909,8 @@ class App(wx.App):
       if data:
         #T('')
         if self.remote_control_slave:
-          Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel())
+          #Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel()) # ---------- удалено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
+          Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_sunits)) # ----------- взамен ------------- S-метр для удалёнки ---------- 17 RA3PKJ
         if self.remote_control_head:
           self.smeter.SetLabel(Hardware.GetSmeter())
         elif self.screen == self.bandscope_screen:

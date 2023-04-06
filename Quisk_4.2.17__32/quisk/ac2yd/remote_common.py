@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # THIS FILE IS FOR USE ON A REMOTELY CONTROLLED "REMOTE_RADIO" COMPUTER
 #    RUNNING QUISK TO CONTROL ATTACHED ACTUAL/REAL RADIO HARDWARE.
 # IT CONNECTS BY NETWORK TO A SEPARATE "CONTROL_HEAD" COMPUTER ALSO RUNNING QUISK.
@@ -327,7 +329,7 @@ class Remot:	# Remote comtrol base class
             # Begin new cw phrase; any prior phrase should be done by now.
             # Set up first cw event to be ready to execute.
             self.cw_begin_phrase_ts = ts + self.cw_delay_secs
-        cw_new_event_ts = self.cw_begin_phrase_ts + cw_event_ts 
+        cw_new_event_ts = self.cw_begin_phrase_ts + cw_event_ts
         if not self.cw_next_event_ts:
           self.cw_next_event_ts = cw_new_event_ts
           self.cw_next_keydown = keydown
