@@ -5398,8 +5398,17 @@ class App(wx.App):
 ##    else:
 ##      t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
 ##    self.smeter.SetLabel(t)
-# --------------------------------- добавлена взамен функция ------------ changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
+# ---------------------------------- добавлена взамен функция ------------ changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
   def NewSmeter(self):
+    # ----------------------------------------------------------------- добавлено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
+    try:
+      if self.remote_control_head:
+        smeter_sunits_str = Hardware.GetSmeter()
+        self.smeter_sunits = float(smeter_sunits_str)
+        return
+    except:
+      pass
+
     self.smeter_db_count += 1		# count for average
     try:
       if Hardware.rf_gain == None:
@@ -6908,11 +6917,13 @@ class App(wx.App):
       data = QS.get_graph(1, self.zoom, float(self.zoom_deltaf))	# get FFT data
       if data:
         #T('')
-        if self.remote_control_slave:
+        if self.remote_control_slave: # Quisk на стороне Server (железо трансивера) отсылает показание S-метра в Client (пользователь)
           #Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel()) # ---------- удалено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
           Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_sunits)) # ----------- взамен ------------- S-метр для удалёнки ---------- 17 RA3PKJ
-        if self.remote_control_head:
-          self.smeter.SetLabel(Hardware.GetSmeter())
+        # ----------------------------------------------------------------------- удалено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
+        #if self.remote_control_head:
+          #self.smeter.SetLabel(Hardware.GetSmeter())
+
         elif self.screen == self.bandscope_screen:
           d = QS.get_hermes_adc()	# ADC level from bandscope, 0.0 to 1.0
           if d < 1E-10:
