@@ -287,8 +287,8 @@ class Configuration:
       conf.__dict__.update(conf.color_scheme_B)
     elif conf.color_scheme == 'C':
       conf.__dict__.update(conf.color_scheme_C)
-    dlg = wx.MessageBox(conf.color_scheme, 'Error',# -------------------------------------------------------bigon
-         wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
+    #dlg = wx.MessageBox(conf.color_scheme, 'Error',# ----- проблема с цветовой схемой "С" в удалёнке оставлена на закуску ----------bigon
+         #wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
     self.RequiredValues(radio_dict)	# Why not update conf too??? This only updates the radio_dict.
     if errors:
       dlg = wx.MessageDialog(None, errors,
