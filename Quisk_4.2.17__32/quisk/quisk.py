@@ -5080,6 +5080,7 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_newsplit = szr #дать своё имя образцу кнопки
     self.newsplitButton = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
+    self.idName2Button[self.newsplitButton.idName] = self.newsplitButton
     szr.Add(self.newsplitButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.newsplitButton.SetLabel("Split")
     self.newsplitButton.Refresh()
@@ -5087,6 +5088,7 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_vfoAB = szr
     self.vfoABButton = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
+    self.idName2Button[self.vfoABButton.idName] = self.vfoABButton
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
     self.vfoABButton.Refresh()
@@ -5101,6 +5103,7 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
     self.lockVFOButton = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
+    self.idName2Button[self.lockVFOButton.idName] = self.lockVFOButton
     szr.Add(self.lockVFOButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.lockVFOButton.SetLabel("Lock")
     self.lockVFOButton.Refresh()
@@ -5204,6 +5207,7 @@ class App(wx.App):
       else:
         gbs.Add(b, (5, col + 5), (1, 2), flag=wx.EXPAND)
         col += 2
+
     col = button_start_col
     for b in left_row3:
       self.idName2Button[b.idName] = b
