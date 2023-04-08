@@ -6056,8 +6056,9 @@ class App(wx.App):
     Hardware.OnButtonPTT(event)
     if btn.GetValue():
       QS.set_key_down(1)
-      #else:
-        #QS.set_key_down(0)
+    else:
+      QS.set_key_down(0)
+
   def OnBtnTmpRecord(self, event):
     btn = event.GetEventObject()
     if btn.GetValue():
