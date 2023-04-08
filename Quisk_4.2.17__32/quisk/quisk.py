@@ -3621,10 +3621,13 @@ class App(wx.App):
         'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec',
 		'btn_text_file_play', 'btn_text_fav_add',
         'btn_text_fav_recall', 'btn_text_mem_add', 'btn_text_mem_next', 'btn_text_mem_del'):
-      if conf.use_unicode_symbols:
-        setattr(conf, 'X' + k, getattr(conf, 'U' + k))
-      else:
-        setattr(conf, 'X' + k, getattr(conf, 'T' + k))
+
+      # ------------------------------------------------- изменено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
+      #if conf.use_unicode_symbols:
+      setattr(conf, 'X' + k, getattr(conf, 'U' + k))
+      #else:
+        #setattr(conf, 'X' + k, getattr(conf, 'T' + k))
+
     MakeWidgetGlobals()
     if conf.invertSpectrum:
       QS.invert_spectrum(1)
@@ -4779,7 +4782,7 @@ class App(wx.App):
       b_test1 = None
     # Transmit button row: Spot
     left_row3=[]
-    bt = self.spotButton = QuiskCheckbutton(frame, self.OnBtnSpot, 'Tune', color=conf.color_test)
+    bt = self.spotButton = QuiskCheckbutton(frame, self.OnBtnSpot, 'Tune', color=conf.color_test) # ---- изменено --- надписи на кнопках --- 20 RA3PKJ
     b = WrapSlider(bt, self.OnBtnSpot, slider_value=self.levelSpot, display=True)
     self.midiControls["SpotSlider"] = (b, None)
     if hasattr(Hardware, 'OnSpot'):
@@ -4963,7 +4966,7 @@ class App(wx.App):
       t = "RX Filter"
     #if conf.button_layout == 'Large screen':# ------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
     #labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Help') # --- удалено --- кнопка Radios --- 15 RA3PKJ
-    labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Radios') # --- взамен --- кнопка Radios --- 15 RA3PKJ
+    labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Hardware') # -- взамен -- кнопка Radios --- 15 RA3PKJ
     self.screenBtnGroup = RadioButtonGroup(frame, self.OnBtnScreen, labels, conf.default_screen)
     right_row3 = self.screenBtnGroup.GetButtons()
 # --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
@@ -5658,7 +5661,7 @@ class App(wx.App):
     #elif name == 'Help':
       #self.screen = self.help_screen
     # ----------------------------------------------------------------------------------- добавлено ----------- кнопка Radios ------------ 15 RA3PKJ
-    elif name == 'Radios':
+    elif name == 'Hardware':
       self.radios_screen.FinishPages()
       self.screen = self.radios_screen
 

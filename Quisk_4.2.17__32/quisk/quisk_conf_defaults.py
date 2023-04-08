@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 from __future__ import absolute_import
 from __future__ import division
 #  ** This is the file quisk_conf_defaults.py which contains defaults for Quisk. **
@@ -1850,30 +1852,33 @@ Tsym_stat_fav = 'F'
 Tsym_stat_mem = 'M'
 Tsym_stat_dx = 'Dx'
 #
+
+# ------------------------------------------------- изменено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
 # These are the Unicode symbols to display on buttons.  Thanks to Christof, DJ4CM.
-Ubtn_text_range_dn = u"\u2B07"						# Down band, left arrow
-Ubtn_text_range_up = u"\u2B06"						# Up band, right arrow
-Ubtn_text_play = u"\u25BA"							# Play button
-Ubtn_text_rec = u"\u25CF"							# Record button, a filled dot
+Ubtn_text_range_dn =  u"\u25C0" + u"\u2500"						# Down band, left arrow
+Ubtn_text_range_up =  u"\u2500" + u"\u25B6"						# Up band, right arrow
+Ubtn_text_play = "Play" + u"\u25BA"							# Play button
+Ubtn_text_rec = "Record" + u"\u25CF"							# Record button, a filled dot
 Ubtn_text_file_rec = "File " + u"\u25CF"           # Record to file
 Ubtn_text_file_play = "File " + u"\u25BA"          # Play from file
-Ubtn_text_fav_add    = u"\u2605" + u"\u2191"  # Add to favorites
-Ubtn_text_fav_recall = u"\u2605" + u"\u2193"  # Jump to favorites screen
-Ubtn_text_mem_add  = u"\u24C2" + u"\u2191"    # Add to memory
-Ubtn_text_mem_next = u"\u24C2" + u"\u27B2"    # Next memory
-Ubtn_text_mem_del  = u"\u24C2" + u"\u2613"    # Delete from memory
+Ubtn_text_fav_add    = "Favor" + u"\u25CF"  # Add to favorites
+Ubtn_text_fav_recall = "Favor" + u"\u25BA"  # Jump to favorites screen
+Ubtn_text_mem_add  = "Save"    # Add to memory
+Ubtn_text_mem_next = "Rest"    # Next memory
+Ubtn_text_mem_del  = "Del"    # Delete from memory
+# -------------------------------------------------- удалено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
 # These are the text symbols to display on buttons.
-Tbtn_text_range_dn = "Dn"
-Tbtn_text_range_up = "Up"
-Tbtn_text_play = "Tmp Play"
-Tbtn_text_rec = "Tmp Rec"
-Tbtn_text_file_rec = "File Rec"
-Tbtn_text_file_play = "File Play"
-Tbtn_text_fav_add    = ">Fav"
-Tbtn_text_fav_recall = "Fav"
-Tbtn_text_mem_add  = "Save"
-Tbtn_text_mem_next = "Next"
-Tbtn_text_mem_del  = "Del"
+#Tbtn_text_range_dn = "Dn"
+#Tbtn_text_range_up = "Up"
+#Tbtn_text_play = "Tmp Play"
+#Tbtn_text_rec = "Tmp Rec"
+#Tbtn_text_file_rec = "File Rec"
+#Tbtn_text_file_play = "File Play"
+#Tbtn_text_fav_add    = ">Fav"
+#Tbtn_text_fav_recall = "Fav"
+#Tbtn_text_mem_add  = "Save"
+#Tbtn_text_mem_next = "Next"
+#Tbtn_text_mem_del  = "Del"
 
 ## decorate_buttons				Decorate buttons, boolean
 # This controls whether to add the button decorations that mark cycle and adjust buttons.
@@ -1887,9 +1892,9 @@ btn_text_switch = u"\u21C4"		# Character to switch left-right
 ## color_scheme				Color scheme, text choice
 # This controls the color scheme used by Quisk.  The default color scheme is A, and you can change this scheme
 # in your config file.  Other color schemes are available here.
-color_scheme = 'A'
+#color_scheme = 'A'
 #color_scheme = 'B'
-#color_scheme = 'C'
+color_scheme = 'C'
 
 ## waterfall_palette			Waterfall colors, text choice
 # This controls the colors used in the waterfall.  The default color scheme is A, and you can change this scheme

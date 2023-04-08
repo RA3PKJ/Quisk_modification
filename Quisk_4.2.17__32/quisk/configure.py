@@ -287,6 +287,8 @@ class Configuration:
       conf.__dict__.update(conf.color_scheme_B)
     elif conf.color_scheme == 'C':
       conf.__dict__.update(conf.color_scheme_C)
+    dlg = wx.MessageBox(conf.color_scheme, 'Error',# -------------------------------------------------------bigon
+         wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
     self.RequiredValues(radio_dict)	# Why not update conf too??? This only updates the radio_dict.
     if errors:
       dlg = wx.MessageDialog(None, errors,
@@ -1470,7 +1472,7 @@ class MidiButton(QuiskControl):
                       "DGT-U", "DGT-L", "DGT-FM", "DGT-IQ", "FDV", "FDV-U", "IMD", ):
         item = modes.Append(-1, idName)
       #elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Help"):# --- удалено --- кнопка Radios --- 15 RA3PKJ
-      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Radios"):# --- взамен --- кнопка Radios --- 15 RA3PKJ
+      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Hardware"):# --- взамен --- кнопка Radios --- 15 RA3PKJ
         item = screens.Append(-1, idName)
       else:
         item = None

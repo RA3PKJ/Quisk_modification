@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 #! /usr/bin/python
 
 # All QUISK software is Copyright (C) 2006-2018 by James C. Ahlstrom.
@@ -889,13 +891,16 @@ class App(wx.App):
     if configure: self.local_conf.UpdateConf()
     # Choose whether to use Unicode or text symbols
     for k in ('sym_stat_mem', 'sym_stat_fav', 'sym_stat_dx',
-        'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec', 
+        'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec',
 		'btn_text_file_play', 'btn_text_fav_add',
         'btn_text_fav_recall', 'btn_text_mem_add', 'btn_text_mem_next', 'btn_text_mem_del'):
-      if conf.use_unicode_symbols:
-        setattr(conf, 'X' + k, getattr(conf, 'U' + k))
-      else:
-        setattr(conf, 'X' + k, getattr(conf, 'T' + k))
+
+      # ------------------------------------------------- изменено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
+      #if conf.use_unicode_symbols:
+      setattr(conf, 'X' + k, getattr(conf, 'U' + k))
+      #else:
+        #setattr(conf, 'X' + k, getattr(conf, 'T' + k))
+
     MakeWidgetGlobals()
     self.BtnRfGain = None
     self.graph_freq = 7e6
