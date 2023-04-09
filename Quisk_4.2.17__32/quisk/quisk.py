@@ -4070,7 +4070,8 @@ class App(wx.App):
     # Add the spacer
     vertBox.Add(Spacer(frame), 0, wx.EXPAND)
     # Add the sizer for the controls
-    gap = 2
+    #gap = 2 # ---------------------------------------------------------------------- удалено -------------- кнопки в пределах окна --- 21 RA3PKJ
+    gap = 1 # ------------------------------------------------------------------------ взамен -------------- кнопки в пределах окна --- 21 RA3PKJ
     gbs = wx.GridBagSizer(gap, gap)
     self.gbs = gbs
     vertBox.Add(gbs, flag=wx.EXPAND)
@@ -4688,7 +4689,7 @@ class App(wx.App):
 ##      self.bandBtnGroup = RadioBtnPopup(frame, self.OnBtnBand, conf.bandLabels, None, 'bandBtnGroup')
     self.bandBtnGroup.idName = 'bandBtnGroup'
     # Add sliders on the left
-    gbs.Add(self.sliderVol, (0, 0), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
+    gbs.Add(self.sliderVol, (0, 0), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin)
 
     # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
     #if conf.use_sidetone:
@@ -5030,9 +5031,9 @@ class App(wx.App):
     # --------------------------------------------------------------- WFallPalette  button --- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
-    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "WFall Palette")
+    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.PaletteButton.SetLabel("WFall Palette")
+    self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
 ##    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
 ##    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -5187,25 +5188,25 @@ class App(wx.App):
     for b in left_row2:
       self.idName2Button[b.idName] = b
       if b.idName in ("Mute"):
-        gbs.Add(b, (3, button_start_col + 15), (1, 1), flag=wx.EXPAND)
+        gbs.Add(b, (3, button_start_col + 15), (1, 1), flag=flag)
         col += 1
       elif b.idName in ("NR2"):
-        gbs.Add(b, (3, button_start_col + 16), (1, 2), flag=wx.EXPAND)
+        gbs.Add(b, (3, button_start_col + 16), (1, 2), flag=flag)
         col += 1
       elif b.idName in ("AGC"):
-        gbs.Add(b, (3, button_start_col + 18), (1, 3), flag=wx.EXPAND)
+        gbs.Add(b, (3, button_start_col + 18), (1, 3), flag=flag)
         col += 2
       elif b.idName in ("Sqlch"):
-        gbs.Add(b, (4, button_start_col + 15), (1, 3), flag=wx.EXPAND)
+        gbs.Add(b, (4, button_start_col + 15), (1, 3), flag=flag)
         col += 2
       elif b.idName in ("NB 1"):
-        gbs.Add(b, (4, button_start_col + 18), (1, 3), flag=wx.EXPAND)
+        gbs.Add(b, (4, button_start_col + 18), (1, 3), flag=flag)
         col += 2
       elif b.idName in ("Notch"):
-        gbs.Add(b, (5, button_start_col + 19), (1, 2), flag=wx.EXPAND)
+        gbs.Add(b, (5, button_start_col + 19), (1, 2), flag=flag)
         col += 2
       else:
-        gbs.Add(b, (5, col + 5), (1, 2), flag=wx.EXPAND)
+        gbs.Add(b, (5, col + 5), (1, 2), flag=flag)
         col += 2
 
     col = button_start_col
@@ -5236,35 +5237,35 @@ class App(wx.App):
 
     #ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
     gbs.Add(b_onoff,      (0, button_start_col), (1, 1),
-       flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
+       flag=flag | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
     self.idName2Button[b_onoff.idName] = b_onoff
-    gbs.Add(b_freqdisp,    (0, button_start_col + 1), (1, 5), flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border) # цифровая шкала
-    gbs.Add(b_freqenter,   (0, button_start_col + 6), (1, 2), flag = wx.EXPAND|wx.LEFT|wx.RIGHT, border=5) # ручной ввод частоты
-    gbs.Add(b_bandupdown,  (0, button_start_col + 8), (1, 2), flag=wx.EXPAND) # сдвиг панорамы влево-вправо
-    gbs.Add(b_lockVFO,     (0, button_start_col + 10), (1, 1), flag=wx.EXPAND)
-    gbs.Add(b_newsplit,    (0, button_start_col + 11), (1, 2), flag=wx.EXPAND)   # кнопка Split
-    gbs.Add(b_vfoAB,       (0, button_start_col + 13), (1, 1), flag=wx.EXPAND)   # кнопка A<>B
-    gbs.Add(b_smeter,      (0, button_start_col + 14), (1, 5), flag=wx.EXPAND)   # малое окошко частоты
-    gbs.Add(b_addrx,       (0, button_start_col + 19), (1, 2), flag=wx.EXPAND)   # второй аппаратный приёмник (Hermes)
+    gbs.Add(b_freqdisp,    (0, button_start_col + 1),  (1, 5), flag=flag | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border) # цифровая шкала
+    gbs.Add(b_freqenter,   (0, button_start_col + 6),  (1, 2), flag=flag|wx.LEFT|wx.RIGHT, border=5) # ручной ввод частоты
+    gbs.Add(b_bandupdown,  (0, button_start_col + 8),  (1, 2), flag=flag) # сдвиг панорамы влево-вправо
+    gbs.Add(b_lockVFO,     (0, button_start_col + 10), (1, 1), flag=flag)
+    gbs.Add(b_newsplit,    (0, button_start_col + 11), (1, 2), flag=flag)   # кнопка Split
+    gbs.Add(b_vfoAB,       (0, button_start_col + 13), (1, 1), flag=flag)   # кнопка A<>B
+    gbs.Add(b_smeter,      (0, button_start_col + 14), (1, 5), flag=flag)   # малое окошко частоты
+    gbs.Add(b_addrx,       (0, button_start_col + 19), (1, 2), flag=flag)   # второй аппаратный приёмник (Hermes)
     col = button_start_col + 21
     self.slider_columns += [col, col + 1, col + 2, col + 3]
-    gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=wx.EXPAND|wx.LEFT, border=margin)
+    gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin)
     gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
     gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
     gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
-    gbs.Add(b_membtn,      (1, button_start_col + 15), (1, 3), flag = wx.EXPAND) # кнопки памяти частоты
-    gbs.Add(b_rit,         (1, button_start_col + 18), (1, 3), flag=wx.EXPAND)   # кнопка RIT
-    gbs.Add(b_Help,        (2, button_start_col + 12), (1, 2), flag=wx.EXPAND)   # кнопка Help
-    gbs.Add(b_fav,         (2, button_start_col + 15), (1, 3), flag=wx.EXPAND)   # кнопка добавления любимых частот
-    gbs.Add(b_tmprec,      (2, button_start_col + 18), (1, 3), flag=wx.EXPAND)   # кнопки быстрой записи/воспроизведения звука
-    gbs.Add(b_Palette,     (4, button_start_col + 12), (1, 2), flag=wx.EXPAND)   # кнопка WFall Palette
+    gbs.Add(b_membtn,      (1, button_start_col + 15), (1, 3), flag=flag) # кнопки памяти частоты
+    gbs.Add(b_rit,         (1, button_start_col + 18), (1, 3), flag=flag)   # кнопка RIT
+    gbs.Add(b_Help,        (2, button_start_col + 12), (1, 2), flag=flag)   # кнопка Help
+    gbs.Add(b_fav,         (2, button_start_col + 15), (1, 3), flag=flag)   # кнопка добавления любимых частот
+    gbs.Add(b_tmprec,      (2, button_start_col + 18), (1, 3), flag=flag)   # кнопки быстрой записи/воспроизведения звука
+    gbs.Add(b_Palette,     (4, button_start_col + 12), (1, 2), flag=flag)   # кнопка WFall Palette
 
-    # вставить пробелы скольео влезет
-    while col < 14:
-      col = 13
-      b = QuiskCheckbutton(frame, None, text='')
-      gbs.Add(b, (4, button_start_col + col), (1, 1), flag=flag)
-      col += 1
+    # вставить пустые кнопки
+    #while col < 14:
+      #col = 13
+      #b = QuiskCheckbutton(frame, None, text='')
+      #gbs.Add(b, (1, button_start_col + col), (1, 1), flag=flag)
+      #col += 1
 
     #gbs.Add(b_Empty0,     (7, button_start_col), (1, 2), flag=wx.EXPAND)      # пустая кнопка
     #gbs.Add(b_Empty1,     (7, button_start_col + 8), (1, 2), flag=wx.EXPAND)  # пустая кнопка
@@ -5274,6 +5275,7 @@ class App(wx.App):
     #gbs.Add(b_Empty5,     (7, button_start_col + 21), (1, 2), flag=wx.EXPAND) # пустая кнопка
     #gbs.Add(b_Empty6,     (0, button_start_col + 25), (1, 2), flag=wx.EXPAND) # пустая кнопка
 
+    # ------------ растяжка кнопок в заданный диапазон длины
     for i in range(button_start_col, button_start_col + 14):
       gbs.AddGrowableCol(i,1)
     for i in range(button_start_col + 15, button_start_col + 21):

@@ -1791,9 +1791,9 @@ spot_button_keys_tx = True
 ## button_font_size				Button font size, integer
 # If the Quisk screen is too wide or the buttons are too crowded, perhaps due to a low screen
 # resolution, you can reduce the font sizes.
-button_font_size = 10
+#button_font_size = 10
 #button_font_size = 9
-#button_font_size = 8
+button_font_size = 8
 
 ## default_font_size			Default font size, integer
 # These control the font size on the named screen.

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # These are Quisk widgets
 
 from __future__ import print_function
@@ -22,10 +24,17 @@ def MakeWidgetGlobals():
   global button_font, button_uline_font, button_bezel, button_width, button_height, button_text_width, button_text_height
   global _bitmap_menupop, _bitmap_sliderpop, _bitmap_cyclepop
   button_bezel = 3		# size of button bezel in pixels
-  button_font = wx.Font(conf.button_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
+
+  #button_font = wx.Font(conf.button_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL, # --------- удалено -- кнопки в пределах окна --- 21 RA3PKJ
+           #wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
+  button_font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.NORMAL, # ------------------------------- взамен -- кнопки в пределах окна --- 21 RA3PKJ
            wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
-  button_uline_font = wx.Font(conf.button_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
+
+  #button_uline_font = wx.Font(conf.button_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL, # --- удалено -- кнопки в пределах окна --- 21 RA3PKJ
+           #wx.FONTWEIGHT_NORMAL, True, conf.quisk_typeface)
+  button_uline_font = wx.Font(8, wx.FONTFAMILY_SWISS, wx.NORMAL, # ------------------------- взамен -- кнопки в пределах окна --- 21 RA3PKJ
            wx.FONTWEIGHT_NORMAL, True, conf.quisk_typeface)
+
   dc = wx.MemoryDC()
   dc.SetFont(button_font)
   tmp_bm = EmptyBitmap(1, 1)		# Thanks to NS4Y
@@ -564,7 +573,7 @@ class QuiskBitmapButton(wx.lib.buttons.GenBitmapButton):
       self.command(event)
   def OnRightDown(self, event):
     if self.GetBitmapLabel() == _bitmap_cyclepop:
-      self.OnLeftDown(event) 
+      self.OnLeftDown(event)
   def OnRightUp(self, event):
     if self.GetBitmapLabel() == _bitmap_cyclepop:
       self.direction = -1
@@ -590,7 +599,7 @@ class QuiskPushbutton(QuiskButtons, wx.lib.buttons.GenButton):
       self.command(event)
   def OnRightDown(self, event):
     self.direction = -1
-    self.OnLeftDown(event) 
+    self.OnLeftDown(event)
   def OnRightUp(self, event):
     self.OnLeftUp(event)
     self.direction = 1
@@ -601,7 +610,7 @@ class QuiskPushbutton(QuiskButtons, wx.lib.buttons.GenButton):
       event = wx.PyEvent()
       event.SetEventObject(self)
       self.command(event)
-      
+
 
 class QuiskRepeatbutton(QuiskButtons, wx.lib.buttons.GenButton):
   """A push button that repeats when held down."""
@@ -643,7 +652,7 @@ class QuiskRepeatbutton(QuiskButtons, wx.lib.buttons.GenButton):
       self.shift = event.ShiftDown()
       self.control = event.ControlDown()
       self.direction = -1
-      self.OnLeftDown(event) 
+      self.OnLeftDown(event)
   def OnRightUp(self, event):
     if self.IsEnabled():
       self.OnLeftUp(event)
@@ -711,7 +720,7 @@ class QuiskCheckbutton(QuiskButtons, wx.lib.buttons.GenToggleButton):
       self.command(event)
   def OnRightDown(self, event):
     self.direction = -1
-    self.OnLeftDown(event) 
+    self.OnLeftDown(event)
   def OnRightUp(self, event):
     self.OnLeftUp(event)
     self.direction = 1
@@ -1058,14 +1067,14 @@ class WrapDualSlider(WrapControl):	# Thanks to Steve, KF7O
     button.command = self.OnMainButton
     self.command = command
     button.lslider_value = lslider_value
-    button.rslider_value = rslider_value     
+    button.rslider_value = rslider_value
     self.slider_min = slider_min
     self.slider_max = slider_max
     self.display = display                  # Display the value at the top
     WrapControl.__init__(self)
     self.Add(button, 1, flag=wx.ALIGN_CENTER_VERTICAL)
     ## This is a hack to get _bitmap_sliderpop
-    ## It would be better if _bitmap_sliderpop were not a global variable 
+    ## It would be better if _bitmap_sliderpop were not a global variable
     ##but a first-class member in another module
     _bitmap_sliderpop = MakeWidgetGlobals.__globals__['_bitmap_sliderpop']
     b = QuiskBitmapButton(button.GetParent(), self.OnPopButton, _bitmap_sliderpop)
