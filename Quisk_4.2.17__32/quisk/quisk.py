@@ -1844,10 +1844,10 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+40', SmtrX + 203, 10)
       dc.DrawText('+50', SmtrX + 228, 10)
       dc.DrawText('+60', SmtrX + 253, 10)
-    # ------------------------------------------------------------ добавлено ------------------ вынос из малого окошка ------ 8 RA3PKJ
+      # --------------------------------------------- добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
       dc.SetTextForeground('yellow')
       dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
-      dc.DrawText(application.measure_audio_set + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+      dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
@@ -3711,7 +3711,7 @@ class App(wx.App):
     #self.smeter_usage = "smeter" # ----------------------------------------- удалено ---------- вынос из малого окошка ------- 8 RA3PKJ
     # ---------------------------------------------------------------------- добавлено --------- вынос из малого окошка ------- 8 RA3PKJ
     self.smeter_usage = "freq"          #по умолчанию режим отображения частоты в малом окошке частоты
-    self.measure_audio_set = ''         #значение напряжения аудио
+    self.measure_audio_str = ''         #значение напряжения аудио
 
 
     self.timer = time.time()		# A seconds clock
@@ -5337,12 +5337,17 @@ class App(wx.App):
 ##        gbs.AddGrowableCol(i,1)
     self.button_start_col = button_start_col
   def MeasureAudioVoltage(self):
+    # --------------------------------------------- добавлено -------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+    if self.remote_control_head: # --------- Client (пользователь)
+      self.measure_audio_str = Hardware.GetVoltage()
+      return
+
     v = QS.measure_audio(-1)
     t = "%11.3f" % v
     # ------------------------------------------------------------ удалено ------------------ вынос из малого окошка ------ 8 RA3PKJ
     #t = t[0:1] + ' ' + t[1:4] + ' ' + t[4:] + ' uV'
     #self.smeter.SetLabel(t)
-    self.measure_audio_set = t #строка напряжения аудио # --- взамен образована переменная --- вынос из малого окошка ----- 8 RA3PKJ
+    self.measure_audio_str = t #строка напряжения аудио # --- взамен образована переменная --- вынос из малого окошка ----- 8 RA3PKJ
   def MeasureFrequency(self):
     vfo = Hardware.ReturnVfoFloat()
     if vfo is None:
@@ -5409,14 +5414,19 @@ class App(wx.App):
 ##    self.smeter.SetLabel(t)
 # ---------------------------------- добавлена взамен функция ------------ changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
   def NewSmeter(self):
-    # ----------------------------------------------------------------- добавлено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
-    try:
-      if self.remote_control_head:
+    # --------------------------------------------- добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+    if self.remote_control_head: # --------- Client (пользователь)
+      try:
         smeter_sunits_str = Hardware.GetSmeter()
         self.smeter_sunits = float(smeter_sunits_str)
-        return
-    except:
-      pass
+      except:
+        pass
+      try:
+        smeter_db_str = Hardware.GetDbm()
+        self.smeter_db = float(smeter_db_str)
+      except:
+        pass
+      return
 
     self.smeter_db_count += 1		# count for average
     try:
@@ -6927,10 +6937,14 @@ class App(wx.App):
       data = QS.get_graph(1, self.zoom, float(self.zoom_deltaf))	# get FFT data
       if data:
         #T('')
-        if self.remote_control_slave: # Quisk на стороне Server (железо трансивера) отсылает показание S-метра в Client (пользователь)
-          #Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel()) # ---------- удалено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
-          Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_sunits)) # ----------- взамен ------------- S-метр для удалёнки ---------- 17 RA3PKJ
-        # ----------------------------------------------------------------------- удалено ------------- S-метр для удалёнки ---------- 17 RA3PKJ
+        if self.remote_control_slave: # Если Quisk на стороне Server (железо трансивера), то он отсылает показание в Client (пользователь)
+          #Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel()) # --- удалено ---- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+          Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_sunits)) # --- взамен ----- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+          # ------------------------------------------------------------ добавлено ---- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+          #Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_db))
+          #Hardware.RemoteCtlSend("M;%s\n" % self.measure_audio_str)
+
+        # ------------------------------------------------------- удалено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
         #if self.remote_control_head:
           #self.smeter.SetLabel(Hardware.GetSmeter())
 
@@ -6938,7 +6952,7 @@ class App(wx.App):
           d = QS.get_hermes_adc()	# ADC level from bandscope, 0.0 to 1.0
           if d < 1E-10:
             d = 1E-10
-          self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d)))
+          self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d))) # --- что с этим делать? ---------------------------------bigon
         elif self.smeter_usage == "smeter":		# update the S-meter
           if self.mode in ('FDV-U', 'FDV-L'):
             self.NewDVmeter()

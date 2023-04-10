@@ -100,6 +100,10 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
       self.cw_phrase_start_ts = None
 
     self.smeter_text = ''
+    # --------------------------------------------- добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+    self.dbm_text = ''
+    self.voltage_text = ''
+
     self.received = ''
     self.closing = False
     QS.set_sparams(remote_control_head=1, remote_control_slave=0)
@@ -315,6 +319,12 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
   def GetSmeter(self):
     return self.smeter_text
 
+  # ------------------------------------------ добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+  def GetDbm(self):
+    return self.dbm_text
+  def GetVoltage(self):
+    return self.voltage_text
+
   def RemoteCtlRead(self):
     if not self.remote_ctl_connected:
       return
@@ -338,6 +348,11 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
         # S-meter text from remote_radio
         self.smeter_text = reply[2:]
         #print ("Receive smeter", reply[2:])
+
+        # ----------------------------------- добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+        #self.dbm_text = reply[2:]
+        #self.voltage_text = reply[2:]
+
       elif reply[0:6] == "TOKEN;":
         passw = self.app.local_conf.globals.get("remote_radio_password", "")
         passw = passw.strip()
