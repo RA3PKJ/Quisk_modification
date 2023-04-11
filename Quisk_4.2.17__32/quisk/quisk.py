@@ -2024,7 +2024,8 @@ class GraphScreen(wx.Window):
     self.doResize = True
   def MakeYScale(self):
     chary = self.chary
-    scale = (self.originY - chary)  * 10 // (self.y_scale + 20)	# Number of pixels per 10 dB
+    #scale = (self.originY - chary)  * 10 // (self.y_scale + 20)	# Number of pixels per 10 dB # -- удалено -- ползунк Ys прямой --- 23 RA3PKJ
+    scale = 33 + ((self.originY - chary) * (self.y_scale - 70) // 1300) # ---------------------------- взамен -- ползунк Ys прямой --- 23 RA3PKJ
     scale = max(1, scale)
     q = (self.originY - chary ) // scale // 2
     zeroDB = chary + q * scale - self.y_zero * scale // 10

@@ -1910,61 +1910,63 @@ waterfall_palette = 'A'
 # Thanks to Steve Murphy, KB8RWQ for the patch adding additional color control.
 # Thanks to Christof, DJ4CM for the patch adding additional color control.
 # Define colors used by all widgets in wxPython colour format.
-# This is the default color scheme, color scheme A.  You can change these colors in your config file:
+# This is the default color scheme.  You can change these colors in your config file:
 
 # цветовые схемы по умолчанию
 # --- схема A -------------------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
-##color_bg			= 'light steel blue'	# Lower screen background
-##color_bg_txt		= 'black'             	# Lower screen text color
-##color_graph			= 'lemonchiffon1'		# Graph background
-##color_config2		= 'lemonchiffon3'		# color in tab row of config screen
-##color_gl			= 'grey'				# Lines on the graph
-##color_graphticks	= 'black'				# Graph ticks
-##color_graphline		= '#005500'				# graph data line color
-##color_graphlabels	= '#555555'				# graph label color
-##color_btn			= 'steelblue2'			# button color
-##color_check_btn		= 'yellow2'				# color of a check button when it is checked
-##color_cycle_btn		= 'goldenrod3'			# color of a cycle button when it is checked
-##color_adjust_btn	= 'orange3'				# color of an adjustable button when it is checked
-##color_test			= 'hot pink'			# color of a button used for test (turn off for tx)
-##color_freq			= 'lightcyan1'			# background color of frequency and s-meter
-##color_freq_txt      = 'black'               # text color of frequency display
-##color_entry			= color_freq			# frequency entry box
-##color_entry_txt     = 'black'		        # text color of entry box
-##color_enable		= 'black'				# text color for an enabled button
-##color_disable		= 'white'				# text color for a disabled button
-##color_popchoice		= 'maroon'				# text color for button that pops up a row of buttons
-##color_bandwidth		= 'lemonchiffon3'		# color for bandwidth display; thanks to WB4JFI
-##color_txline		= 'red'					# vertical line color for tx in graph
-##color_rxline		= 'green'				# vertical line color for rx in graph
-##color_graph_msg_fg	= 'black'				# text messages on the graph screen
-##color_graph_msg_bg	= 'lemonchiffon2'		# background of text messages on the graph screen
+#color_bg			= 'light steel blue'	# Lower screen background
+#color_bg_txt		= 'black'             	# Lower screen text color
+#color_graph			= 'lemonchiffon1'		# Graph background
+#color_config2		= 'lemonchiffon3'		# color in tab row of config screen
+#color_gl			= 'grey'				# Lines on the graph
+#color_graphticks	= 'black'				# Graph ticks
+#color_graphline		= '#005500'				# graph data line color
+#color_graphlabels	= '#555555'				# graph label color
+#color_btn			= 'steelblue2'			# button color
+#color_check_btn		= 'yellow2'				# color of a check button when it is checked
+#color_cycle_btn		= 'goldenrod3'			# color of a cycle button when it is checked
+#color_adjust_btn	= 'orange3'				# color of an adjustable button when it is checked
+#color_test			= 'hot pink'			# color of a button used for test (turn off for tx)
+#color_freq			= 'lightcyan1'			# background color of frequency and s-meter
+#color_freq_txt      = 'black'               # text color of frequency display
+#color_entry			= color_freq			# frequency entry box
+#color_entry_txt     = 'black'		        # text color of entry box
+#color_enable		= 'black'				# text color for an enabled button
+#color_disable		= 'white'				# text color for a disabled button
+#color_popchoice		= 'maroon'				# text color for button that pops up a row of buttons
+#color_bandwidth		= 'lemonchiffon3'		# color for bandwidth display; thanks to WB4JFI
+#color_txline		= 'red'					# vertical line color for tx in graph
+#color_rxline		= 'green'				# vertical line color for rx in graph
+#color_graph_msg_fg	= 'black'				# text messages on the graph screen
+#color_graph_msg_bg	= 'lemonchiffon2'		# background of text messages on the graph screen
+
 # --- схема B -------------------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
-##color_bg			= '#111111'
-##color_bg_txt		= 'white'
-##color_graph		    = '#111111'
-##color_config2		= '#111111'
-##color_gl			= '#555555'
-##color_graphticks	= '#DDDDDD'
-##color_graphline	    = '#00AA00'
-##color_graphlabels	= '#FFFFFF'
-##color_btn			= '#666666'
-##color_check_btn	    = '#996699'
-##color_cycle_btn	    = '#666699'
-##color_adjust_btn	= '#669999'
-##color_test		    = 'hot pink'
-##color_freq		    = '#333333'
-##color_freq_txt	    = 'white'
-##color_entry		    = '#333333'
-##color_entry_txt	    = 'white'
-##color_enable		= 'white'
-##color_disable		= 'black'
-##color_popchoice	    = 'maroon'
-##color_bandwidth	    = '#333333'
-##color_txline		= 'red'
-##color_rxline		= 'green'
-##color_graph_msg_fg	= 'white'
-##color_graph_msg_bg	= '#111111'
+#color_bg			= '#111111'
+#color_bg_txt		= 'white'
+#color_graph		    = '#111111'
+#color_config2		= '#111111'
+#color_gl			= '#555555'
+#color_graphticks	= '#DDDDDD'
+#color_graphline	    = '#00AA00'
+#color_graphlabels	= '#FFFFFF'
+#color_btn			= '#666666'
+#color_check_btn	    = '#996699'
+#color_cycle_btn	    = '#666699'
+#color_adjust_btn	= '#669999'
+#color_test		    = 'hot pink'
+#color_freq		    = '#333333'
+#color_freq_txt	    = 'white'
+#color_entry		    = '#333333'
+#color_entry_txt	    = 'white'
+#color_enable		= 'white'
+#color_disable		= 'black'
+#color_popchoice	    = 'maroon'
+#color_bandwidth	    = '#333333'
+#color_txline		= 'red'
+#color_rxline		= 'green'
+#color_graph_msg_fg	= 'white'
+#color_graph_msg_bg	= '#111111'
+
 # --- схема C ------------------------------------------------------------------- цветовая схема ----------- 22 RA3PKJ
 color_bg			= '#123456'
 color_bg_txt		= '#FFFFFF'
@@ -2024,6 +2026,7 @@ color_scheme_A = {
 'color_graph_msg_fg': 'black',				# text messages on the graph screen
 'color_graph_msg_bg': 'lemonchiffon2',		# background of text messages on the graph screen
 }
+
 # This color scheme B, a dark color scheme designed by Steve Murphy, KB8RWQ.
 # Additional colors added by N2ADR.
 color_scheme_B = {
@@ -2053,6 +2056,7 @@ color_scheme_B = {
 'color_graph_msg_fg'		: 'white',
 'color_graph_msg_bg'		: '#111111',
 }
+
 # This is color scheme C:
 #######################################################################################
 #
