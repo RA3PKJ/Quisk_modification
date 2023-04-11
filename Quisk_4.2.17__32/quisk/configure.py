@@ -283,12 +283,15 @@ class Configuration:
         self.settings_changed = True
         errors = errors + "Failed to set %s to %s using format %s\n" % (k, v, fmt)
         #traceback.print_exc()
-    if conf.color_scheme == 'B':
+
+    # -------------------------------- изменено ----------------------------------------------- цветовая схема ----------- 22 RA3PKJ
+    if conf.color_scheme == 'A':
+      conf.__dict__.update(conf.color_scheme_A)
+    elif conf.color_scheme == 'B':
       conf.__dict__.update(conf.color_scheme_B)
     elif conf.color_scheme == 'C':
       conf.__dict__.update(conf.color_scheme_C)
-    #dlg = wx.MessageBox(conf.color_scheme, 'Error',# ----- проблема с цветовой схемой "С" в удалёнке оставлена на закуску ----------bigon
-         #wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
+
     self.RequiredValues(radio_dict)	# Why not update conf too??? This only updates the radio_dict.
     if errors:
       dlg = wx.MessageDialog(None, errors,
