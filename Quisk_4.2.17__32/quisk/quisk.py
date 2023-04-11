@@ -5339,7 +5339,12 @@ class App(wx.App):
   def MeasureAudioVoltage(self):
     # --------------------------------------------- добавлено -------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
     if self.remote_control_head: # --------- Client (пользователь)
-      self.measure_audio_str = Hardware.GetVoltage()
+      i = 0
+      aa = Hardware.GetSmeter()
+      str_len = len(aa)
+      i = aa.rfind('_')
+      i = i + 1
+      self.measure_audio_str = aa[i:str_len]
       return
 
     v = QS.measure_audio(-1)
@@ -5416,13 +5421,21 @@ class App(wx.App):
   def NewSmeter(self):
     # --------------------------------------------- добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
     if self.remote_control_head: # --------- Client (пользователь)
+      i = 0
+      ii = 0
+      aa = Hardware.GetSmeter()
+      i = aa.find('_')
+      smeter_sunits_str = aa[0:i]
+      i = i + 1
+      str_len = len(aa)
+      ab = aa[i:str_len]
+      i = ab.find('_')
+      smeter_db_str = ab[0:i]
       try:
-        smeter_sunits_str = Hardware.GetSmeter()
         self.smeter_sunits = float(smeter_sunits_str)
       except:
         pass
       try:
-        smeter_db_str = Hardware.GetDbm()
         self.smeter_db = float(smeter_db_str)
       except:
         pass
@@ -6939,10 +6952,8 @@ class App(wx.App):
         #T('')
         if self.remote_control_slave: # Если Quisk на стороне Server (железо трансивера), то он отсылает показание в Client (пользователь)
           #Hardware.RemoteCtlSend("M;%s\n" % self.smeter.GetLabel()) # --- удалено ---- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
-          Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_sunits)) # --- взамен ----- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
-          # ------------------------------------------------------------ добавлено ---- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
-          #Hardware.RemoteCtlSend("M;%s\n" % str(self.smeter_db))
-          #Hardware.RemoteCtlSend("M;%s\n" % self.measure_audio_str)
+          # -------------------------------------------------------------- взамен ----- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+          Hardware.RemoteCtlSend("M;%s\n" % (str(self.smeter_sunits) + '_' + str(self.smeter_db) + '_' + self.measure_audio_str))
 
         # ------------------------------------------------------- удалено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
         #if self.remote_control_head:
