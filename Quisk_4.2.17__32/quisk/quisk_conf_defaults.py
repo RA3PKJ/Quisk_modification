@@ -1899,9 +1899,9 @@ color_scheme = 'C'
 ## waterfall_palette			Waterfall colors, text choice
 # This controls the colors used in the waterfall.  The default color scheme is A, and you can change this scheme
 # in your config file.  Other color schemes are available here.
-waterfall_palette = 'A'
+#waterfall_palette = 'A'
 #waterfall_palette = 'B'
-#waterfall_palette = 'C'
+waterfall_palette = 'C'
 
 
 
