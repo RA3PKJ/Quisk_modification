@@ -3470,11 +3470,11 @@ class AudioFFTScreen(GraphScreen):
 class QMainFrame(wx.Frame):
   """Create the main top-level window."""
   def __init__(self, width, height):
-    # --------------------------------------------------- удалено ------ заголовок окна ----------------- 3 RA3PKJ
+    # ----------------------------------------------------------- удалено ----------------- заголовок окна ------------------ 3 RA3PKJ
     #fp = open('__init__.py')		# Read in the title
     #self.title = fp.readline().strip()[1:]
     #fp.close()
-    self.title = version_quisk # ------------------------ взамен ------ заголовок окна ------------------ 3 RA3PKJ
+    self.title = version_quisk # -------------------------------- взамен ------------------ заголовок окна ------------------ 3 RA3PKJ
     x = conf.window_posX
     y = conf.window_posY
     wx.Frame.__init__(self, None, -1, self.title, (x, y),
@@ -3493,7 +3493,7 @@ class QMainFrame(wx.Frame):
   def SetConfigText(self, text):
     if len(text) > 100:
       text = text[0:80] + '|||' + text[-17:]
-    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # ---------- изменено ---------- заголовок окна ---------- 3 RA3PKJ
+    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # --- изменено --- заголовок окна --- 3 RA3PKJ
 
 class Spacer(wx.Window):
   """Create a bar between the graph screen and the controls"""
@@ -5963,7 +5963,7 @@ class App(wx.App):
     else:
       self.rx2Button.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
 
-  # ----------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
+  # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)
       self.aa = self.rx2Button.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
       if self.aa == False:
@@ -6084,7 +6084,7 @@ class App(wx.App):
       value = -1
     QS.set_spot_level(value)
     Hardware.OnSpot(value)
-    # ----------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    # ----------------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
     #if conf.spot_button_keys_tx:
     Hardware.OnButtonPTT(event)
     if btn.GetValue():
@@ -6287,7 +6287,7 @@ class App(wx.App):
     The hardware will reply with the updated frequencies which may be different
     from those requested; use and display the returned tune and vfo.
     """
-    if not self.rx2_rxtx: # -------------------- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if not self.rx2_rxtx: # -----------------=--- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
       self.rxFreq = tune	# rxFreq must be correct before the call to Hardware.ChangeFrequency()
     elif rx_freq is not None:
       self.rxFreq = rx_freq
@@ -6324,11 +6324,11 @@ class App(wx.App):
         QS.set_ampl_phase(ampl, phase, 0)
         ampl, phase = self.GetAmplPhase('tx')
         QS.set_ampl_phase(ampl, phase, 1)
-      #self.freqDisplay.Display(self.txFreq + self.VFO) # --------------------- удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
+      #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------- удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
       self.fldigi_new_freq = self.txFreq + self.VFO
     return change
   def ChangeRxTxFrequency(self, rx_freq=None, tx_freq=None):
-    if not self.rx2_rxtx and not tx_freq: # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if not self.rx2_rxtx and not tx_freq: # ------------ изменено --------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
       tx_freq = rx_freq
     if tx_freq:
       tune = tx_freq - self.VFO
@@ -6340,7 +6340,7 @@ class App(wx.App):
         tune = tx_freq - vfo
         self.BandFromFreq(tx_freq)
       self.ChangeHwFrequency(tune, vfo, 'FreqEntry')
-    if rx_freq and self.rx2_rxtx: # Frequency must be on-screen ------# --- изменено --- чистка кнопки Split и перевод её на RX2 ------ 10 RA3PKJ
+    if rx_freq and self.rx2_rxtx: # Frequency must be on-screen # --- изменено ------ чистка кнопки Split и перевод её на RX2 ------ 10 RA3PKJ
       tune = rx_freq - self.VFO
       self.ChangeHwFrequency(self.txFreq, self.VFO, 'FreqEntry', rx_freq=tune)
   def OnBtnMode(self, event):
