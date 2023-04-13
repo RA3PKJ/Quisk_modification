@@ -1805,7 +1805,6 @@ class GraphDisplay(wx.Window):
     # --------------------- добавлено ----------------------------------------------- S-метр на панораме --------------- 7 RA3PKJ
     if self.display_text == "":
     # красный указатель S-метра на панораме
-      application.NewSmeter()
       SmtrX = 30 # X-position (изначальная позиция S-метра по оси Х)
       smeter_int = round(SmtrX - 15 + (application.smeter_sunits + 127) * 2.5) #вычислить новое положение бегунка S-метра по оси Х
       dc.SetPen(wx.Pen('red', 2)) #цвет бегунка S-метра
@@ -3710,10 +3709,7 @@ class App(wx.App):
     self.smeter_sunits = -87.0
 
     #self.smeter_usage = "smeter" # ----------------------------------------- удалено ---------- вынос из малого окошка ------- 8 RA3PKJ
-    # ---------------------------------------------------------------------- добавлено --------- вынос из малого окошка ------- 8 RA3PKJ
-    self.smeter_usage = "freq"          #по умолчанию режим отображения частоты в малом окошке частоты
-    self.measure_audio_str = ''         #значение напряжения аудио
-
+    self.measure_audio_str = '' # --- значение напряжения аудио ------------ добавлено --------- вынос из малого окошка ------- 8 RA3PKJ
 
     self.timer = time.time()		# A seconds clock
     self.heart_time0 = self.timer	# timer to call HeartBeat at intervals
@@ -6964,25 +6960,31 @@ class App(wx.App):
           d = QS.get_hermes_adc()	# ADC level from bandscope, 0.0 to 1.0
           if d < 1E-10:
             d = 1E-10
-          self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d))) # --- что с этим делать? ---------------------------------bigon
-        elif self.smeter_usage == "smeter":		# update the S-meter
-          if self.mode in ('FDV-U', 'FDV-L'):
-            self.NewDVmeter()
-          else:
-            self.NewSmeter()
-# ------------------------------------------------------------------------- удалено ------------ вынос из малого окошка -------------- 8 RA3PKJ
-##        elif self.smeter_usage == "freq":
-##          self.MeasureFrequency()	# display measured frequency
-##        else:
-##          self.MeasureAudioVoltage()		# display audio voltage
-# ------------------------------------------------------------------------- взамен ------------- вынос из малого окошка -------------- 8 RA3PKJ
-        if self.smeter_usage == "freq":
-          self.MeasureFrequency()     #функция измерения частоты, показываемой в окошке "частота/аудио"
+          self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d))) # --- что с этим делать? ---------------bigon
+
+        # ----------------------------------------------------------------------- удалено ------------ вынос из малого окошка ------------- 8 RA3PKJ
+        #elif self.smeter_usage == "smeter":		# update the S-meter
+          #if self.mode in ('FDV-U', 'FDV-L'):
+            #self.NewDVmeter()
+          #else:
+            #self.NewSmeter()
+        #elif self.smeter_usage == "freq":
+          #self.MeasureFrequency()	# display measured frequency
+        #else:
+          #self.MeasureAudioVoltage()		# display audio voltage
+
+        # ----------------------------------------------------------------------- взамен ------------- вынос из малого окошка ------------- 8 RA3PKJ
+        if self.mode in ('FDV-U', 'FDV-L'):
+          #self.NewDVmeter()
+          pass # -------------------------------------------------------------------------------------------- временно ---------bigon
+        self.NewSmeter()
+        self.MeasureFrequency()     #функция измерения частоты
         self.MeasureAudioVoltage()    #функция измерения напряжения
+
 
         if self.screen == self.config_screen:
           pass
-        elif self.screen == self.radios_screen: # --------------------------------- добавлено ------------- кнопка Radios ------------ 15 RA3PKJ
+        elif self.screen == self.radios_screen: # ------------------------------------- добавлено ------------- кнопка Radios ------------ 15 RA3PKJ
           pass
         elif self.screen == self.bandscope_screen:
           pass
