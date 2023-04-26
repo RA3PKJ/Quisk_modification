@@ -3655,16 +3655,16 @@ static int read_rx_udp10(complex double * samp)	// Read samples from UDP using t
 					// Look for match
 					hlwp = 5*(quisk_hermeslite_writepointer-1);
 					if (dindex == 0x7f) {
-						QuiskPrintf("ERROR: Hermes-Lite did not process ACK command\n");
+						QuiskPrintf("ERROR: Hermes-Lite did not process command\n");
 					} else if (dindex != (quisk_hermeslite_writequeue[hlwp])) {
-						QuiskPrintf("ERROR: Nonmatching Hermes-Lite ACK response 0x%X seen\n",dindex);
+						QuiskPrintf("ERROR: Nonmatching Hermes-Lite response %d seen\n",dindex);
 					} else {
 						//QuiskPrintf("Response %d received\n",dindex);
 						quisk_hermeslite_writepointer--;
 						quisk_hermeslite_writeattempts = 0;
 					} 
 				} else {
-					QuiskPrintf("ERROR: ACK response for 0x%X but no request outstanding\n",dindex);
+					QuiskPrintf("ERROR: Unexpected Hermes-Lite response 0x%X seen\n",dindex);
 				}
 			} else {
 				dindex = dindex >> 2;
@@ -4989,7 +4989,7 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 		// d2 is the number of FFT bins required for the bandwidth
 		// i is the starting bin number from  - sample_rate / 2 to + sample_rate / 2
 		d2 = (double)filter_bandwidth[0] * fft_size / fft_sample_rate;
-				
+
         // --------------------------------------------- удалено ---------------- S-метр для режимов RX2 и Split -------------- 14 RA3PKJ
 		//if (scan_blocks) {    // Use tx, not rx?? ERROR:
 		//	d1 = ((double)quisk_tx_tune_freq + vfo_screen - scan_vfo0 - scan_deltaf * ptFft->block) * fft_size / scan_sample_rate;
@@ -5017,9 +5017,9 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 			    i = (int)((double)(quisk_tx_tune_freq + filter_start_offset) * fft_size / fft_sample_rate + 0.5);
 		    else
 			    i = (int)((double)(rx_tune_freq + filter_start_offset) * fft_size / fft_sample_rate + 0.5);
-		}	
-					
-			
+		}
+
+
 		n = (int)(floor(d2) + 0.01);		// number of whole bins to add
 		if (i > - fft_size / 2 && i + n + 1 < fft_size / 2) {	// too close to edge?
 			for (j = 0; j < n; i++, j++) {

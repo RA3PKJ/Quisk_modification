@@ -1238,7 +1238,7 @@ class SoundThread(threading.Thread):
     """Set a flag to indicate that the sound thread should end."""
     self.doQuit.set()
 
-# ------------------------------ добавлен новый класс для нового окна выбора радио (и их настроек) --------- кнопка Radios --------- 15 RA3PKJ
+# ------------------------------ добавлен новый класс для нового окна выбора радио (и их настроек) --------- кнопка Hardware ------- 15 RA3PKJ
 class RadiosScreen(wx.Panel):
   """Display a notebook with radios data"""
   def __init__(self, parent, width):
@@ -1303,8 +1303,8 @@ class ConfigScreen(wx.Panel):
   def FinishPages(self):
     if self.finish_pages:
       self.finish_pages = False
-      #application.local_conf.AddPages(self.notebook, self.width) # ------------------- удалено--------------- кнопка Radios ------ 15 RA3PKJ
-      application.local_conf.AddPagesConfig(self.notebook, self.width) # --------------- взамен--------------- кнопка Radios ------ 15 RA3PKJ
+      #application.local_conf.AddPages(self.notebook, self.width) # ------------------- удалено------------- кнопка Hardware ------ 15 RA3PKJ
+      application.local_conf.AddPagesConfig(self.notebook, self.width) # --------------- взамен------------- кнопка Hardware ------ 15 RA3PKJ
   def ChangeYscale(self, y_scale):
     pass
   def ChangeYzero(self, y_zero):
@@ -3440,7 +3440,7 @@ class AudioFFTScreen(GraphScreen):
   def SetTxFreq(self, tx_freq, rx_freq):
     pass
 
-# --------------------------------------------------- удалено ------------------------------------- кнопка Radios ---------- 15 RA3PKJ
+# --------------------------------------------------- удалено ----------------------------------- кнопка Hardware ---------- 15 RA3PKJ
 ##class HelpScreen(wx.html.HtmlWindow):
 ##  """Create the screen for the Help button."""
 ##  def __init__(self, parent, width, height):
@@ -4030,7 +4030,7 @@ class App(wx.App):
     self.config_screen = ConfigScreen(frame, width, self.fft_size)
     self.config_screen.Hide()
 
-    # --------------------------------------------------------------------------- добавлено ------------- кнопка Radios ------------- 15 RA3PKJ
+    # --------------------------------------------------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
     self.radios_screen = RadiosScreen(frame, width)
     self.radios_screen.Hide()
 
@@ -4044,7 +4044,7 @@ class App(wx.App):
       self.audio_fft_screen = AudioFFTScreen(frame, self.data_width, self.graph_width, self.rate_audio_fft)
       self.audio_fft_screen.Hide()
 
-    # ------------------------------------------------------------------------------ удалено ------------- кнопка Radios ------------- 15 RA3PKJ
+    # ------------------------------------------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
     #self.help_screen = HelpScreen(frame, width, self.screen_height // 10)
     #self.help_screen.Hide()
 
@@ -4055,14 +4055,14 @@ class App(wx.App):
     frame.SetSizer(vertBox)
     # Add the screens
     vertBox.Add(self.config_screen, 1, wx.EXPAND)
-    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ------------------------------- добавлено ------------- кнопка Radios ------------- 15 RA3PKJ
+    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.multi_rx_screen, 1)
     vertBox.Add(self.scope, 1)
     vertBox.Add(self.bandscope_screen, 1)
     vertBox.Add(self.filter_screen, 1)
     if self.rate_audio_fft:
       vertBox.Add(self.audio_fft_screen, 1)
-    #vertBox.Add(self.help_screen, 1)    # ------------------------------------------ удалено ------------- кнопка Radios ------------- 15 RA3PKJ
+    #vertBox.Add(self.help_screen, 1)    # ------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.station_screen)
     # Add the spacer
     vertBox.Add(Spacer(frame), 0, wx.EXPAND)
@@ -4963,8 +4963,8 @@ class App(wx.App):
     else:
       t = "RX Filter"
     #if conf.button_layout == 'Large screen':# ------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
-    #labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Help') # --- удалено --- кнопка Radios --- 15 RA3PKJ
-    labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Hardware') # -- взамен -- кнопка Radios --- 15 RA3PKJ
+    #labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Help') # --- удалено --- кнопка Hardware --- 15 RA3PKJ
+    labels = (('Graph', 'GraphP1', 'GraphP2'), ('WFall', 'WFallP1', 'WFallP2'), ('Scope', 'Scope'), 'Config', t, 'Hardware') # -- взамен -- кнопка Hardware --- 15 RA3PKJ
     self.screenBtnGroup = RadioButtonGroup(frame, self.OnBtnScreen, labels, conf.default_screen)
     right_row3 = self.screenBtnGroup.GetButtons()
 # --------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
@@ -5683,19 +5683,20 @@ class App(wx.App):
       self.screen = self.audio_fft_screen
       self.freqDisplay.Display(self.screen.txFreq)
 
-    # ------------------------------------------------------------------------------------ удалено ------------- кнопка Radios ----------- 15 RA3PKJ
+    # ------------------------------------------------------------------------------------ удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     #elif name == 'Help':
       #self.screen = self.help_screen
-    # ----------------------------------------------------------------------------------- добавлено ----------- кнопка Radios ------------ 15 RA3PKJ
+    # ----------------------------------------------------------------------------------- добавлено ------------ кнопка Hardware --------- 15 RA3PKJ
     elif name == 'Hardware':
       self.radios_screen.FinishPages()
       self.screen = self.radios_screen
+
 
     self.screen.Show()
     self.vertBox.Layout()	# This destroys the initialized sash position!
     self.sliderYs.SetValue(self.screen.y_scale)
     self.sliderYz.SetValue(self.screen.y_zero)
-    #self.sliderZo.SetValue(self.screen.zoom_control) # ----------------------------------- удалено ------------- кнопка Radios ----------- 15 RA3PKJ
+    #self.sliderZo.SetValue(self.screen.zoom_control) # ----------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     if name[0:5] == 'WFall':
       self.screen.SetSashPosition(sash)
   def OnBtnFileRecord(self, event):
@@ -6984,7 +6985,7 @@ class App(wx.App):
 
         if self.screen == self.config_screen:
           pass
-        elif self.screen == self.radios_screen: # ------------------------------------- добавлено ------------- кнопка Radios ------------ 15 RA3PKJ
+        elif self.screen == self.radios_screen: # ------------------------------------- добавлено ------------- кнопка Hardware ---------- 15 RA3PKJ
           pass
         elif self.screen == self.bandscope_screen:
           pass

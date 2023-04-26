@@ -984,8 +984,7 @@ void quisk_hermes_tx_send(int tx_socket, int * tx_records)
 	sendbuf[522] = 0x7F;
 
 	// Changes for HermesLite v2 thanks to Steve, KF7O
-	// Add an initial delay in sending ACK request so two successive requests are spaced.
-	if ((quisk_hermeslite_writepointer > 0) && (quisk_hermeslite_writeattempts % 8 == 7)) {
+	if ((quisk_hermeslite_writepointer > 0) && (quisk_hermeslite_writeattempts++ % 8 == 0)) {
 
 		// Only send periodic hermeslite writes in second part of frame
 		hlwp = 5*(quisk_hermeslite_writepointer-1);
@@ -1018,12 +1017,13 @@ void quisk_hermes_tx_send(int tx_socket, int * tx_records)
                 }
 		if (++C0_index > 16)
 			C0_index = 0;
+	
+		if (quisk_hermeslite_writepointer > 0) quisk_hermeslite_writeattempts++;
 	}
-	if (quisk_hermeslite_writepointer > 0) quisk_hermeslite_writeattempts++;
 
 	// Abort after 53/8 ~= 5 retries
 	if ((quisk_hermeslite_writepointer > 0) && (quisk_hermeslite_writeattempts > 53)) {
-		QuiskPrintf("ERROR: Maximum Hermes-Lite write attempts without ACK\n");
+		QuiskPrintf("ERROR: Maximum Hermes-Lite write attempts\n");
 		// Cancel entire write sequence
 		quisk_hermeslite_writepointer = 0;
 		quisk_hermeslite_writeattempts = 0;

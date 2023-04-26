@@ -1,7 +1,3 @@
-Quisk Version 4.2.18  April 2023
-================================
-I added some small changes to the I2C messages sent to the Hermes Lite 2 IO board.
-
 Quisk Version 4.2.17  February 2023
 ===================================
 I fixed the PTT keyboard shortcut on Linux.

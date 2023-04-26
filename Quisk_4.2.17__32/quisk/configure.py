@@ -398,11 +398,14 @@ class Configuration:
       if not page.pages:
         page.MakePages()
 
-  # --------------------------------------------------- пункты меню на кнопке Radios ----- добавлено ----- кнопка Radios ---------- 15 RA3PKJ
+  # --- пункты меню на кнопке Hardware ---------------------------------------- добавлено -------------- кнопка Hardware ---------- 15 RA3PKJ
   def AddPagesRadios(self, notebk, width):
     global win_width
     win_width = width
     self.notebk = notebk
+    va = notebk.GetClassDefaultAttributes()
+    notebk.tfg_color = va.colFg	# use for text foreground
+    notebk.bg_color = va.colBg
     page = RadiosHelp(notebk)
     notebk.AddPage(page, "Information")
     self.radio_page = Radios(notebk)
@@ -416,17 +419,17 @@ class Configuration:
       else:
         notebk.AddPage(page, name)
 
-  #def AddPages(self, notebk, width):	# Called sixth to add pages # --------- удалено ------------------- кнопка Radios ---------- 15 RA3PKJ
-  def AddPagesConfig(self, notebk, width):	# Called sixth to add pages # ------ взамен ------------------- кнопка Radios ---------- 15 RA3PKJ
+  #def AddPages(self, notebk, width):	# Called sixth to add pages # --------- удалено ----------------- кнопка Hardware ---------- 15 RA3PKJ
+  def AddPagesConfig(self, notebk, width):	# Called sixth to add pages # ------ взамен ----------------- кнопка Hardware ---------- 15 RA3PKJ
     global win_width
     win_width = width
     self.notebk = notebk
-    # ----------- пока не добавлять никакие дополнительные пункты меню --------- удалено ------------------ кнопка Radios ---------- 15 RA3PKJ
+    # ----------- пока не добавлять никакие дополнительные пункты меню --------- удалено ---------------- кнопка Hardware ---------- 15 RA3PKJ
     #self.radio_page = Radios(notebk)
     #notebk.AddPage(self.radio_page, "Radios")
     self.radios_page_start = notebk.GetPageCount()
     notebk.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanging, notebk)
- # ---------------------------------------------------------------------------- удалено ------------------- кнопка Radios ---------- 15 RA3PKJ
+ # ---------------------------------------------------------------------------- удалено ----------------- кнопка Hardware ---------- 15 RA3PKJ
 ##    for name in Settings[2]:
 ##      page = RadioNotebook(notebk, name)
 ##      if name == Settings[1]:
@@ -722,7 +725,7 @@ class Configuration:
         count -= 1
     return count
 
-# -------------------------------------------- удалено ------------------------------------- кнопка Radios -------------------- 15 RA3PKJ
+# -------------------------------------------- удалено ----------------------------------- кнопка Hardware -------------------- 15 RA3PKJ
 ##class xxConfigHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
 ##  """Create the help screen for the configuration tabs."""
 ##  def __init__(self, parent):
@@ -1091,7 +1094,7 @@ class ListEditDialog(wx.Dialog):	# Display a dialog with a List-Edit control, pl
   def GetValue(self):
     return self.combo.GetValue()
 
-# ---------------------------------------------------------- добавлено ---------------------------------- кнопка Radios --------- 15 RA3PKJ
+# ---------------------------------------------------------- добавлено -------------------------------- кнопка Hardware --------- 15 RA3PKJ
 class RadiosHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
   """Create the help screen for the configuration tabs."""
   def __init__(self, parent):
@@ -1474,8 +1477,8 @@ class MidiButton(QuiskControl):
       elif idName in ("CW U/L", "CWL", "CWU", "SSB U/L", "LSB", "USB", "AM", "FM", "DGT",
                       "DGT-U", "DGT-L", "DGT-FM", "DGT-IQ", "FDV", "FDV-U", "IMD", ):
         item = modes.Append(-1, idName)
-      #elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Help"):# --- удалено --- кнопка Radios --- 15 RA3PKJ
-      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Hardware"):# --- взамен --- кнопка Radios --- 15 RA3PKJ
+      #elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Help"):# --- удалено --- кнопка Hardware --- 15 RA3PKJ
+      elif idName in ("Graph", "GraphP1", "GraphP2", "WFall", "Scope", "Config", "Audio FFT", "Bscope", "RX Filter", "Hardware"):# --- взамен --- кнопка Hardware --- 15 RA3PKJ
         item = screens.Append(-1, idName)
       else:
         item = None

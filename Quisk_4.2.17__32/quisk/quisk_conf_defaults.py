@@ -1912,8 +1912,7 @@ waterfall_palette = 'B'
 # Define colors used by all widgets in wxPython colour format.
 # This is the default color scheme.  You can change these colors in your config file:
 
-# цветовые схемы по умолчанию
-# --- схема A -------------------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
+# --- цветовая схема A по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
 #color_bg			= 'light steel blue'	# Lower screen background
 #color_bg_txt		= 'black'             	# Lower screen text color
 #color_graph			= 'lemonchiffon1'		# Graph background
@@ -1940,9 +1939,9 @@ waterfall_palette = 'B'
 #color_graph_msg_fg	= 'black'				# text messages on the graph screen
 #color_graph_msg_bg	= 'lemonchiffon2'		# background of text messages on the graph screen
 
-# --- схема B -------------------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
+# --- цветовая схема B по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
 #color_bg			= '#111111'
-#color_bg_txt		= 'black'
+#color_bg_txt		= 'white' # ------------------------------------------------------------bigon
 #color_graph		    = '#111111'
 #color_config2		= '#111111'
 #color_gl			= '#555555'
@@ -1959,7 +1958,7 @@ waterfall_palette = 'B'
 #color_entry		    = '#333333'
 #color_entry_txt	    = 'white'
 #color_enable		= 'white'
-#color_disable		= 'black'
+#color_disable		= '#BB8888'
 #color_popchoice	    = 'maroon'
 #color_bandwidth	    = '#333333'
 #color_txline		= 'red'
@@ -1967,9 +1966,9 @@ waterfall_palette = 'B'
 #color_graph_msg_fg	= 'white'
 #color_graph_msg_bg	= '#111111'
 
-# --- схема C ------------------------------------------------------------------- цветовая схема ----------- 22 RA3PKJ
+# --- цветовая схема C по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
 color_bg			= '#123456'
-color_bg_txt		= 'black'
+color_bg_txt		= 'white' # ------------------------------------------------------------bigon
 color_graph		    = 'lightcyan3'
 color_config2		= '#0000FF'
 color_gl			= '#555555'
@@ -1986,7 +1985,7 @@ color_freq_txt	    = '#FEF80A'
 color_entry		    = '#333333'
 color_entry_txt	    = '#FEF80A'
 color_enable		= '#FFFFFF'
-color_disable		= '#000000'
+color_disable		= '#707070'
 color_popchoice	    = '#D76B00'
 color_bandwidth	    = 'lemonchiffon1'
 color_txline		= '#FF0000'
@@ -1995,10 +1994,7 @@ color_graph_msg_fg	= '#000000'
 color_graph_msg_bg	= 'lemonchiffon2'
 
 
-
-# переключаемые цветовые схемы
-# ------------------------------------------------------------------------------- цветовая схема ----------- 22 RA3PKJ
-# This color scheme A
+# --- подключаемая цветовая схема A ------------------------------------------------------ цветовая схема ----------- 22 RA3PKJ
 color_scheme_A = {
 'color_bg'			: 'light steel blue',	# Lower screen background
 'color_bg_txt'		: 'black',             	# Lower screen text color
@@ -2027,11 +2023,12 @@ color_scheme_A = {
 'color_graph_msg_bg': 'lemonchiffon2',		# background of text messages on the graph screen
 }
 
-# This color scheme B, a dark color scheme designed by Steve Murphy, KB8RWQ.
+# --- подключаемая цветовая схема B ------------------------------------------------------ цветовая схема ----------- 22 RA3PKJ
+# dark color scheme designed by Steve Murphy, KB8RWQ.
 # Additional colors added by N2ADR.
 color_scheme_B = {
 'color_bg'			: '#111111',
-'color_bg_txt'		: 'black',
+'color_bg_txt'		: 'white', # ------------------------------------------------------------bigon
 'color_graph'		: '#111111',
 'color_config2'		: '#111111',
 'color_gl'			: '#555555',
@@ -2048,27 +2045,20 @@ color_scheme_B = {
 'color_entry'		: '#333333',
 'color_entry_txt'	: 'white',
 'color_enable'		: 'white',
-'color_disable'		: 'black',
+'color_disable'		: '#BB8888',
 'color_popchoice'	: 'maroon',
 'color_bandwidth'	: '#333333',
 'color_txline'		: 'red',
 'color_rxline'		: 'green',
-'color_graph_msg_fg'		: 'white',
-'color_graph_msg_bg'		: '#111111',
+'color_graph_msg_fg': 'white',
+'color_graph_msg_bg': '#111111',
 }
 
-# This is color scheme C:
-#######################################################################################
-#
-#   Color scheme designed by Sergio, IK8HTM.  04/06/2016
-#   '#red red green green blue blue' x00 to xFF
-#	'#FFFFFF' = white
-#   	'#000000' = black
-#
-#######################################################################################
+# --- подключаемая цветовая схема C ------------------------------------------------------ цветовая схема ----------- 22 RA3PKJ
+# color scheme designed by Sergio, IK8HTM.  04/06/2016
 color_scheme_C = {
 'color_bg'			: '#123456',
-'color_bg_txt'		: 'black',
+'color_bg_txt'		: 'white', # ------------------------------------------------------------bigon
 'color_graph'		: 'lightcyan3',
 'color_config2'		: '#0000FF',
 'color_gl'			: '#555555',
@@ -2085,15 +2075,14 @@ color_scheme_C = {
 'color_entry'		: '#333333',
 'color_entry_txt'	: '#FEF80A',
 'color_enable'		: '#FFFFFF',
-'color_disable'		: '#000000',
+'color_disable'		: '#707070',
 'color_popchoice'	: '#D76B00',
 'color_bandwidth'	: 'lemonchiffon1',
 'color_txline'		: '#FF0000',
 'color_rxline'		: '#3CC918',
-'color_graph_msg_fg'	: '#000000',
-'color_graph_msg_bg'	: 'lemonchiffon2',
+'color_graph_msg_fg': '#000000',
+'color_graph_msg_bg': 'lemonchiffon2',
 }
-#############################################################################################
 
 
 # These are the palettes for the waterfall.  The one used is named waterfallPallette,
