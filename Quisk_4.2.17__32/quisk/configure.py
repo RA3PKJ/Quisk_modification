@@ -406,8 +406,6 @@ class Configuration:
     va = notebk.GetClassDefaultAttributes()
     notebk.tfg_color = va.colFg	# use for text foreground
     notebk.bg_color = va.colBg
-    page = RadiosHelp(notebk)
-    notebk.AddPage(page, "Information")
     self.radio_page = Radios(notebk)
     notebk.AddPage(self.radio_page, "Radios")
     self.radios_page_start = notebk.GetPageCount()
@@ -1093,17 +1091,6 @@ class ListEditDialog(wx.Dialog):	# Display a dialog with a List-Edit control, pl
     self.SetClientSize(wx.Size(width, y + bsize.height * 14 // 10))
   def GetValue(self):
     return self.combo.GetValue()
-
-# ---------------------------------------------------------- добавлено -------------------------------- кнопка Hardware --------- 15 RA3PKJ
-class RadiosHelp(wx.html.HtmlWindow):	# The "Help with Radios" first-level page
-  """Create the help screen for the configuration tabs."""
-  def __init__(self, parent):
-    wx.html.HtmlWindow.__init__(self, parent, -1, size=(win_width, 100))
-    if "gtk2" in wx.PlatformInfo:
-      self.SetStandardFonts()
-    self.SetFonts("", "", [10, 12, 14, 16, 18, 20, 22])
-    # read in text from file help_conf.html in the directory of this module
-    self.LoadFile('help_conf.html')
 
 class RadioNotebook(wx.Notebook):	# The second-level notebook for each radio name
   def __init__(self, parent, radio_name):
