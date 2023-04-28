@@ -1241,7 +1241,7 @@ class SoundThread(threading.Thread):
 # ------------------------------ добавлен новый класс для нового окна выбора радио (и их настроек) --------- кнопка Hardware ------- 15 RA3PKJ
 class RadiosScreen(wx.Panel):
   """Display a notebook with radios data"""
-  def __init__(self, parent, width):
+  def __init__(self, parent, width, fft_size):
     self.y_scale = 0
     self.y_zero = 0
     self.finish_pages = True
@@ -1257,6 +1257,21 @@ class RadiosScreen(wx.Panel):
     sizer = wx.BoxSizer()
     sizer.Add(notebook_2, 1, wx.EXPAND)
     self.SetSizer(sizer)
+
+    self.status = ConfigStatus(notebook_2, width, fft_size)
+    self.SetBackgroundColour(self.status.bg_color)
+    self.SetForegroundColour(self.status.tfg_color)
+    notebook_2.bg_color = self.status.bg_color
+    notebook_2.tfg_color = self.status.tfg_color
+    notebook_2.AddPage(self.status, "Status")
+
+##    self.tx_audio = configure.ConfigTxAudio(notebook_2)
+##    self.SetBackgroundColour(self.tx_audio.bg_color)
+##    self.SetForegroundColour(self.tx_audio.tfg_color)
+##    notebook_2.bg_color = self.tx_audio.bg_color
+##    notebook_2.tfg_color = self.tx_audio.tfg_color
+##    notebook_2.AddPage(self.tx_audio, "Tx Audio")
+
   def FinishPages(self):
     if self.finish_pages:
       self.finish_pages = False
@@ -1269,6 +1284,10 @@ class RadiosScreen(wx.Panel):
     pass
   def ChangeYzero(self, y_zero):
     pass
+  def OnGraphData(self, data=None):
+    self.status.OnGraphData(data)
+  def InitBitmap(self):		# Initial construction of bitmap
+    self.status.InitBitmap()
 
 class ConfigScreen(wx.Panel):
   """Display a notebook with status and configuration data"""
@@ -1300,7 +1319,7 @@ class ConfigScreen(wx.Panel):
     tx_audio = configure.ConfigTxAudio(notebook)
     notebook.AddPage(tx_audio, "Tx Audio")
     tx_audio.status = self.status
-  def FinishPages(self):
+  def FinishPages(self): # --- добавить пункты меню на кнопке Config
     if self.finish_pages:
       self.finish_pages = False
       #application.local_conf.AddPages(self.notebook, self.width) # ------------------- удалено------------- кнопка Hardware ------ 15 RA3PKJ
@@ -4031,7 +4050,7 @@ class App(wx.App):
     self.config_screen.Hide()
 
     # --------------------------------------------------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
-    self.radios_screen = RadiosScreen(frame, width)
+    self.radios_screen = RadiosScreen(frame, width, self.fft_size)
     self.radios_screen.Hide()
 
     self.scope = ScopeScreen(frame, width, self.data_width, self.graph_width)
@@ -4097,8 +4116,8 @@ class App(wx.App):
         i = self.bottom_widgets.num_rows_added		# No way to get total rows until ver 2.9 !!
       except:
         i = 1
-      #rows = self.widget_row + i # --------------------- удалено -------- устранение ошибки нижнего ряда в Hermes --------- 19 RA3PKJ
-      rows = self.widget_row + i + 1 # ------------------- взамен -------- устранение ошибки нижнего ряда в Hermes --------- 19 RA3PKJ
+      #rows = self.widget_row + i # --------------------- удалено ---------- устранение ошибки нижнего ряда в Hermes ------------------- 19 RA3PKJ
+      rows = self.widget_row + i + 1 # ------------------- взамен ---------- устранение ошибки нижнего ряда в Hermes ------------------- 19 RA3PKJ
       for i in self.slider_columns:
         item = gbs.FindItemAtPosition((0, i))
         item.SetSpan((rows, 1))
@@ -4116,6 +4135,7 @@ class App(wx.App):
     # Record filter rate for the filter screen
     self.filter_screen.sample_rate = QS.get_filter_rate(-1, -1)
     self.config_screen.InitBitmap()
+    self.radios_screen.InitBitmap() # ------------------ добавлено ---------------------------------- кнопка Hardware ------------------- 15 RA3PKJ
     self.screenBtnGroup.SetLabel(conf.default_screen, do_cmd=True)
     frame.Show()
     self.Yield()
@@ -4129,7 +4149,7 @@ class App(wx.App):
       self.dxCluster.setListener(self.OnDxClChange)
       self.dxCluster.start()
     # Create shortcut keys for buttons
-    #if conf.button_layout == 'Large screen':# ------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    #if conf.button_layout == 'Large screen':# ------------------------------ удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
     for button in self.modeButns.GetButtons():	# mode buttons
       self.idName2Button[button.idName] = button
       if button.char_shortcut:
@@ -4142,7 +4162,7 @@ class App(wx.App):
         rid = self.QuiskNewId()
         self.main_frame.Bind(wx.EVT_MENU, self.bandBtnGroup.Shortcut, id=rid)
         self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
-# --------------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+# --------------------------------------------------------------------------- удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
 ##    else:	# Small screen
 ##      for button in self.modeButns.GetButtons():	# mode buttons
 ##        self.idName2Button[button.idName] = self.modeButns
@@ -6736,6 +6756,7 @@ class App(wx.App):
     return ampl, phase
   def PostStartup(self):	# called once after sound attempts to start
     self.config_screen.OnGraphData(None)	# update config in case sound is not running
+    self.radios_screen.OnGraphData(None)	# update config in case sound is not running # -------- добавлено ----- кнопка Hardware --------------- 15 RA3PKJ
     #txt = self.sound_thread.config_text		# change config_text if StartSamples() returns a string
     #if txt:
     #  self.config_text = txt
@@ -7013,6 +7034,11 @@ class App(wx.App):
         print(msg, end='')
       if self.screen == self.config_screen:
         self.screen.OnGraphData()			# Send message to draw new data
+
+      # -------------------------------------------- добавлено --------------------------------------- кнопка Hardware --------------------- 15 RA3PKJ
+      if self.screen == self.radios_screen:
+        self.screen.OnGraphData()			# Send message to draw new data
+
       if self.add_version and Hardware.GetFirmwareVersion() is not None:
         self.add_version = False
         self.config_text = "%s, firmware version 1.%d" % (self.config_text, Hardware.GetFirmwareVersion())

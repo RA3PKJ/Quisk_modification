@@ -417,6 +417,7 @@ class Configuration:
       else:
         notebk.AddPage(page, name)
 
+  # --- добавить пункты меню на кнопке Config
   #def AddPages(self, notebk, width):	# Called sixth to add pages # --------- удалено ----------------- кнопка Hardware ---------- 15 RA3PKJ
   def AddPagesConfig(self, notebk, width):	# Called sixth to add pages # ------ взамен ----------------- кнопка Hardware ---------- 15 RA3PKJ
     global win_width
