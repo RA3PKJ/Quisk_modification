@@ -6,5 +6,4 @@ For Windows (32-bit or 64-bit) use 32-bit versions of the:
 - wxPython-4.1.1-cp39-cp39-win32.whl
 
 Remarks:
-- So far I have a problem with the font color for Hermes in Linux.
 - I made changes according Quisk 4.2.18 (new from Jim)
