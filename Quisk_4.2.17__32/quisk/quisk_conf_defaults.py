@@ -1941,7 +1941,7 @@ waterfall_palette = 'B'
 
 # --- цветовая схема B по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
 #color_bg			= '#111111'
-#color_bg_txt		= 'white' # ------------------------------------------------------------bigon
+#color_bg_txt		= 'white'
 #color_graph		    = '#111111'
 #color_config2		= '#111111'
 #color_gl			= '#555555'
@@ -1968,7 +1968,7 @@ waterfall_palette = 'B'
 
 # --- цветовая схема C по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
 color_bg			= '#123456'
-color_bg_txt		= 'white' # ------------------------------------------------------------bigon
+color_bg_txt		= 'white'
 color_graph		    = 'lightcyan3'
 color_config2		= '#0000FF'
 color_gl			= '#555555'
@@ -2028,7 +2028,7 @@ color_scheme_A = {
 # Additional colors added by N2ADR.
 color_scheme_B = {
 'color_bg'			: '#111111',
-'color_bg_txt'		: 'white', # ------------------------------------------------------------bigon
+'color_bg_txt'		: 'white',
 'color_graph'		: '#111111',
 'color_config2'		: '#111111',
 'color_gl'			: '#555555',
@@ -2058,7 +2058,7 @@ color_scheme_B = {
 # color scheme designed by Sergio, IK8HTM.  04/06/2016
 color_scheme_C = {
 'color_bg'			: '#123456',
-'color_bg_txt'		: 'white', # ------------------------------------------------------------bigon
+'color_bg_txt'		: 'white',
 'color_graph'		: 'lightcyan3',
 'color_config2'		: '#0000FF',
 'color_gl'			: '#555555',
