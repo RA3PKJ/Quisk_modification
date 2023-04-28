@@ -406,9 +406,6 @@ class Configuration:
     va = notebk.GetClassDefaultAttributes()
     notebk.tfg_color = va.colFg	# use for text foreground
     notebk.bg_color = va.colBg
-    self.radio_page = Radios(notebk)
-    notebk.AddPage(self.radio_page, "Radios")
-    self.radios_page_start = notebk.GetPageCount()
     notebk.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanging, notebk)
     for name in Settings[2]:
       page = RadioNotebook(notebk, name)
@@ -2445,7 +2442,16 @@ class ConfigTxAudio(BaseWindow):
 class Radios(BaseWindow):	# The "Radios" first-level page
   def __init__(self, parent):
     BaseWindow.__init__(self, parent)
-    self.SetBackgroundColour(parent.bg_color)
+    #self.SetBackgroundColour(parent.bg_color) # ------------------ удалено ----------------------- кнопка Hardware -------------- 15 RA3PKJ
+
+    # ------------------------------------------------------------- добавлено --------------------- кнопка Hardware -------------- 15 RA3PKJ
+    self.bg_color = self.GetBackgroundColour()
+    try:
+      va = wx.StaticText.GetClassDefaultAttributes()
+      self.tfg_color = wx.Colour(va.colFg)	# use for text foreground
+    except:
+      self.tfg_color = self.GetForegroundColour()
+
     self.num_cols = 8
     self.radio_name = None
     self.cur_radio_text = self.AddTextL(1, 'xx', self.num_cols - 1)
