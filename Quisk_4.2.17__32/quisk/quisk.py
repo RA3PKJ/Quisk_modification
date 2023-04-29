@@ -1241,7 +1241,7 @@ class SoundThread(threading.Thread):
 # ------------------------------ добавлен новый класс для нового окна выбора радио (и их настроек) --------- кнопка Hardware ------- 15 RA3PKJ
 class RadiosScreen(wx.Panel):
   """Display a notebook with radios data"""
-  def __init__(self, parent, width, fft_size):
+  def __init__(self, parent, width):
     self.y_scale = 0
     self.y_zero = 0
     self.finish_pages = True
@@ -1258,19 +1258,12 @@ class RadiosScreen(wx.Panel):
     sizer.Add(notebook_2, 1, wx.EXPAND)
     self.SetSizer(sizer)
 
-    self.status = ConfigStatus(notebook_2, width, fft_size)
-    self.SetBackgroundColour(self.status.bg_color)
-    self.SetForegroundColour(self.status.tfg_color)
-    notebook_2.bg_color = self.status.bg_color
-    notebook_2.tfg_color = self.status.tfg_color
-    notebook_2.AddPage(self.status, "Status")
-
-##    self.tx_audio = configure.ConfigTxAudio(notebook_2)
-##    self.SetBackgroundColour(self.tx_audio.bg_color)
-##    self.SetForegroundColour(self.tx_audio.tfg_color)
-##    notebook_2.bg_color = self.tx_audio.bg_color
-##    notebook_2.tfg_color = self.tx_audio.tfg_color
-##    notebook_2.AddPage(self.tx_audio, "Tx Audio")
+    self.radios = configure.Radios(notebook_2)
+    self.SetBackgroundColour(self.radios.bg_color)
+    self.SetForegroundColour(self.radios.tfg_color)
+    notebook_2.bg_color = self.radios.bg_color
+    notebook_2.tfg_color = self.radios.tfg_color
+    notebook_2.AddPage(self.radios, "Radios")
 
   def FinishPages(self):
     if self.finish_pages:
@@ -1284,10 +1277,6 @@ class RadiosScreen(wx.Panel):
     pass
   def ChangeYzero(self, y_zero):
     pass
-  def OnGraphData(self, data=None):
-    self.status.OnGraphData(data)
-  def InitBitmap(self):		# Initial construction of bitmap
-    self.status.InitBitmap()
 
 class ConfigScreen(wx.Panel):
   """Display a notebook with status and configuration data"""
@@ -4050,7 +4039,7 @@ class App(wx.App):
     self.config_screen.Hide()
 
     # --------------------------------------------------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
-    self.radios_screen = RadiosScreen(frame, width, self.fft_size)
+    self.radios_screen = RadiosScreen(frame, width)
     self.radios_screen.Hide()
 
     self.scope = ScopeScreen(frame, width, self.data_width, self.graph_width)
@@ -4135,7 +4124,6 @@ class App(wx.App):
     # Record filter rate for the filter screen
     self.filter_screen.sample_rate = QS.get_filter_rate(-1, -1)
     self.config_screen.InitBitmap()
-    self.radios_screen.InitBitmap() # ------------------ добавлено ---------------------------------- кнопка Hardware ------------------- 15 RA3PKJ
     self.screenBtnGroup.SetLabel(conf.default_screen, do_cmd=True)
     frame.Show()
     self.Yield()
@@ -6756,7 +6744,6 @@ class App(wx.App):
     return ampl, phase
   def PostStartup(self):	# called once after sound attempts to start
     self.config_screen.OnGraphData(None)	# update config in case sound is not running
-    self.radios_screen.OnGraphData(None)	# update config in case sound is not running # -------- добавлено ----- кнопка Hardware --------------- 15 RA3PKJ
     #txt = self.sound_thread.config_text		# change config_text if StartSamples() returns a string
     #if txt:
     #  self.config_text = txt
@@ -7034,11 +7021,6 @@ class App(wx.App):
         print(msg, end='')
       if self.screen == self.config_screen:
         self.screen.OnGraphData()			# Send message to draw new data
-
-      # -------------------------------------------- добавлено --------------------------------------- кнопка Hardware --------------------- 15 RA3PKJ
-      if self.screen == self.radios_screen:
-        self.screen.OnGraphData()			# Send message to draw new data
-
       if self.add_version and Hardware.GetFirmwareVersion() is not None:
         self.add_version = False
         self.config_text = "%s, firmware version 1.%d" % (self.config_text, Hardware.GetFirmwareVersion())
