@@ -1,4 +1,4 @@
-# Quisk modification.
+# Quisk modification
 Now the source code of Quisk 4.2.18 is used (the author Jim N2ADR).  
 I am creating a 32-bit Quisk for Windows 32/64.
 
