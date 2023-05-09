@@ -2830,18 +2830,24 @@ class WaterfallScreen(wx.SplitterWindow):
   def SetVFO(self, vfo):
     self.pane1.SetVFO(vfo)
     self.pane2.SetVFO(vfo)
+
   def ChangeYscale(self, y_scale):		# Test if the shift key is down
-    if wx.GetKeyState(wx.WXK_SHIFT):	# Set graph screen
-      self.pane1.ChangeYscale(y_scale)
-    else:			# Set waterfall screen
-      self.y_scale = y_scale
-      self.pane2.ChangeYscale(y_scale)
+    # --------------------------------------------------------------------------- удалено ------------ перевод слайдеров на график --------------- 26 RA3PKJ
+    #if wx.GetKeyState(wx.WXK_SHIFT):	# Set graph screen
+      #self.pane1.ChangeYscale(y_scale)
+    #else:			# Set waterfall screen
+      #self.y_scale = y_scale
+      #self.pane2.ChangeYscale(y_scale)
+    self.pane1.ChangeYscale(y_scale) # ------------------------------------------ взамен -------------- перевод слайдеров на график -------------- 26 RA3PKJ
   def ChangeYzero(self, y_zero):		# Test if the shift key is down
-    if wx.GetKeyState(wx.WXK_SHIFT):	# Set graph screen
-      self.pane1.ChangeYzero(y_zero)
-    else:			# Set waterfall screen
-      self.y_zero = y_zero
-      self.pane2.ChangeYzero(y_zero)
+    # --------------------------------------------------------------------------- удалено ------------- перевод слайдеров на график -------------- 26 RA3PKJ
+    #if wx.GetKeyState(wx.WXK_SHIFT):	# Set graph screen
+      #self.pane1.ChangeYzero(y_zero)
+    #else:			# Set waterfall screen
+      #self.y_zero = y_zero
+      #self.pane2.ChangeYzero(y_zero)
+    self.pane1.ChangeYzero(y_zero) # -------------------------------------------- взамен -------------- перевод слайдеров на график -------------- 26 RA3PKJ
+
   def SetPane1(self, ysz):
     y_scale, y_zero = ysz
     self.pane1.ChangeYscale(y_scale)
