@@ -2608,11 +2608,10 @@ class WaterfallDisplay(wx.Window):
 
     # ------------------------------------------------------------------------------------------- добавлено ------ автоматика водопада ------ 24 RA3PKJ
     self.bright_const = -110.0	# уровень нормальной шумовой дорожки
-    self.bright = 80
-    self.contrast = 80
+    self.bright = 0
+    self.contrast = 0
     # ------------------------------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
     self.current_pal = ''
-    self.bright_standart = -20 # можно изменять
 
     self.sample_rate = application.sample_rate
     self.SetBackgroundColour('Black')
@@ -2665,10 +2664,16 @@ class WaterfallDisplay(wx.Window):
   def MakePalette(self, pal_type):
     if pal_type == 'B':
       pal2 = conf.waterfallPaletteB
+      self.bright = 83
+      self.contrast = 80
     elif pal_type == 'C':
       pal2 = conf.waterfallPaletteC
+      self.bright = 93
+      self.contrast = 95
     else:
       pal2 = conf.waterfallPalette
+      self.bright = 78
+      self.contrast = 65
     red = bytearray(256)
     green = bytearray(256)
     blue = bytearray(256)
