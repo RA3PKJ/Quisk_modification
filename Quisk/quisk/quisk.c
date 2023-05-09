@@ -5183,7 +5183,7 @@ static PyObject * watfall_OnGraphData(PyObject * self, PyObject * args)	// Calle
 	// replace data in oldest row
 	pRow->x_origin = x_origin;
 	pPixels = pRow->pixels;
-	size = PySequence_Size(db_list);
+	size = PySequence_Size(db_list); //длина входных данных
 	if (size > pWatfall->width)
 		size = pWatfall->width;
 	yz = 40.0 + y_zero * 0.69;		// -yz is the color center in dB

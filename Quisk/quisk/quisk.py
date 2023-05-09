@@ -19,12 +19,17 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.18.3 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.18.4 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
 # and to find ./__init__.py and ./help.html.
 import sys, os
+
+# ------------------------------------------------------------------------------------------------ добавлено ------ автоматика водопада ------- 24 RA3PKJ
+import numpy as np
+import array
+
 #print ('getcwd', os.getcwd())
 #print ('__file__', __file__)
 os.chdir(os.path.normpath(os.path.dirname(__file__)))	# change directory to the location of this script
@@ -2599,7 +2604,16 @@ class WaterfallDisplay(wx.Window):
     self.height = 10
     self.zoom = 1.0
     self.zoom_deltaf = 0
-    self.rf_gain = 0	# Keep waterfall colors constant for variable RF gain
+    self.rf_gain = 0 # Keep waterfall colors constant for variable RF gain ----------- бесполезная переменная
+
+    # ------------------------------------------------------------------------------------------- добавлено ------ автоматика водопада ------ 24 RA3PKJ
+    self.bright_const = -110.0	# уровень нормальной шумовой дорожки
+    self.bright = 80
+    self.contrast = 80
+    # ------------------------------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
+    self.current_pal = ''
+    self.bright_standart = -20 # можно изменять
+
     self.sample_rate = application.sample_rate
     self.SetBackgroundColour('Black')
     self.Bind(wx.EVT_PAINT, self.OnPaint)
@@ -2612,20 +2626,46 @@ class WaterfallDisplay(wx.Window):
     self.tune_rx = 0				# Current X position of Rx tuning line or zero
     self.marginPen = wx.Pen(conf.color_graph, 1)
     #self.tuningPen = wx.Pen('White', 3)
-    self.tuningPen = wx.Pen('#82B3C8', 1) # ---- взамен ---- цвет и ширина вертикальной линии на водопаде ---- оформление панорамы ------- 4 RA3PKJ
+    self.tuningPen = wx.Pen('#82B3C8', 1) # цвет и ширина вертикальной линии на водопаде ---------------------------- взамен -- оформление панорамы -- 4 RA3PKJ
     #self.tuningPenTx = wx.Pen(conf.color_txline, 3)
-    self.tuningPenTx = wx.Pen(conf.color_txline, 2) # -- взамен -- цвет и ширина вертикального тонкого огрызка на водопаде (TX) -- оформление панорамы -- 4 RA3PKJ
+    self.tuningPenTx = wx.Pen(conf.color_txline, 2) # цвет и ширина вертикального тонкого огрызка на водопаде (TX) -- взамен -- оформление панорамы -- 4 RA3PKJ
     #self.tuningPenRx = wx.Pen(conf.color_rxline, 3)
-    self.tuningPenRx = wx.Pen(conf.color_rxline, 2) # -- взамен -- цвет и ширина вертикального тонкого огрызка на водопаде (RX) -- оформление панорамы -- 4 RA3PKJ
+    self.tuningPenRx = wx.Pen(conf.color_rxline, 2) # цвет и ширина вертикального тонкого огрызка на водопаде (RX) -- взамен -- оформление панорамы -- 4 RA3PKJ
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен -------- цвет шторки ---------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # цвет шторки -------------------------------------------------- взамен -- оформление панорамы -- 4 RA3PKJ
     # Size of top faster scroll region is (top_key + 2) * (top_key - 1) // 2
     self.top_key = 8
     self.top_size = (self.top_key + 2) * (self.top_key - 1) // 2
+
+    # ------------------------------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
+    self.MakePalette(conf.waterfall_palette)
+    self.current_pal = conf.waterfall_palette
+    # --------------------------------------------------------------------------------------------- удалено --------- выбор водопада -------- 25 RA3PKJ
     # Make the palette
-    if conf.waterfall_palette == 'B':
+    #if conf.waterfall_palette == 'B':
+      #pal2 = conf.waterfallPaletteB
+    #elif conf.waterfall_palette == 'C':
+      #pal2 = conf.waterfallPaletteC
+    #else:
+      #pal2 = conf.waterfallPalette
+    #red = bytearray(256)
+    #green = bytearray(256)
+    #blue = bytearray(256)
+    #n = 0
+    #for i in range(256):
+      #if i > pal2[n+1][0]:
+         #n = n + 1
+      #red[i]   = (i - pal2[n][0]) * (pal2[n+1][1] - pal2[n][1]) // (pal2[n+1][0] - pal2[n][0]) + pal2[n][1]
+      #green[i] = (i - pal2[n][0]) * (pal2[n+1][2] - pal2[n][2]) // (pal2[n+1][0] - pal2[n][0]) + pal2[n][2]
+      #blue[i]  = (i - pal2[n][0]) * (pal2[n+1][3] - pal2[n][3]) // (pal2[n+1][0] - pal2[n][0]) + pal2[n][3]
+    #self.rgb_data = QS.watfall_RgbData(red, green, blue, self.graph_width, application.screen_height)
+    #self.pixels = bytearray(self.graph_width * application.screen_height * 3)
+
+  # ------------------------------------------------------------------------------- добавлена функция взамен --------- выбор водопада -------- 25 RA3PKJ
+  def MakePalette(self, pal_type):
+    if pal_type == 'B':
       pal2 = conf.waterfallPaletteB
-    elif conf.waterfall_palette == 'C':
+    elif pal_type == 'C':
       pal2 = conf.waterfallPaletteC
     else:
       pal2 = conf.waterfallPalette
@@ -2641,6 +2681,14 @@ class WaterfallDisplay(wx.Window):
       blue[i]  = (i - pal2[n][0]) * (pal2[n+1][3] - pal2[n][3]) // (pal2[n+1][0] - pal2[n][0]) + pal2[n][3]
     self.rgb_data = QS.watfall_RgbData(red, green, blue, self.graph_width, application.screen_height)
     self.pixels = bytearray(self.graph_width * application.screen_height * 3)
+
+  # обработчик кнопки Palette ------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
+  def ChangePalette(self):
+    if self.current_pal == 'A': self.current_pal  = 'B'
+    elif self.current_pal == 'B': self.current_pal  = 'C'
+    else: self.current_pal = 'A'
+    self.MakePalette(self.current_pal)
+
   def OnPaint(self, event):
     dc = wx.PaintDC(self)
     dc.SetTextForeground(conf.color_graphlabels)
@@ -2689,15 +2737,50 @@ class WaterfallDisplay(wx.Window):
     dc.SetPen(self.tuningPenTx)
     dc.DrawLine(self.tune_tx, 0, self.tune_tx, self.margin)
     return rit
+
+# ----------------------------------------------------------------------------------------------- удалено ------ автоматика водопада ------- 24 RA3PKJ
+  #def OnGraphData(self, data, y_zero, y_scale):
+# y_scale and y_zero range from zero to 160.
+# y_zero controls the center position of the colors. Set to a bit over the noise level.
+# y_scale controls how much the colors change when the sample deviates from y_zero.
+    #gain = self.rf_gain
+    #sample_rate = int(self.sample_rate * self.zoom)
+    #x_origin = int(float(self.VFO) / sample_rate * self.data_width + 0.5)
+    #QS.watfall_OnGraphData(self.rgb_data, data, y_zero, y_scale, gain, x_origin)
+    #self.Refresh(False)
+
+# ------------------------------------------------------------------------------------------------- взамен ------ автоматика водопада ------- 24 RA3PKJ
   def OnGraphData(self, data, y_zero, y_scale):
-    # y_scale and y_zero range from zero to 160.
-    # y_zero controls the center position of the colors. Set to a bit over the noise level.
-    # y_scale controls how much the colors change when the sample deviates from y_zero.
+# y_scale and y_zero range from zero to 160.
+# y_zero controls the center position of the colors. Set to a bit over the noise level.
+# y_scale controls how much the colors change when the sample deviates from y_zero.
     gain = self.rf_gain
     sample_rate = int(self.sample_rate * self.zoom)
     x_origin = int(float(self.VFO) / sample_rate * self.data_width + 0.5)
-    QS.watfall_OnGraphData(self.rgb_data, data, y_zero, y_scale, gain, x_origin)
+
+    # отрезать крайние провалы, чтобы при нахождении персентайла не возникала ошибка, когда шторка стоит на провале и далее следует зуммирование
+    l_s = len(data) // 10              # отрезка левого провала
+    l_f = len(data) - len(data) // 10  # отрезка правого провала
+    mn = data[l_s:l_f]
+    percent_min  = np.percentile(mn,4) # находим максимальное значение из минимальных значений при 4-х процентной выборке из массива входных данных
+
+    data_m = array.array('f', []) # будем заполнять массив из массива data путём сдвига уровней с целью привязки к константе self.bright_const
+    if percent_min > self.bright_const:
+      rf_corr = percent_min - self.bright_const # вычислить необходимый сдвиг
+      for x in data:
+        x = x - rf_corr
+        data_m.append (x)
+    elif percent_min < self.bright_const:
+      rf_corr = self.bright_const - percent_min # вычислить необходимый сдвиг
+      for x in data:
+        x = x + rf_corr
+        data_m.append (x)
+    else:
+      data_m = data
+
+    QS.watfall_OnGraphData(self.rgb_data, data_m, self.bright, self.contrast, gain, x_origin)
     self.Refresh(False)
+
   def SetTuningLine(self, tune_tx, tune_rx):
     dc = wx.ClientDC(self)
     rit = self.DrawFilter(dc)
@@ -2776,6 +2859,9 @@ class WaterfallScreen(wx.SplitterWindow):
     self.pane2.display.ChangeZoom(zoom, deltaf, zoom_control)
   def PeakHold(self, name):
     self.pane1.PeakHold(name)
+  # --------------------------------------------------------------------------------------- добавлено --------- выбор водопада ---------- 25 RA3PKJ
+  def ChangePalette(self):
+    self.pane2.ChangePalette()
 
 class WaterfallPane(GraphScreen):
   """Create a waterfall screen with an X axis and a waterfall display."""
@@ -2810,6 +2896,9 @@ class WaterfallPane(GraphScreen):
     i2 = i1 + self.graph_width
     self.raw_graph_data = data[i1:i2]
     self.display.OnGraphData(data[i1:i2], self.y_zero, self.y_scale)
+  # --------------------------------------------------------------------------------------- добавлено --------- выбор водопада ---------- 25 RA3PKJ
+  def ChangePalette(self):
+    self.display.ChangePalette()
 
 class MultiRxGraph(GraphScreen):
   # The screen showing each added receiver
@@ -5033,7 +5122,7 @@ class App(wx.App):
 ##    szr.Add(self.Empty0, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
 ##    self.Empty0.SetLabel(" ")
 ##    self.Empty0.Refresh()
-    # --------------------------------------------------------------- WFallPalette  button --- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # --------------------------------------------------------------- Palette  button ---------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
     self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
@@ -5899,16 +5988,16 @@ class App(wx.App):
       QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
       QS.set_sidetone(self.sidetone_volume, self.sidetone_0to1, self.ritFreq, conf.keyupDelay)
 
-  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # -------------------------------------------------------------------------------- добавлено -------------- выбор водопада ---------- 25 RA3PKJ
   def OnBtnWaterFallPalette(self, event): # обработчик нажатия кнопки Palette
-    pass
-    #self.multi_rx_screen.ChangePalette()
-  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+    self.multi_rx_screen.ChangePalette()
+  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
     rx = self.rxFreq
     self.rxFreq = self.txFreq
     self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
-  # --------------------------------------------------------------------------------добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnLockVFO(self, event): # обработчик нажатия кнопки Lock
     self.lock_vfo = self.lockVFOButton.GetValue() # See that button turn On or Off?
     if self.lock_vfo:
