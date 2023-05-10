@@ -5232,7 +5232,8 @@ static uint8_t * watfall_copy(uint8_t * dest, uint8_t * source, int x, int width
 
 static PyObject * watfall_GetPixels(PyObject * self, PyObject * args)	// Called by the GUI thread
 {
-	int i, j, x, x_origin, width, width3, height;
+	//int i, j, x, x_origin, width, width3, height; // ------ удалено ------------------- выключение тетриса --------- 27 RA3PKJ
+	int i, x, x_origin, width, width3, height; // ------------ взамен ------------------- выключение тетриса --------- 27 RA3PKJ
 	Py_buffer rgb_data, pixels;
 	struct watfall_t * pWatfall;
 	struct watfall_row_t * pRow;
@@ -5245,17 +5246,18 @@ static PyObject * watfall_GetPixels(PyObject * self, PyObject * args)	// Called 
 	pDest = pixels.buf;
 	pWatfall = (struct watfall_t *)rgb_data.buf;
 	pRow = pWatfall->current_row;
-	if (waterfall_scroll_mode) {
-		for (j = 8; j > 1; j--) {
-			x = pRow->x_origin - x_origin;
-			x *= 3;
-			for (i = 0; i < j; i++) {		// Copy the first rows multiple times
-				pDest = watfall_copy(pDest, pRow->pixels, x, width3);
-				height--;
-			}
-			pRow = pRow->next_row;
-		}
-	}
+	// ------------------------------------------------------ удалено ------------------- выключение тетриса --------- 27 RA3PKJ
+	//if (waterfall_scroll_mode) {
+		//for (j = 8; j > 1; j--) {
+			//x = pRow->x_origin - x_origin;
+			//x *= 3;
+			//for (i = 0; i < j; i++) {		// Copy the first rows multiple times
+				//pDest = watfall_copy(pDest, pRow->pixels, x, width3);
+				//height--;
+			//}
+			//pRow = pRow->next_row;
+		//}
+	//}
 	for (i = 0; i < height; i++) {
 		x = pRow->x_origin - x_origin;
 		x *= 3;
