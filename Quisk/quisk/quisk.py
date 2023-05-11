@@ -2637,8 +2637,11 @@ class WaterfallDisplay(wx.Window):
     self.top_size = (self.top_key + 2) * (self.top_key - 1) // 2
 
     # ------------------------------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
+    self.settings_changed = False
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     self.MakePalette(conf.waterfall_palette)
     self.current_pal = conf.waterfall_palette
+
     # --------------------------------------------------------------------------------------------- удалено --------- выбор водопада -------- 25 RA3PKJ
     # Make the palette
     #if conf.waterfall_palette == 'B':
@@ -2692,6 +2695,12 @@ class WaterfallDisplay(wx.Window):
     if self.current_pal == 'A': self.current_pal  = 'B'
     elif self.current_pal == 'B': self.current_pal  = 'C'
     else: self.current_pal = 'A'
+
+    index = configure.Settings[2].index(configure.Settings[1]) # -------- найти индекс текущего радио в списке радио
+    configure.Settings[3][index]["waterfall_palette"] = self.current_pal
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
     self.MakePalette(self.current_pal)
 
   def OnPaint(self, event):

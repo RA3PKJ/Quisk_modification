@@ -95,7 +95,15 @@ class Configuration:
     self.StatePath = conf.settings_file_path
     if not self.StatePath:
       self.StatePath = os.path.join(app.QuiskFilesDir, "quisk_settings.json")
-    self.ReadState()
+    self.ReadState() # ---------------------------------- прочитать quisk_settings.json
+
+    # ===================== СПРАВКА ===============================
+    # ---- массив Settings[] iполучает из quisk_options.json ------
+    # -------Settings[0] выбор нового радио
+    # -------Settings[1] последнее использованное радио
+    # -------Settings[2] список радио
+    # -------Settings[3] перечень параметров для каждого радио, каждое радио иммет указатель index, например Settings[3][index] или Settings[3].index("xxxxxxx")
+
     if AskMe == 'Same':
       pass
     elif Radio:
@@ -530,7 +538,7 @@ class Configuration:
             return True
         break
     return False
-  def ReadState(self):
+  def ReadState(self): # ---------------------------------- прочитать quisk_settings.json
     self.settings_changed = False
     global Settings
     try:
