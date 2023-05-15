@@ -1,6 +1,6 @@
 # Quisk modification
 
-Quisk modification for Windows and Linux.
+Quisk modification for Windows and Linux
 
 Now the source code of Quisk 4.2.18 (by Jim N2ADR) is used for modification.  
 I am creating a 32-bit Quisk for Windows 32/64.
