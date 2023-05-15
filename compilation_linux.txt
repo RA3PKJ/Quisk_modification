@@ -1,0 +1,20 @@
+Сборка DLL _quisk.cpython-310-x86_64-linux-gnu.so в Linux.
+------------------
+Подготовка:
+установить авторскую версию с соответствующим номером версии. Установку авторской версии произвести по 
+инструкции на странице - http://james.ahlstrom.name/quisk/docs.html
+После установки авторской версии, quisk должен находиться в папке /usr/local/lib/python3.10/dist-packages/quisk.
+Папку quisk заменить целиком на папку quisk, взятую из моего репозитория на Github.
+Перед сборкой изменить расширение файла _quisk.cpython-310-x86_64-linux-gnu.so на другое, например sot вместо so,
+чтобы при неудачной сборке можно было вернуть файл обратно.
+------------------
+Сборка:
+- Сделать папку quisk родной для вас:
+  sudo chown ваше_имя_пользователя /usr/local/lib/python3.10/dist-packages/quisk
+
+- Перейти в папку quisk:
+  cd /usr/local/lib/python3.10/dist-packages/quisk
+
+- Выполнить сборку:
+  make quisk3
+В папке quisk появится новый файл _quisk.cpython-310-x86_64-linux-gnu.so
