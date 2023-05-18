@@ -298,7 +298,8 @@ class HamlibHandlerSerial:
   "Create a serial port for Hamlib control that emulates the FlexRadio PowerSDR 2.x command set."
   # This implements some Kenwood TS-2000 commands, but it is far from complete.
   # See http://k5fr.com/binary/CatCommandReferenceGuide.pdf
-  # Test on Linux using putty.
+  # Test on linux by setting the Quisk serial port to /tmp/QuiskTTY0 and using putty with font Ubuntu Mono.
+  # Commands are "ZZAR;"  and  "ZZAR+030;"   -   no newline.
 
   # Additional logic contributed by Dr. Karsten Schmidt
 
@@ -490,6 +491,20 @@ class HamlibHandlerSerial:
       vol = int(data, base=10) * 10
       self.app.sliderVol.SetValue(vol)
       self.app.ChangeVolume()
+    else:
+      self.Error(cmd, data)
+  def ZZAR(self, cmd, data, length):	# AGC level
+    if length == 0:
+      n = self.app.levelAGC * 140 // 1000 - 20	# Convert AGC 0 to 1000 -> -20 to 120
+      if n < 0:
+        self.Write("%s-%03d;" % (cmd, - n))
+      else:
+        self.Write("%s+%03d;" % (cmd, n))
+    elif length == 4:
+      val = int(data, base=10)
+      val = (val + 20) * 1000 // 140	# Convert AGC -20 to 120 -> 0 to 1000
+      self.app.SliderAGC.SetSlider(value_on=val)
+      self.app.BtnAGC.SetValue(True, True)
     else:
       self.Error(cmd, data)
   def ZZAU(self, cmd, data, length):  # VFO A up by a selected step
@@ -3875,6 +3890,8 @@ class App(wx.App):
     self.hot_key_ptt_was_down = False
     self.hot_key_ptt_pressed = False
     self.hot_key_ptt_active = False
+    self.serial_ptt_active = False
+    self.vox_ptt_active = False
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
@@ -4834,21 +4851,18 @@ class App(wx.App):
     self.BtnAGC = agc = QuiskCheckbutton(frame, self.OnBtnAGC, 'AGC')
     agc.char_shortcut = 'G'
     self.MakeAccel(agc)
-    b = WrapSlider(agc, self.OnBtnAGC, display=True)
+    b = self.SliderAGC = WrapSlider(agc, self.OnBtnAGC, display=True)
     self.midiControls["AGCSlider"] = (b, None)
     b.SetDual(True)
     b.SetSlider(value_off=self.levelOffAGC, value_on=self.levelAGC)
     agc.SetValue(True, True)
     left_row2.append(b)
-
-
     b = self.BtnSquelch = QuiskCheckbutton(frame, self.OnBtnSquelch, text='Sqlch')
     b.char_shortcut = 'q'
     self.MakeAccel(b)
     self.sliderSquelch = WrapSlider(b, self.OnBtnSquelch, display=True)
     self.midiControls["SqlchSlider"] = (self.sliderSquelch, None)
     left_row2.append(self.sliderSquelch)
-
     # Noise Blanker
     self.NB_menu = QuiskMenu("NB_menu")
     for t in ("NB 1", "NB 2", "NB 3"):
@@ -6310,7 +6324,7 @@ class App(wx.App):
     btn.text_color = color
     btn.Refresh()
   def OnBtnAGC(self, event):
-    btn = event.GetEventObject()
+    btn = self.BtnAGC
     self.levelOffAGC = btn.slider_value_off
     self.levelAGC = btn.slider_value_on
     value = btn.GetValue()
@@ -7005,18 +7019,36 @@ class App(wx.App):
       if self.tx_indicator:
         self.tx_indicator = False
         self.pttButton.Tx.TurnOn(False)
-    if True:	# Manage the PTT button using VOX, hot keys and WAV file play
+    if True:	# Manage the PTT button using serial port, VOX, hot keys and WAV file play
       ptt_button_down = self.pttButton.GetValue()
       ptt = None
+      if conf.quisk_serial_cts[0:4] == "PTT " or conf.quisk_serial_dsr[0:4] == "PTT ":
+        old = self.serial_ptt_active
+        if self.file_play_state == 0:
+          if QS.get_params("serial_ptt"):
+            ptt = True
+            self.serial_ptt_active = True
+          elif self.serial_ptt_active:
+            ptt = False
+            self.serial_ptt_active = False
+        elif self.file_play_state == 2 and QS.get_params("serial_ptt"):
+          self.TurnOffFilePlay()
+          ptt = True
+          self.serial_ptt_active = True
+        if self.remote_control_head and old != self.serial_ptt_active:
+          Hardware.RemoteCtlSend('PTT;%d\n' % self.serial_ptt_active)
       if self.useVOX:
         if self.file_play_state == 0:
           if QS.is_vox():
             ptt = True
-          else:
+            self.vox_ptt_active = True
+          elif self.vox_ptt_active:
             ptt = False
+            self.vox_ptt_active = False
         elif self.file_play_state == 2 and QS.is_vox():			# VOX tripped between file play repeats
           self.TurnOffFilePlay()
           ptt = True
+          self.vox_ptt_active = True
       if self.file_play_state == 2 and QS.is_key_down():			# hardware key between file play repeats
         if time.time() > self.file_play_timer - self.file_play_repeat + 0.25:	# pause to allow key state to change
           self.TurnOffFilePlay()
