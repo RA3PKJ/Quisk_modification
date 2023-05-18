@@ -1,3 +1,13 @@
+Quisk Version 4.2.19  May 2023
+==============================
+I added the Flex ZZAR command to the Hamlib interface. This controls the AGC level from -20 to +120 dB.
+The levels are mapped to the Quisk AGC level 0.0 to 1.0. The Flex AGC operates as a limiter but the
+Quisk AGC is a compressor, so you will need to experiment to find the correct ZZAR command. Also the
+Quisk AGC is never off. The off setting just changes the AGC level. So to turn AGC off send another ZZAR
+command, perhaps "ZZAR+120;".
+
+When using the AC2YD remote feature, the serial port PTT now works correctly.
+
 Quisk Version 4.2.18  April 2023
 ================================
 I added some small changes to the I2C messages sent to the Hermes Lite 2 IO board.
