@@ -3079,6 +3079,8 @@ static PyObject * get_params(PyObject * self, PyObject * args)
 	}
 	if (strcmp(name, "rx_udp_started") == 0)
 		return PyInt_FromLong(quisk_rx_udp_started);
+	if (strcmp(name, "serial_ptt") == 0)
+		return PyInt_FromLong(quisk_serial_ptt);	
 	Py_INCREF (Py_None);
 	return Py_None;
 }
