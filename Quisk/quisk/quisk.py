@@ -1871,10 +1871,13 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+40', SmtrX + 203, 10)
       dc.DrawText('+50', SmtrX + 228, 10)
       dc.DrawText('+60', SmtrX + 253, 10)
-      # --------------------------------------------- добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
+      # ------------------------------------------------------ добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
       dc.SetTextForeground('yellow')
       dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
-      dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+      if application.freedv_flag: # -------------------------------- не показывать строку напряжения аудио
+        pass
+      else:
+        dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
@@ -3895,6 +3898,11 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
+
+    # ------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
+    self.snr = 0.0
+    self.freedv_flag = False # -------------- флаг моды freedv
+
     if hasattr(Hardware, "OnChangeRxTx"):
       self.want_RxTx = True
     else:
@@ -5494,7 +5502,13 @@ class App(wx.App):
     #t = '%13.2f' % (QS.measure_frequency(-1) + vfo)
     #t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
     #self.smeter.SetLabel(t)
-# ----------------------------------------------------------------- взамен --------------------- частота в малое окошко --- 9 RA3PKJ
+# ----------------------------------------------------------------- взамен --------------- частота и SNR в малое окошко --- 9 RA3PKJ
+    if self.mode in ('FDV-U', 'FDV-L'):
+      t = " SNR %3.0f" % self.snr #показать SNR freeDV
+      self.smeter.SetLabel(t)
+      self.freedv_flag = True
+      return
+    else: self.freedv_flag = False
     self.ab = self.newsplitButton.GetValue() #проверить нажата ли кнопка Split
     if self.ab == True:#если кнопка Split нажата
       t = '%13.2f' % (self.txFreq + vfo)
@@ -5514,18 +5528,28 @@ class App(wx.App):
     self.smeter.SetLabel(t)
     self.freqDisplay.Display(self.txFreq + self.VFO)
 
+# ------------------------------------------------------------------ удалено ------------- частота и SNR в малое окошко ------------- 9 RA3PKJ
+  #def NewDVmeter(self):
+    #if conf.add_freedv_button:
+      #snr = QS.freedv_get_snr()
+      #txt = QS.freedv_get_rx_char()
+      #self.graph.ScrollMsg(txt)
+      #self.waterfall.ScrollMsg(txt)
+    #else:
+      #snr = 0.0
+    #t = "  SNR %3.0f" % snr
+    #self.smeter.SetLabel(t)
+# ------------------------------------------------------------------- взамен ------------- частота и SNR в малое окошко ------------- 9 RA3PKJ
   def NewDVmeter(self):
     if conf.add_freedv_button:
-      snr = QS.freedv_get_snr()
+      self.snr = QS.freedv_get_snr()
       txt = QS.freedv_get_rx_char()
       self.graph.ScrollMsg(txt)
       self.waterfall.ScrollMsg(txt)
     else:
-      snr = 0.0
-    t = "  SNR %3.0f" % snr
-    self.smeter.SetLabel(t)
+      self.snr = 0.0
 
-# -------------------------------- удалена функция -------------------------------------------- расчёт S-метра -------------- 6 RA3PKJ
+# -------------------------------- удалена функция ----------------------------------------------------- расчёт S-метра -------------- 6 RA3PKJ
 ##  def NewSmeter(self):
 ##    self.smeter_db_count += 1		# count for average
 ##    x = QS.get_smeter()
@@ -5549,9 +5573,9 @@ class App(wx.App):
 ##    else:
 ##      t = "  S%.0f  %7.2f dB" % (s, self.smeter_db)
 ##    self.smeter.SetLabel(t)
-# ---------------------------------- добавлена взамен функция ------------ changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
+# ---------------------------------- добавлена взамен функция ------------------- changed by rolin ------ расчёт S-метра ------------- 6 RA3PKJ
   def NewSmeter(self):
-    # --------------------------------------------- добавлено ------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+    # --------------------------------------------- добавлено -------------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
     if self.remote_control_head: # --------- Client (пользователь)
       i = 0
       ii = 0
@@ -7126,15 +7150,12 @@ class App(wx.App):
           #self.MeasureFrequency()	# display measured frequency
         #else:
           #self.MeasureAudioVoltage()		# display audio voltage
-
         # ----------------------------------------------------------------------- взамен ------------- вынос из малого окошка ------------- 8 RA3PKJ
         if self.mode in ('FDV-U', 'FDV-L'):
-          #self.NewDVmeter()
-          pass # -------------------------------------------------------------------------------------------- временно ---------bigon
+          self.NewDVmeter() # ------------------------------- оставить FreeDV SNR в малом окошке
         self.NewSmeter()
         self.MeasureFrequency()     #функция измерения частоты
         self.MeasureAudioVoltage()    #функция измерения напряжения
-
 
         if self.screen == self.config_screen:
           pass
