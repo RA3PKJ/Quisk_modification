@@ -1878,6 +1878,9 @@ class GraphDisplay(wx.Window):
         pass
       else:
         dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+      if conf.use_fast_sound:
+        dc.SetTextForeground('#999999')
+        dc.DrawText('fast sound enable', SmtrX-5, 60) #показать строку напряжения аудио
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
