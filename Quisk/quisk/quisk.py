@@ -1750,6 +1750,38 @@ class ConfigFavorites(wx.grid.Grid):
     if self.changed:
       self.WriteOut()
 
+# ------------------------------------------------------ добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
+class TopScreen(wx.Window):
+  def __init__(self, parent, width, height):
+    wx.Window.__init__(self, parent,
+       pos = (0, 0),
+       size = (width, height),
+       style = wx.NO_BORDER)
+    self.width = width
+    self.SetBackgroundColour('#103640') # --- цвет фона
+    self.Bind(wx.EVT_PAINT, self.OnPaint)
+  def OnPaint(self, event):
+    dc = wx.PaintDC(self)
+    SmtrX = 30 # X-position
+    SmtrY = 2  # Y-position
+
+    dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    dc.SetTextForeground('white')
+    dc.DrawText('QUISK', 5, SmtrY - 1)
+
+    # --- строка сообщения о включении "fast sound"
+    dc.SetFont(wx.Font(9, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    if conf.use_fast_sound:
+      dc.SetTextForeground('#00FF00')
+      dc.DrawText('Fast sound ON', SmtrX + 30, SmtrY)
+    else:
+      dc.SetTextForeground('#777777')
+      dc.DrawText('Fast sound OFF', SmtrX + 30, SmtrY)
+
+    # --- разделительная линия
+    dc.SetPen(wx.Pen('#888888', 1))
+    dc.DrawLine(0, SmtrY + 17, self.width, SmtrY + 17)
+
 class GraphDisplay(wx.Window):
   """Display the FFT graph within the graph screen."""
   def __init__(self, parent, x, y, graph_width, height, chary):
@@ -1763,7 +1795,7 @@ class GraphDisplay(wx.Window):
     self.display_text = ""
     self.line = [(0, 0), (1,1)]		# initial fake graph data
     #self.SetBackgroundColour(conf.color_graph)
-    self.SetBackgroundColour('#06354F') # -------------- взамен ----- цвет фона на панораме --------- оформление панорамы ------- 4 RA3PKJ
+    self.SetBackgroundColour('#06354F') # -------------- взамен -------------------- цвет фона на панораме --------- оформление панорамы ------- 4 RA3PKJ
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, parent.OnLeftDown)
     self.Bind(wx.EVT_RIGHT_DOWN, parent.OnRightDown)
@@ -1783,9 +1815,9 @@ class GraphDisplay(wx.Window):
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ---- цвет шторки -------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ------------------- цвет шторки -------- оформление панорамы ----------- 4 RA3PKJ
     #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
-    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----- взамен ----- цвет горизонтальных линий на панораме ----- оформление панорамы --- 4 RA3PKJ
+    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----------- взамен ----- цвет горизонтальных линий на панораме ----- оформление панорамы --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
@@ -1794,7 +1826,7 @@ class GraphDisplay(wx.Window):
     else:
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
-    #-------------------------------------------------- добавлено ----------- колесо мыши ---------------------------- 1 RA3PKJ
+    #----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
     #if sys.platform == 'win32':
     if sys.platform.lower().startswith('win'):
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
@@ -1810,7 +1842,7 @@ class GraphDisplay(wx.Window):
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
 
-    # --------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
+    # ---------------------------------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
     bmp = wx.Image('Pano_2.jpg', wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
     bmp_ = wx.Bitmap(bmp)
     dc.DrawBitmap(bmp_, 0, 0)
@@ -1820,7 +1852,7 @@ class GraphDisplay(wx.Window):
     for y in self.parent.y_ticks:
       dc.DrawLine(0, y, self.graph_width, y)	# y line
 
-    dc.SetPen(wx.Pen('white', 1)) # ---- перенесено и изменено ---- цвет шумовой дорожки ----- оформление панорамы ----- 4 RA3PKJ
+    dc.SetPen(wx.Pen('white', 1)) # ---- перенесено и изменено ----------------------------- цвет шумовой дорожки ----- оформление панорамы ----- 4 RA3PKJ
     dc.DrawLines(self.line)
 
     if self.display_text:
@@ -1829,8 +1861,7 @@ class GraphDisplay(wx.Window):
       dc.SetTextForeground(conf.color_graph_msg_fg)
       dc.SetBackgroundMode(wx.SOLID)
       dc.DrawText(self.display_text, 0, 0)
-
-    # --------------------- добавлено ----------------------------------------------- S-метр на панораме --------------- 7 RA3PKJ
+    # --------------------- добавлено ------------------------------------------------------------------------ S-метр на панораме --------------- 7 RA3PKJ
     if self.display_text == "":
     # красный указатель S-метра на панораме
       SmtrX = 30 # X-position (изначальная позиция S-метра по оси Х)
@@ -1871,16 +1902,13 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+40', SmtrX + 203, 10)
       dc.DrawText('+50', SmtrX + 228, 10)
       dc.DrawText('+60', SmtrX + 253, 10)
-      # ------------------------------------------------------ добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
+      # ---------------------------------------------------------------------- добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
       dc.SetTextForeground('yellow')
       dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
       if application.freedv_flag: # -------------------------------- не показывать строку напряжения аудио
         pass
       else:
         dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
-      if conf.use_fast_sound:
-        dc.SetTextForeground('#999999')
-        dc.DrawText('fast sound enable', SmtrX-5, 60) #показать строку напряжения аудио
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
@@ -3628,6 +3656,7 @@ class QMainFrame(wx.Frame):
       debugshell = ShellFrame(parent=self)
       debugshell.Show()
       debugshell.shell.write("hw=quisk.application.Hardware")
+
   def OnBtnClose(self, event):
     application.OnBtnClose(event)
     self.Destroy()
@@ -4192,17 +4221,20 @@ class App(wx.App):
     if self.rate_audio_fft:
       self.audio_fft_screen = AudioFFTScreen(frame, self.data_width, self.graph_width, self.rate_audio_fft)
       self.audio_fft_screen.Hide()
-
     # ------------------------------------------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
     #self.help_screen = HelpScreen(frame, width, self.screen_height // 10)
     #self.help_screen.Hide()
+
+    top_screen = TopScreen(frame, width, 23) # --------------- добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
 
     self.station_screen = StationScreen(frame, width, conf.station_display_lines)
     self.station_screen.Hide()
     # Make a vertical box to hold all the screens and the bottom box
     vertBox = self.vertBox = wx.BoxSizer(wx.VERTICAL)
     frame.SetSizer(vertBox)
+
     # Add the screens
+    vertBox.Add(top_screen) # --------------------------------- добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
     vertBox.Add(self.config_screen, 1, wx.EXPAND)
     vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.multi_rx_screen, 1)
