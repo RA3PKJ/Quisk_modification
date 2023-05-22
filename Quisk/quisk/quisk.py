@@ -1902,10 +1902,16 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+40', SmtrX + 203, 10)
       dc.DrawText('+50', SmtrX + 228, 10)
       dc.DrawText('+60', SmtrX + 253, 10)
+
       # ---------------------------------------------------------------------- добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
       dc.SetTextForeground('yellow')
       dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
-      if application.freedv_flag: # -------------------------------- не показывать строку напряжения аудио
+      if application.bandscope_flag:
+        d = QS.get_hermes_adc()	# ---------- ADC level from bandscope, 0.0 to 1.0
+        if d < 1E-10:
+          d = 1E-10
+        dc.DrawText("ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d)),  SmtrX+450, 10)
+      elif application.freedv_flag:
         pass
       else:
         dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
@@ -3931,9 +3937,11 @@ class App(wx.App):
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
 
-    # ------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
+    # -------------------------------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
+    # -------------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
     self.snr = 0.0
-    self.freedv_flag = False # -------------- флаг моды freedv
+    self.freedv_flag = False # --- флаг моды freedv
+    self.bandscope_flag = False
 
     if hasattr(Hardware, "OnChangeRxTx"):
       self.want_RxTx = True
@@ -5843,9 +5851,11 @@ class App(wx.App):
     self.screen.Hide()
     self.station_screen.Hide()
     if name == 'Config':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.config_screen.FinishPages()
       self.screen = self.config_screen
     elif name[0:5] == 'Graph':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.multi_rx_screen
       self.screen.ChangeRxZero(True)
       self.screen.SetTxFreq(self.txFreq, self.rxFreq)
@@ -5853,6 +5863,7 @@ class App(wx.App):
       self.screen.PeakHold(name)
       self.station_screen.Show()
     elif name[0:5] == 'WFall':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.multi_rx_screen
       self.screen.ChangeRxZero(False)
       self.screen.SetTxFreq(self.txFreq, self.rxFreq)
@@ -5861,37 +5872,41 @@ class App(wx.App):
       sash = self.screen.GetSashPosition()
       self.station_screen.Show()
     elif name == 'Scope':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       if win.direction:				# Another push on the same button
         self.scope.running = 1 - self.scope.running		# Toggle run state
       else:				# Initial push of button
         self.scope.running = 1
       self.screen = self.scope
     elif name == 'RX Filter':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.filter_screen
       self.freqDisplay.Display(self.screen.txFreq)
       self.screen.NewFilter()
     elif name == 'Bscope':
+      self.bandscope_flag = True # -------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.bandscope_screen
       self.screen.SetTxFreq(self.txFreq, self.rxFreq)
     elif name == 'Audio FFT':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.audio_fft_screen
       self.freqDisplay.Display(self.screen.txFreq)
-
-    # ------------------------------------------------------------------------------------ удалено ------------- кнопка Hardware --------- 15 RA3PKJ
+    # -------------------------------------------------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     #elif name == 'Help':
       #self.screen = self.help_screen
-    # ----------------------------------------------------------------------------------- добавлено ------------ кнопка Hardware --------- 15 RA3PKJ
+    # ------------------------------------------------------------------------- добавлено ------------ кнопка Hardware --------- 15 RA3PKJ
     elif name == 'Hardware':
+      self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.radios_screen.FinishPages()
       self.screen = self.radios_screen
-
 
     self.screen.Show()
     self.vertBox.Layout()	# This destroys the initialized sash position!
     self.sliderYs.SetValue(self.screen.y_scale)
     self.sliderYz.SetValue(self.screen.y_zero)
-    #self.sliderZo.SetValue(self.screen.zoom_control) # ----------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
+    #self.sliderZo.SetValue(self.screen.zoom_control) # ------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     if name[0:5] == 'WFall':
+      self.bandscope_flag = False # -------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen.SetSashPosition(sash)
   def OnBtnFileRecord(self, event):
     record = event.GetEventObject().GetValue()
@@ -7169,13 +7184,12 @@ class App(wx.App):
         #if self.remote_control_head:
           #self.smeter.SetLabel(Hardware.GetSmeter())
 
-        elif self.screen == self.bandscope_screen:
-          d = QS.get_hermes_adc()	# ADC level from bandscope, 0.0 to 1.0
-          if d < 1E-10:
-            d = 1E-10
-          self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d))) # --- что с этим делать? ---------------bigon
-
-        # ----------------------------------------------------------------------- удалено ------------ вынос из малого окошка ------------- 8 RA3PKJ
+        # --------------------------------------------------------------- удалено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
+        #elif self.screen == self.bandscope_screen:
+          #d = QS.get_hermes_adc()	# ADC level from bandscope, 0.0 to 1.0
+          #if d < 1E-10:
+            #d = 1E-10
+          #self.smeter.SetLabel(" ADC %.0f%% %.0fdB" % (d * 100.0, 20 * math.log10(d)))
         #elif self.smeter_usage == "smeter":		# update the S-meter
           #if self.mode in ('FDV-U', 'FDV-L'):
             #self.NewDVmeter()
