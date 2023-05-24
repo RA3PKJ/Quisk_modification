@@ -1,9 +1,9 @@
-Сборка DLL (файл _quisk.pyd) для 32-битного Quisk с использованием MSYS2 (для сборки требуется 64-битная Windows 8.1 или выше).
+Сборка  _quisk.pyd для 32-битного Quisk с использованием MSYS2 (для сборки требуется 64-битная Windows 8.1 или выше).
 
 
 -----------------------------Среда сборки---------------------------------
 
-1) Скачать 32-битный компилятор GCC (среда MSVCRT) по прямой ссылке:
+1) Скачать 32-битный компилятор GCC по прямой ссылке (там выбрать среду MSVCRT):
 https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-10.0.0-msvcrt-r4/winlibs-i686-posix-dwarf-gcc-12.2.0-mingw-w64msvcrt-10.0.0-r4.zip
 или выбрать самостоятельно на странице https://winlibs.com/
 Распаковать в корень диска C:\. Появится папка C:\mingw32.
@@ -36,22 +36,23 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-1
 - папка python39_32 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-395/):
     - \include (взята целиком из исходника Python-3.9.5.tgz, пункт Gzipped source tarball на указанной выше странице). 
     - \PC (взята целиком аналогично). Примечание. В файле pyconfig.h закомментирована строчка //#define MS_WIN32 /* only support win32 and greater. */ 
-    - \libs (взята python39.dll из python-3.9.5-embed-win32.zip, пункт Windows embeddable package (32-bit) на указанной выше странице).
+    - \libs (там один файл python39.dll, взятый из python-3.9.5-embed-win32.zip, пункт Windows embeddable package (32-bit) на указанной выше странице).
 - папка quisk.
 
 7) В папке quisk в свою очередь должны присутствовать:
-- папка build, в которой должна быть папка temp.win32-3.9, а в ней папка Release. 
 - файл сценария сборки build_quiskpyd .
+- папка build, в которой должна быть папка temp.win32-3.9, а в ней папка Release. 
 
 
 ---------------------------------Сборка--------------------------------------
 
-8)Перед сборкой закомментировать в файле sound.c строчку  вот так: //struct sound_conf * pt_quisk_sound_state = &quisk_sound_state;//--------------- dublicate ------------------- 2 RA3PKJ
+8) Перед сборкой закомментировать в файле sound.c (находится в папке quisk) строчку  вот так:  
+//struct sound_conf * pt_quisk_sound_state = &quisk_sound_state;//--------------- dublicate ------------------- 2 RA3PKJ
 
 9) Старый файл _quisk.pyd переименуйте в _quisk_old.pyd  
 Вдруг понадобится.
 
-10) Запустить C:\msys64\mingw32.exe (не путать с msys2.exe, в консоли должна быть надпись MINGW32 фиолетовым цветом).
+10) Запустить C:\msys64\mingw32.exe (не путать с msys2.exe, отличие - в консоли должна быть надпись MINGW32 фиолетовым цветом).
 Вставить команду: cd /C/Quisk_modification-main/quisk/ (написание пути как в Linux)
 Вставить команду: ./build_quiskpyd
 Дождаться сборки _quisk.pyd.
