@@ -3937,6 +3937,8 @@ class App(wx.App):
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
 
+    self.offset = 300 # --------------------------- 29 RA3PKJ
+
     # -------------------------------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
     # -------------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
     self.snr = 0.0
@@ -5203,29 +5205,23 @@ class App(wx.App):
     b_tmprec = szr
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
-
-##    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-##    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-##    b_Empty0 = szr
-##    self.Empty0 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-##    szr.Add(self.Empty0, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-##    self.Empty0.SetLabel(" ")
-##    self.Empty0.Refresh()
-    # --------------------------------------------------------------- Palette  button ---------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # --------------------------------------------------------------- Palette  button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
     self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
-
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------- кнопка SSB Low Freq ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty0 = szr
-    self.Empty0 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty0, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty0.SetLabel(" ")
-    self.Empty0.Refresh()
+    b_ssb_offset = szr
+    self.ssb_low_freq = ('SSB Low300Hz','SSB Low250Hz','SSB Low200Hz','SSB Low150Hz','SSB Low100Hz','SSB Low50Hz','SSB Low0Hz')
+    self.ssb_offset = QuiskCycleCheckbutton(frame, self.OnBtnOffset, self.ssb_low_freq )
+    #self.ssb_offset = QuiskCheckbutton(frame,  self.OnBtnOffset, "SSB Low Freq")
+    szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    #self.ssb_offset.SetLabel("SSB Low Freq")
+    self.ssb_offset.Refresh()
+
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Empty1 = szr
@@ -5481,7 +5477,7 @@ class App(wx.App):
       #gbs.Add(b, (1, button_start_col + col), (1, 1), flag=flag)
       #col += 1
 
-    gbs.Add(b_Empty0,     (6, button_start_col), (1, 2), flag=flag)      # пустая кнопка
+    gbs.Add(b_ssb_offset,     (6, button_start_col), (1, 2), flag=flag)      # пустая кнопка
     gbs.Add(b_Empty1,     (6, button_start_col + 2), (1, 2), flag=flag)  # пустая кнопка
     gbs.Add(b_Empty2,     (6, button_start_col + 4), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty3,     (6, button_start_col + 6), (1, 2), flag=flag) # пустая кнопка
@@ -5780,7 +5776,7 @@ class App(wx.App):
     if mode in ('CWU', 'CWL'):
       center = max(conf.cwTone, bandwidth // 2)
     elif mode in ('LSB', 'USB'):
-      center = 300 + bandwidth // 2
+      center = self.offset + bandwidth // 2 # ----------------- 29 RA3PKJ
     elif mode in ('AM',):
       center = 0
     elif mode in ('FM',):
@@ -6709,10 +6705,92 @@ class App(wx.App):
     self.vertBox.Layout()    # This destroys the initialized sash position!
   def OnBtnFavoritesNew(self, event):
     self.config_screen.favorites.AddNewFavorite()
+
     self.OnBtnFavoritesShow(event)
+  # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
+  # --------------------------------------------------------------------------------- добавлено ----------------- SSB Offset ---- 29 RA3PKJ
+  def OnBtnOffset(self, event):
+    ssb_offset_label = self.ssb_offset.GetLabel()
+    try:
+      if ssb_offset_label == 'SSB Low300Hz':
+        self.offset = 300
+      elif ssb_offset_label == 'SSB Low250Hz':
+        self.offset = 250
+      elif ssb_offset_label == 'SSB Low200Hz':
+        self.offset = 200
+      elif ssb_offset_label == 'SSB Low150Hz':
+        self.offset = 150
+      elif ssb_offset_label == 'SSB Low100Hz':
+        self.offset = 100
+      elif ssb_offset_label == 'SSB Low50Hz':
+        self.offset = 50
+      elif ssb_offset_label == 'SSB Low0Hz':
+        self.offset = 0
+      else: self.offset = 300
+    except:
+      self.offset = 300
+
+    band = self.lastBand	# former band in use
+    try:
+      f1, f2 = conf.BandEdge[band]
+      if f1 <= self.VFO + self.txFreq <= f2:
+        self.bandState[band] = (self.VFO, self.txFreq, self.mode)
+    except KeyError:
+      pass
+    #btn = event.GetEventObject()
+    #band = btn.GetLabel()	# new band
+    #self.lastBand = band
+    try:
+      vfo, tune, mode = self.bandState[band]
+    except KeyError:
+      vfo, tune, mode = (1000000, 0, 'LSB')
+    if band == '60':
+      if self.mode in ('CWL', 'CWU'):
+        freq60 = []
+        for f in conf.freq60:
+          freq60.append(f + 1500)
+      else:
+        freq60 = conf.freq60
+      freq = vfo + tune
+      if btn.direction:
+        vfo = self.VFO
+        if 5100000 < vfo < 5600000:
+          if btn.direction > 0:		# Move up
+            for f in freq60:
+              if f > vfo + self.txFreq:
+                freq = f
+                break
+            else:
+              freq = freq60[0]
+          else:			# move down
+            l = list(freq60)
+            l.reverse()
+            for f in l:
+              if f < vfo + self.txFreq:
+                freq = f
+                break
+              else:
+                freq = freq60[-1]
+      half = self.sample_rate // 2 * self.graph_width // self.data_width
+      while freq - vfo <= -half + 1000:
+        vfo -= 10000
+      while freq - vfo >= +half - 5000:
+        vfo += 10000
+      tune = freq - vfo
+    elif band == 'Time':
+      vfo, tune, mode = conf.bandTime[btn.index]
+    self.modeButns.SetLabel(mode, True)
+    self.txFreq = self.VFO = -1		# demand change
+    self.ChangeBand(band)
+    self.ChangeHwFrequency(tune, vfo, 'BtnBand', band=band)
+    if band in ('Time', 'Audio') or conf.tx_level.get(band, 127) == 0:
+      self.pttButton.Enable(False)
+    else:
+      self.pttButton.Enable(True)
+
 
   # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
-  def OnBtnEmpty(self, event): # ------------ для пустых кнопок
+  def OnBtnEmpty(self, event):
     pass
   # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
   def OnBtnHelp(self, event): # --------- обработчик нажатия кнопки Help
