@@ -1988,7 +1988,7 @@ class GraphScreen(wx.Window):
     self.filter_center = 0
     self.ritFreq = 0				# receive incremental tuning frequency offset
     self.mouse_x = 0
-    self.WheelMod = conf.mouse_wheelmod		# Round frequency when using mouse wheel
+    self.WheelMod = conf.mouse_wheelmod		# Round frequency when using mouse wheel # ----------что делать?-- bigon
     self.txFreq = 0
     self.sample_rate = application.sample_rate
     self.zoom = 1.0
@@ -2419,7 +2419,7 @@ class GraphScreen(wx.Window):
     if conf.freq_spacing:
       wm = conf.freq_spacing
     else:
-      wm = self.WheelMod		# Round frequency when using mouse wheel
+      wm = self.WheelMod		# Round frequency when using mouse wheel # --------что делать?----bigon
     mouse_x, mouse_y = self.GetMousePosition(event)
     x = mouse_x - self.originX
 
@@ -3936,8 +3936,7 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
-
-    self.offset = 300 # --------------------------- 29 RA3PKJ
+    self.offset = 300 # -------------------------------- добавлено --------------- --- SSB Offset ------------------------- 29 RA3PKJ
 
     # -------------------------------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
     # -------------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
@@ -5163,7 +5162,7 @@ class App(wx.App):
 ##        self.idName2Button[button.idName] = self.screenBtnGroup
     self.screenBtnGroup.idName = "screenBtnGroup"
     # Top row -----------------
-    # Band down button
+    # ---------------------------------------------------------------------------------------------- Band down button
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_bandupdown = szr
     b = QuiskRepeatbutton(frame, self.OnBtnDownBand, conf.Xbtn_text_range_dn,
@@ -5171,13 +5170,13 @@ class App(wx.App):
     b.idName = "Band " + b.idName
     self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    # Band up button
+    # ---------------------------------------------------------------------------------------------- Band up button
     b = QuiskRepeatbutton(frame, self.OnBtnUpBand, conf.Xbtn_text_range_up,
              self.OnBtnUpDnBandDone, use_right=True)
     b.idName = "Band " + b.idName
     self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
-    # Memory buttons
+    # --------------------------------------------------------------------------------------------- Memory buttons
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_membtn = szr
     b = QuiskPushbutton(frame, self.OnBtnMemSave, conf.Xbtn_text_mem_add)
@@ -5189,18 +5188,18 @@ class App(wx.App):
     b = self.memDeleteButton = QuiskPushbutton(frame, self.OnBtnMemDelete, conf.Xbtn_text_mem_del)
     b.Enable(False)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
-    # Favorites buttons
+    # ------------------------------------------------------------------------------------------- Favorites buttons
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_fav = szr
     b = self.StationNewButton = QuiskPushbutton(frame, self.OnBtnFavoritesNew, conf.Xbtn_text_fav_add)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     b = self.StationNewButton = QuiskPushbutton(frame, self.OnBtnFavoritesShow, conf.Xbtn_text_fav_recall)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
-    # Add another receiver
+    # ------------------------------------------------------------------------------------------- Add another receiver
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_addrx = szr
     szr.Add(btn_addrx, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    # Temporary play and record
+    # ------------------------------------------------------------------------------------------ Temporary play and record
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_tmprec = szr
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
@@ -5212,15 +5211,17 @@ class App(wx.App):
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
-    # -------------------------------------------------------------- кнопка SSB Low Freq ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+
+    # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено --------------- SSB Offset ---- 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
     self.ssb_low_freq = ('SSB Low300Hz','SSB Low250Hz','SSB Low200Hz','SSB Low150Hz','SSB Low100Hz','SSB Low50Hz','SSB Low0Hz')
     self.ssb_offset = QuiskCycleCheckbutton(frame, self.OnBtnOffset, self.ssb_low_freq )
-    #self.ssb_offset = QuiskCheckbutton(frame,  self.OnBtnOffset, "SSB Low Freq")
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    #self.ssb_offset.SetLabel("SSB Low Freq")
-    self.ssb_offset.Refresh()
+    self.ssb_offset.Enable(False)
+    if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
+      self.ssb_offset.Enable(True)
 
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -5287,7 +5288,7 @@ class App(wx.App):
     self.Empty9.Refresh()
 
 
-    # ------------------------------------------------------------------- Split button ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ------------------------------------------------------------------------ Split button ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_newsplit = szr #дать своё имя образцу кнопки
     self.newsplitButton = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
@@ -5295,7 +5296,7 @@ class App(wx.App):
     szr.Add(self.newsplitButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.newsplitButton.SetLabel("Split")
     self.newsplitButton.Refresh()
-    # --------------------------------------------------------------------A<>B button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------------------A<>B button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_vfoAB = szr
     self.vfoABButton = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
@@ -5303,14 +5304,14 @@ class App(wx.App):
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
     self.vfoABButton.Refresh()
-    # ------------------------------------------------------------------- кнопка Help -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ------------------------------------------------------------------------ кнопка Help -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Help = szr
     self.Help = QuiskPushbutton(frame, self.OnBtnHelp, "Help")
     szr.Add(self.Help, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.Help.SetLabel("Help")
     self.Help.Refresh()
-    # ---------------------------------------------------------------- Lock TX VFO button ---- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # --------------------------------------------------------------------- Lock TX VFO button ---- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
     self.lockVFOButton = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
@@ -5319,7 +5320,7 @@ class App(wx.App):
     self.lockVFOButton.SetLabel("Lock")
     self.lockVFOButton.Refresh()
 
-    # --------------------------------------------------------------------- RIT button
+    # --------------------------------------------------------------------------------------- RIT button
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_rit = szr
     self.ritButton = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
@@ -5331,8 +5332,8 @@ class App(wx.App):
     bw, bh = b_mute.GetMinSize()
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 15 // 10)
     #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------------------ удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
-    # On/Off button
-    #if conf.button_layout == 'Large screen':# -------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+    # --------------------------------------------------------------------------------------- On/Off button
+    #if conf.button_layout == 'Large screen':# --------------------------------------- удалено --------- удаление маленького экрана --------- 16 RA3PKJ
     b_onoff = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77DD77')
     b_onoff.SetValue(True, do_cmd=False)
     h = b_freqdisp.height
@@ -5445,7 +5446,7 @@ class App(wx.App):
       self.idName2Button[b.idName] = b
       col += 2
 
-    #ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
+    # ------------------------------------- ID кнопки, (строка, столбец), (высота кнопки, длина кнопки), макс. возможная длина кнопки
     gbs.Add(b_onoff,      (0, button_start_col), (1, 1),
        flag=flag | wx.TOP | wx.BOTTOM, border=self.freqDisplay.border)
     self.idName2Button[b_onoff.idName] = b_onoff
@@ -5549,6 +5550,8 @@ class App(wx.App):
 ##      for i in range(button_start_col, button_start_col + 12):
 ##        gbs.AddGrowableCol(i,1)
     self.button_start_col = button_start_col
+
+
   def MeasureAudioVoltage(self):
     # --------------------------------------------- добавлено -------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
     if self.remote_control_head: # --------- Client (пользователь)
@@ -5776,7 +5779,8 @@ class App(wx.App):
     if mode in ('CWU', 'CWL'):
       center = max(conf.cwTone, bandwidth // 2)
     elif mode in ('LSB', 'USB'):
-      center = self.offset + bandwidth // 2 # ----------------- 29 RA3PKJ
+      #center = 300 + bandwidth // 2 # ----------------------------------- удалено ----------------- SSB Offset -------------- 29 RA3PKJ
+      center = self.offset + bandwidth // 2 # ---------------------------- взамен ------------------ SSB Offset -------------- 29 RA3PKJ
     elif mode in ('AM',):
       center = 0
     elif mode in ('FM',):
@@ -6581,6 +6585,13 @@ class App(wx.App):
       self.ChangeHwFrequency(self.txFreq, self.VFO, 'FreqEntry', rx_freq=tune)
   def OnBtnMode(self, event):
     mode = self.modeButns.GetLabel()
+
+    # ---------------------------------------------------------------- добавлено ---------------------- SSB Offset ----------------- 29 RA3PKJ
+    if mode in ('LSB','USB'):
+      self.ssb_offset.Enable(True) #кнопка смещения полосы SSB
+    else:
+      self.ssb_offset.Enable(False)
+
     delta = 0	# Change frequency so switch between CW and SSB keeps tone constant
     if self.mode == 'USB':
       if mode in ('CWL', 'CWU'):
@@ -6705,10 +6716,9 @@ class App(wx.App):
     self.vertBox.Layout()    # This destroys the initialized sash position!
   def OnBtnFavoritesNew(self, event):
     self.config_screen.favorites.AddNewFavorite()
-
     self.OnBtnFavoritesShow(event)
-  # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
-  # --------------------------------------------------------------------------------- добавлено ----------------- SSB Offset ---- 29 RA3PKJ
+
+  # --------------------------------------------------------------------------------- добавлено ----------------- SSB Offset ------- 29 RA3PKJ
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
     try:
@@ -6716,6 +6726,8 @@ class App(wx.App):
         self.offset = 300
       elif ssb_offset_label == 'SSB Low250Hz':
         self.offset = 250
+        self.WheelMod = 10 # --------------------- bigon
+        GraphScreen(self, self.WheelMod)# --------------------- bigon
       elif ssb_offset_label == 'SSB Low200Hz':
         self.offset = 200
       elif ssb_offset_label == 'SSB Low150Hz':
@@ -6730,6 +6742,7 @@ class App(wx.App):
     except:
       self.offset = 300
 
+    # ---------- перерисовка фильтра (выжимка кода из функции OnBtnBand ниже)
     band = self.lastBand	# former band in use
     try:
       f1, f2 = conf.BandEdge[band]
@@ -6737,40 +6750,13 @@ class App(wx.App):
         self.bandState[band] = (self.VFO, self.txFreq, self.mode)
     except KeyError:
       pass
-    #btn = event.GetEventObject()
-    #band = btn.GetLabel()	# new band
-    #self.lastBand = band
     try:
       vfo, tune, mode = self.bandState[band]
     except KeyError:
       vfo, tune, mode = (1000000, 0, 'LSB')
     if band == '60':
-      if self.mode in ('CWL', 'CWU'):
-        freq60 = []
-        for f in conf.freq60:
-          freq60.append(f + 1500)
-      else:
-        freq60 = conf.freq60
+      freq60 = conf.freq60
       freq = vfo + tune
-      if btn.direction:
-        vfo = self.VFO
-        if 5100000 < vfo < 5600000:
-          if btn.direction > 0:		# Move up
-            for f in freq60:
-              if f > vfo + self.txFreq:
-                freq = f
-                break
-            else:
-              freq = freq60[0]
-          else:			# move down
-            l = list(freq60)
-            l.reverse()
-            for f in l:
-              if f < vfo + self.txFreq:
-                freq = f
-                break
-              else:
-                freq = freq60[-1]
       half = self.sample_rate // 2 * self.graph_width // self.data_width
       while freq - vfo <= -half + 1000:
         vfo -= 10000
@@ -6783,11 +6769,6 @@ class App(wx.App):
     self.txFreq = self.VFO = -1		# demand change
     self.ChangeBand(band)
     self.ChangeHwFrequency(tune, vfo, 'BtnBand', band=band)
-    if band in ('Time', 'Audio') or conf.tx_level.get(band, 127) == 0:
-      self.pttButton.Enable(False)
-    else:
-      self.pttButton.Enable(True)
-
 
   # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
   def OnBtnEmpty(self, event):
