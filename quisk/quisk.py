@@ -1843,7 +1843,8 @@ class GraphDisplay(wx.Window):
     # Otherwise draw both an Rx and Tx tuning display.
 
     # ---------------------------------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
-    bmp = wx.Image('Pano_2.jpg', wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
+    picture_bmp = application.picture_bmp
+    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
     bmp_ = wx.Bitmap(bmp)
     dc.DrawBitmap(bmp_, 0, 0)
 
@@ -3941,6 +3942,7 @@ class App(wx.App):
     self.hermes_LNA_dB = 20
     self.offset = 300 # --- цифра условная, т.к.берётся из файла ----- добавлено --------------------- SSB Offset ------------- 29 RA3PKJ
     self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------------------ шаг перестройки ----------- 30 RA3PKJ
+    self.picture_bmp = "Pano_1.jpg" # -------------------------------- добавлено -------------- картинка на панораме ----------- 5 RA3PKJ
 
     # ---------------------------------------------------------------- добавлено ----------------- вынос из малого окошка ------ 8 RA3PKJ
     # ---------------------------------------------------------------- добавлено ----------- частота и SNR в малое окошко ------ 9 RA3PKJ
@@ -5283,13 +5285,31 @@ class App(wx.App):
       self.freq_step = 50
       self.step_btn.SetLabel("Step 50")
 
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------------- кнопка Picture ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------------- кнопка Picture ----- добавлено ------ картинка на панораме ---- 5 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty2 = szr
-    self.Empty2 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty2, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty2.SetLabel(" ")
-    self.Empty2.Refresh()
+    b_picture = szr
+    self.picture = QuiskPushbutton(frame, self.OnBtnPicture, "Picture")
+    szr.Add(self.picture, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.picture.SetLabel("Picture")
+    self.picture.Refresh()
+    try:
+      self.picture_bmp = configure.Settings[4]["Picture"]
+      if self.picture_bmp == "Pano_1.jpg":
+        self.picture.SetLabel("Picture 1")
+      elif self.picture_bmp == "Pano_2.jpg":
+        self.picture.SetLabel("Picture 2")
+      elif self.picture_bmp == "Pano_3.jpg":
+        self.picture.SetLabel("Picture 3")
+      elif self.picture_bmp == "Pano_4.jpg":
+        self.picture.SetLabel("Picture 4")
+      elif self.picture_bmp == "Pano_5.jpg":
+        self.picture.SetLabel("Picture 5")
+      elif self.picture_bmp == "Pano_6.jpg":
+        self.picture.SetLabel("Picture 6")
+    except:
+      pass
+
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Empty3 = szr
@@ -5531,9 +5551,9 @@ class App(wx.App):
       #gbs.Add(b, (1, button_start_col + col), (1, 1), flag=flag)
       #col += 1
 
-    gbs.Add(b_ssb_offset, (6, button_start_col), (1, 2), flag=flag)
+    gbs.Add(b_picture,    (6, button_start_col), (1, 2), flag=flag)
     gbs.Add(b_step,       (6, button_start_col + 2), (1, 2), flag=flag)
-    gbs.Add(b_Empty2,     (6, button_start_col + 4), (1, 2), flag=flag) # пустая кнопка
+    gbs.Add(b_ssb_offset, (6, button_start_col + 4), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty3,     (6, button_start_col + 6), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty4,     (6, button_start_col + 8), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty5,     (6, button_start_col + 10), (1, 2), flag=flag) # пустая кнопка
@@ -6770,6 +6790,33 @@ class App(wx.App):
   def OnBtnFavoritesNew(self, event):
     self.config_screen.favorites.AddNewFavorite()
     self.OnBtnFavoritesShow(event)
+
+  # -------------------------------- добавлено --------------------------------------------------------- картинка на панораме ------ 5 RA3PKJ
+  def OnBtnPicture(self, event):
+    picture_label = self.picture.GetLabel()
+    if picture_label == "Picture 1":
+      self.picture.SetLabel("Picture 2")
+      self.picture_bmp = "Pano_2.jpg"
+    elif picture_label == "Picture 2":
+      self.picture.SetLabel("Picture 3")
+      self.picture_bmp = "Pano_3.jpg"
+    elif picture_label == "Picture 3":
+      self.picture.SetLabel("Picture 4")
+      self.picture_bmp = "Pano_4.jpg"
+    elif picture_label == "Picture 4":
+      self.picture.SetLabel("Picture 5")
+      self.picture_bmp = "Pano_5.jpg"
+    elif picture_label == "Picture 5":
+      self.picture.SetLabel("Picture 6")
+      self.picture_bmp = "Pano_6.jpg"
+    elif picture_label == "Picture 6":
+      self.picture.SetLabel("Picture 1")
+      self.picture_bmp = "Pano_1.jpg"
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["Picture"] = self.picture_bmp
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
 
   # --------------------------------------------------------------------------------- добавлено ------------ шаг перестройки ------- 30 RA3PKJ
   def OnBtnStep(self, event):
