@@ -5220,9 +5220,9 @@ class App(wx.App):
     # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено --------------- SSB Offset ---- 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
-    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
+    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Lf")
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.ssb_offset.SetLabel("SSB Low")
+    self.ssb_offset.SetLabel("SSB Lf")
     self.ssb_offset.Refresh()
     self.ssb_offset.Enable(False)
     if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
@@ -5230,25 +5230,25 @@ class App(wx.App):
     try:
       self.offset = configure.Settings[4]["offset_SSB_bandwidth"]
       if self.offset == 300:
-        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
       elif self.offset == 250:
-        self.ssb_offset.SetLabel("SSB Low 250Hz")
+        self.ssb_offset.SetLabel("SSB Lf=250Hz")
       elif self.offset == 200:
-        self.ssb_offset.SetLabel("SSB Low 200Hz")
+        self.ssb_offset.SetLabel("SSB Lf=200Hz")
       elif self.offset == 150:
-        self.ssb_offset.SetLabel("SSB Low 150Hz")
+        self.ssb_offset.SetLabel("SSB Lf=150Hz")
       elif self.offset == 100:
-        self.ssb_offset.SetLabel("SSB Low 100Hz")
+        self.ssb_offset.SetLabel("SSB Lf=100Hz")
       elif self.offset == 50:
-        self.ssb_offset.SetLabel("SSB Low 50Hz")
+        self.ssb_offset.SetLabel("SSB Lf=50Hz")
       elif self.offset == 0:
-        self.ssb_offset.SetLabel("SSB Low 0Hz")
+        self.ssb_offset.SetLabel("SSB Lf=0Hz")
       else:
         self.offset = 300
-        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
     except:
       self.offset = 300
-      self.ssb_offset.SetLabel("SSB Low 300Hz")
+      self.ssb_offset.SetLabel("SSB Lf=300Hz")
 
     # -------------------------------------------------------------------- кнопка Step ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     # -------------------------------------------------------------------- кнопка Step ------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
@@ -5261,27 +5261,27 @@ class App(wx.App):
     try:
       self.freq_step = configure.Settings[4]["FrequencyStep"]
       if self.freq_step == 1:
-        self.step_btn.SetLabel("Step 1Hz")
+        self.step_btn.SetLabel("Step 1")
       elif self.freq_step == 10:
-        self.step_btn.SetLabel("Step 10Hz")
+        self.step_btn.SetLabel("Step 10")
       elif self.freq_step == 25:
-        self.step_btn.SetLabel("Step 25Hz")
+        self.step_btn.SetLabel("Step 25")
       elif self.freq_step == 50:
-        self.step_btn.SetLabel("Step 50Hz")
+        self.step_btn.SetLabel("Step 50")
       elif self.freq_step == 100:
-        self.step_btn.SetLabel("Step 100Hz")
+        self.step_btn.SetLabel("Step 100")
       elif self.freq_step == 250:
-        self.step_btn.SetLabel("Step 250Hz")
+        self.step_btn.SetLabel("Step 250")
       elif self.freq_step == 500:
-        self.step_btn.SetLabel("Step 500Hz")
+        self.step_btn.SetLabel("Step 500")
       elif self.freq_step == 1000:
         self.step_btn.SetLabel("Step 1kHz")
       else:
         self.freq_step = 50
-        self.step_btn.SetLabel("Step 50Hz")
+        self.step_btn.SetLabel("Step 50")
     except:
       self.freq_step = 50
-      self.step_btn.SetLabel("Step 50Hz")
+      self.step_btn.SetLabel("Step 50")
 
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -6775,38 +6775,38 @@ class App(wx.App):
   def OnBtnStep(self, event):
     step_label = self.step_btn.GetLabel()
     try:
-      if step_label == 'Step 1Hz':
-        self.step_btn.SetLabel("Step 10Hz")
+      if step_label == 'Step 1':
+        self.step_btn.SetLabel("Step 10")
         self.freq_step = 10
-      elif step_label == 'Step 10Hz':
-        self.step_btn.SetLabel("Step 25Hz")
+      elif step_label == 'Step 10':
+        self.step_btn.SetLabel("Step 25")
         self.freq_step = 25
-      elif step_label == 'Step 25Hz':
-        self.step_btn.SetLabel("Step 50Hz")
+      elif step_label == 'Step 25':
+        self.step_btn.SetLabel("Step 50")
         self.freq_step = 50
-      elif step_label == 'Step 50Hz':
-        self.step_btn.SetLabel("Step 100Hz")
+      elif step_label == 'Step 50':
+        self.step_btn.SetLabel("Step 100")
         self.freq_step = 100
-      elif step_label == 'Step 100Hz':
-        self.step_btn.SetLabel("Step 250Hz")
+      elif step_label == 'Step 100':
+        self.step_btn.SetLabel("Step 250")
         self.freq_step = 250
-      elif step_label == 'Step 250Hz':
-        self.step_btn.SetLabel("Step 500Hz")
+      elif step_label == 'Step 250':
+        self.step_btn.SetLabel("Step 500")
         self.freq_step = 500
-      elif step_label == 'Step 500Hz':
+      elif step_label == 'Step 500':
         self.step_btn.SetLabel("Step 1kHz")
         self.freq_step = 1000
       elif step_label == 'Step 1kHz':
-        self.step_btn.SetLabel("Step 1Hz")
+        self.step_btn.SetLabel("Step 1")
         self.freq_step = 1
       elif step_label == 'Step':
-        self.step_btn.SetLabel("Step 50Hz")
+        self.step_btn.SetLabel("Step 50")
         self.freq_step = 50
       else:
-        self.step_btn.SetLabel("Step 50Hz")
+        self.step_btn.SetLabel("Step 50")
         self.freq_step = 50
     except:
-        self.step_btn.SetLabel("Step 50Hz")
+        self.step_btn.SetLabel("Step 50")
         self.freq_step = 50
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["FrequencyStep"] = self.freq_step
@@ -6818,35 +6818,35 @@ class App(wx.App):
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
     try:
-      if ssb_offset_label == 'SSB Low 300Hz':
-        self.ssb_offset.SetLabel("SSB Low 250Hz")
+      if ssb_offset_label == 'SSB Lf=300Hz':
+        self.ssb_offset.SetLabel("SSB Lf=250Hz")
         self.offset = 250
-      elif ssb_offset_label == 'SSB Low 250Hz':
-        self.ssb_offset.SetLabel("SSB Low 200Hz")
+      elif ssb_offset_label == 'SSB Lf=250Hz':
+        self.ssb_offset.SetLabel("SSB Lf=200Hz")
         self.offset = 200
-      elif ssb_offset_label == 'SSB Low 200Hz':
-        self.ssb_offset.SetLabel("SSB Low 150Hz")
+      elif ssb_offset_label == 'SSB Lf=200Hz':
+        self.ssb_offset.SetLabel("SSB Lf=150Hz")
         self.offset = 150
-      elif ssb_offset_label == 'SSB Low 150Hz':
-        self.ssb_offset.SetLabel("SSB Low 100Hz")
+      elif ssb_offset_label == 'SSB Lf=150Hz':
+        self.ssb_offset.SetLabel("SSB Lf=100Hz")
         self.offset = 100
-      elif ssb_offset_label == 'SSB Low 100Hz':
-        self.ssb_offset.SetLabel("SSB Low 50Hz")
+      elif ssb_offset_label == 'SSB Lf=100Hz':
+        self.ssb_offset.SetLabel("SSB Lf=50Hz")
         self.offset = 50
-      elif ssb_offset_label == 'SSB Low 50Hz':
-        self.ssb_offset.SetLabel("SSB Low 0Hz")
+      elif ssb_offset_label == 'SSB Lf=50Hz':
+        self.ssb_offset.SetLabel("SSB Lf=0Hz")
         self.offset = 0
-      elif ssb_offset_label == 'SSB Low 0Hz':
-        self.ssb_offset.SetLabel("SSB Low 300Hz")
+      elif ssb_offset_label == 'SSB Lf=0Hz':
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
         self.offset = 300
-      elif ssb_offset.label == 'SSB Low':
-        self.ssb_offset.SetLabel("SSB Low 300Hz")
+      elif ssb_offset.label == 'SSB Lf':
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
         self.offset = 300
       else:
-        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
         self.offset = 300
     except:
-      self.ssb_offset.SetLabel("SSB Low 300Hz")
+      self.ssb_offset.SetLabel("SSB Lf=300Hz")
       self.offset = 300
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
