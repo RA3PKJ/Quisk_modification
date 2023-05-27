@@ -1988,7 +1988,7 @@ class GraphScreen(wx.Window):
     self.filter_center = 0
     self.ritFreq = 0				# receive incremental tuning frequency offset
     self.mouse_x = 0
-    self.WheelMod = conf.mouse_wheelmod		# Round frequency when using mouse wheel # ----------что делать?-- bigon
+    #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки ------- 30 RA3PKJ
     self.txFreq = 0
     self.sample_rate = application.sample_rate
     self.zoom = 1.0
@@ -2409,17 +2409,19 @@ class GraphScreen(wx.Window):
           self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseMotion', event=event, rx_freq=freq2)
         else:					# Mouse motion changes the transmit frequency
           self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
+
   def OnWheel(self, event):
     # ----------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
     if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
-
     if conf.freq_spacing:
       wm = conf.freq_spacing
     else:
-      wm = self.WheelMod		# Round frequency when using mouse wheel # --------что делать?----bigon
+      #wm = self.WheelMod # ----------------------------------------------------------------- удалено -------------- шаг перестройки ----------- 30 RA3PKJ
+      wm = application.freq_step # ----------------------------------------------------------- взамен -------------- шаг перестройки ----------- 30 RA3PKJ
+
     mouse_x, mouse_y = self.GetMousePosition(event)
     x = mouse_x - self.originX
 
@@ -3793,6 +3795,7 @@ class App(wx.App):
     else:
       self.local_conf = configure.Configuration(self, argv_options.AskMe, argv_options.radio)
     self.local_conf.UpdateConf()
+
     # Choose whether to use Unicode or text symbols
     for k in ('sym_stat_mem', 'sym_stat_fav', 'sym_stat_dx',
         'btn_text_range_dn', 'btn_text_range_up', 'btn_text_play', 'btn_text_rec', 'btn_text_file_rec',
@@ -3936,10 +3939,11 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
-    self.offset = 300 # -------------------------------- добавлено --------------- --- SSB Offset ------------------------- 29 RA3PKJ
+    self.offset = 300 # --- цифра условная, т.к.берётся из файла ----- добавлено --------------------- SSB Offset ------------- 29 RA3PKJ
+    self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------------------ шаг перестройки ----------- 30 RA3PKJ
 
-    # -------------------------------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
-    # -------------------------------------------------- добавлено --------------- частота и SNR в малое окошко ------------ 9 RA3PKJ
+    # ---------------------------------------------------------------- добавлено ----------------- вынос из малого окошка ------ 8 RA3PKJ
+    # ---------------------------------------------------------------- добавлено ----------- частота и SNR в малое окошко ------ 9 RA3PKJ
     self.snr = 0.0
     self.freedv_flag = False # --- флаг моды freedv
     self.bandscope_flag = False
@@ -5217,19 +5221,67 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
     self.ssb_low_freq = ('SSB Low300Hz','SSB Low250Hz','SSB Low200Hz','SSB Low150Hz','SSB Low100Hz','SSB Low50Hz','SSB Low0Hz')
-    self.ssb_offset = QuiskCycleCheckbutton(frame, self.OnBtnOffset, self.ssb_low_freq )
+    self.ssb_offset = QuiskCycleCheckbutton(frame, self.OnBtnOffset, self.ssb_low_freq)
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.ssb_offset.Enable(False)
     if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
       self.ssb_offset.Enable(True)
+    try:
+      self.offset = configure.Settings[4]["offset_SSB_bandwidth"]
+      if self.offset == 300:
+        self.ssb_offset.SetLabel("SSB Low 300Hz")
+      elif self.offset == 250:
+        self.ssb_offset.SetLabel("SSB Low 250Hz")
+      elif self.offset == 200:
+        self.ssb_offset.SetLabel("SSB Low 200Hz")
+      elif self.offset == 150:
+        self.ssb_offset.SetLabel("SSB Low 150Hz")
+      elif self.offset == 100:
+        self.ssb_offset.SetLabel("SSB Low 100Hz")
+      elif self.offset == 50:
+        self.ssb_offset.SetLabel("SSB Low 50Hz")
+      elif self.offset == 0:
+        self.ssb_offset.SetLabel("SSB Low 0Hz")
+      else:
+        self.offset = 300
+        self.ssb_offset.SetLabel("SSB Low 300Hz")
+    except:
+      self.offset = 300
+      self.ssb_offset.SetLabel("SSB Low 300Hz")
 
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------------- кнопка Step ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------------------- кнопка Step ------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty1 = szr
-    self.Empty1 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty1, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty1.SetLabel(" ")
-    self.Empty1.Refresh()
+    b_step = szr
+    self.step_btn = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    szr.Add(self.step_btn, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.step_btn.SetLabel("Step")
+    self.step_btn.Refresh()
+    try:
+      self.freq_step = configure.Settings[4]["FrequencyStep"]
+      if self.freq_step == 1:
+        self.step_btn.SetLabel("Step 1Hz")
+      elif self.freq_step == 10:
+        self.step_btn.SetLabel("Step 10Hz")
+      elif self.freq_step == 25:
+        self.step_btn.SetLabel("Step 25Hz")
+      elif self.freq_step == 50:
+        self.step_btn.SetLabel("Step 50Hz")
+      elif self.freq_step == 100:
+        self.step_btn.SetLabel("Step 100Hz")
+      elif self.freq_step == 250:
+        self.step_btn.SetLabel("Step 250Hz")
+      elif self.freq_step == 500:
+        self.step_btn.SetLabel("Step 500Hz")
+      elif self.freq_step == 1000:
+        self.step_btn.SetLabel("Step 1kHz")
+      else:
+        self.freq_step = 50
+        self.step_btn.SetLabel("Step 50Hz")
+    except:
+      self.freq_step = 50
+      self.step_btn.SetLabel("Step 50Hz")
+
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Empty2 = szr
@@ -5478,8 +5530,8 @@ class App(wx.App):
       #gbs.Add(b, (1, button_start_col + col), (1, 1), flag=flag)
       #col += 1
 
-    gbs.Add(b_ssb_offset,     (6, button_start_col), (1, 2), flag=flag)      # пустая кнопка
-    gbs.Add(b_Empty1,     (6, button_start_col + 2), (1, 2), flag=flag)  # пустая кнопка
+    gbs.Add(b_ssb_offset, (6, button_start_col), (1, 2), flag=flag)
+    gbs.Add(b_step,       (6, button_start_col + 2), (1, 2), flag=flag)
     gbs.Add(b_Empty2,     (6, button_start_col + 4), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty3,     (6, button_start_col + 6), (1, 2), flag=flag) # пустая кнопка
     gbs.Add(b_Empty4,     (6, button_start_col + 8), (1, 2), flag=flag) # пустая кнопка
@@ -6718,29 +6770,77 @@ class App(wx.App):
     self.config_screen.favorites.AddNewFavorite()
     self.OnBtnFavoritesShow(event)
 
+  # --------------------------------------------------------------------------------- добавлено ------------ шаг перестройки ------- 30 RA3PKJ
+  def OnBtnStep(self, event):
+    step_label = self.step_btn.GetLabel()
+    try:
+      if step_label == 'Step 1Hz':
+        self.step_btn.SetLabel("Step 10Hz")
+        self.freq_step = 10
+      elif step_label == 'Step 10Hz':
+        self.step_btn.SetLabel("Step 25Hz")
+        self.freq_step = 25
+      elif step_label == 'Step 25Hz':
+        self.step_btn.SetLabel("Step 50Hz")
+        self.freq_step = 50
+      elif step_label == 'Step 50Hz':
+        self.step_btn.SetLabel("Step 100Hz")
+        self.freq_step = 100
+      elif step_label == 'Step 100Hz':
+        self.step_btn.SetLabel("Step 250Hz")
+        self.freq_step = 250
+      elif step_label == 'Step 250Hz':
+        self.step_btn.SetLabel("Step 500Hz")
+        self.freq_step = 500
+      elif step_label == 'Step 500Hz':
+        self.step_btn.SetLabel("Step 1kHz")
+        self.freq_step = 1000
+      elif step_label == 'Step 1kHz':
+        self.step_btn.SetLabel("Step 1Hz")
+        self.freq_step = 1
+      elif step_label == 'Step':
+        self.step_btn.SetLabel("Step 50Hz")
+        self.freq_step = 50
+      else:
+        self.step_btn.SetLabel("Step 50Hz")
+        self.freq_step = 50
+    except:
+        self.step_btn.SetLabel("Step 50Hz")
+        self.freq_step = 50
+
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["FrequencyStep"] = self.freq_step
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
+
   # --------------------------------------------------------------------------------- добавлено ----------------- SSB Offset ------- 29 RA3PKJ
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
     try:
-      if ssb_offset_label == 'SSB Low300Hz':
+      if ssb_offset_label == 'SSB Low 300Hz':
         self.offset = 300
-      elif ssb_offset_label == 'SSB Low250Hz':
+      elif ssb_offset_label == 'SSB Low 250Hz':
         self.offset = 250
-        self.WheelMod = 10 # --------------------- bigon
-        GraphScreen(self, self.WheelMod)# --------------------- bigon
-      elif ssb_offset_label == 'SSB Low200Hz':
+      elif ssb_offset_label == 'SSB Low 200Hz':
         self.offset = 200
-      elif ssb_offset_label == 'SSB Low150Hz':
+      elif ssb_offset_label == 'SSB Low 150Hz':
         self.offset = 150
-      elif ssb_offset_label == 'SSB Low100Hz':
+      elif ssb_offset_label == 'SSB Low 100Hz':
         self.offset = 100
-      elif ssb_offset_label == 'SSB Low50Hz':
+      elif ssb_offset_label == 'SSB Low 50Hz':
         self.offset = 50
-      elif ssb_offset_label == 'SSB Low0Hz':
+      elif ssb_offset_label == 'SSB Low 0Hz':
         self.offset = 0
       else: self.offset = 300
     except:
       self.offset = 300
+
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
 
     # ---------- перерисовка фильтра (выжимка кода из функции OnBtnBand ниже)
     band = self.lastBand	# former band in use
