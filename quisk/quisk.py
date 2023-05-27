@@ -5220,9 +5220,10 @@ class App(wx.App):
     # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено --------------- SSB Offset ---- 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
-    self.ssb_low_freq = ('SSB Low300Hz','SSB Low250Hz','SSB Low200Hz','SSB Low150Hz','SSB Low100Hz','SSB Low50Hz','SSB Low0Hz')
-    self.ssb_offset = QuiskCycleCheckbutton(frame, self.OnBtnOffset, self.ssb_low_freq)
+    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.ssb_offset.SetLabel("SSB Low")
+    self.ssb_offset.Refresh()
     self.ssb_offset.Enable(False)
     if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
       self.ssb_offset.Enable(True)
@@ -6807,7 +6808,6 @@ class App(wx.App):
     except:
         self.step_btn.SetLabel("Step 50Hz")
         self.freq_step = 50
-
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["FrequencyStep"] = self.freq_step
     self.settings_changed = True
@@ -6819,23 +6819,35 @@ class App(wx.App):
     ssb_offset_label = self.ssb_offset.GetLabel()
     try:
       if ssb_offset_label == 'SSB Low 300Hz':
-        self.offset = 300
-      elif ssb_offset_label == 'SSB Low 250Hz':
+        self.ssb_offset.SetLabel("SSB Low 250Hz")
         self.offset = 250
-      elif ssb_offset_label == 'SSB Low 200Hz':
+      elif ssb_offset_label == 'SSB Low 250Hz':
+        self.ssb_offset.SetLabel("SSB Low 200Hz")
         self.offset = 200
-      elif ssb_offset_label == 'SSB Low 150Hz':
+      elif ssb_offset_label == 'SSB Low 200Hz':
+        self.ssb_offset.SetLabel("SSB Low 150Hz")
         self.offset = 150
-      elif ssb_offset_label == 'SSB Low 100Hz':
+      elif ssb_offset_label == 'SSB Low 150Hz':
+        self.ssb_offset.SetLabel("SSB Low 100Hz")
         self.offset = 100
-      elif ssb_offset_label == 'SSB Low 50Hz':
+      elif ssb_offset_label == 'SSB Low 100Hz':
+        self.ssb_offset.SetLabel("SSB Low 50Hz")
         self.offset = 50
-      elif ssb_offset_label == 'SSB Low 0Hz':
+      elif ssb_offset_label == 'SSB Low 50Hz':
+        self.ssb_offset.SetLabel("SSB Low 0Hz")
         self.offset = 0
-      else: self.offset = 300
+      elif ssb_offset_label == 'SSB Low 0Hz':
+        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.offset = 300
+      elif ssb_offset.label == 'SSB Low':
+        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.offset = 300
+      else:
+        self.ssb_offset.SetLabel("SSB Low 300Hz")
+        self.offset = 300
     except:
+      self.ssb_offset.SetLabel("SSB Low 300Hz")
       self.offset = 300
-
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
     self.settings_changed = True
