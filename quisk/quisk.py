@@ -2750,7 +2750,7 @@ class WaterfallDisplay(wx.Window):
     self.rgb_data = QS.watfall_RgbData(red, green, blue, self.graph_width, application.screen_height)
     self.pixels = bytearray(self.graph_width * application.screen_height * 3)
 
-  # обработчик кнопки Palette ------------------------------------------------------------------- добавлено --------- выбор водопада -------- 25 RA3PKJ
+  # ----------------------------------------------------------------------------- добавлено -------------------------------- выбор водопада -------- 25 RA3PKJ
   def ChangePalette(self):
     if self.current_pal == 'A': self.current_pal  = 'B'
     elif self.current_pal == 'B': self.current_pal  = 'C'
@@ -2943,7 +2943,7 @@ class WaterfallScreen(wx.SplitterWindow):
     self.pane2.display.ChangeZoom(zoom, deltaf, zoom_control)
   def PeakHold(self, name):
     self.pane1.PeakHold(name)
-  # --------------------------------------------------------------------------------------- добавлено --------- выбор водопада ---------- 25 RA3PKJ
+  # --------------------------------------------------------------------------- добавлено --------------------- выбор водопада -------------------- 25 RA3PKJ
   def ChangePalette(self):
     self.pane2.ChangePalette()
 
@@ -6226,7 +6226,10 @@ class App(wx.App):
   # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   # ------------------------------------------------------------------------------- добавлено -------------- выбор водопада ---------- 25 RA3PKJ
   def OnBtnWaterFallPalette(self, event): # обработчик нажатия кнопки Palette
-    self.multi_rx_screen.ChangePalette()
+    if configure.Settings[1] == "ConfigFileRadio":
+      pass
+    else:
+      self.multi_rx_screen.ChangePalette()
   # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
     rx = self.rxFreq
