@@ -4990,16 +4990,16 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 		// d1 is the tune frequency
 		// d2 is the number of FFT bins required for the bandwidth
 		// i is the starting bin number from  - sample_rate / 2 to + sample_rate / 2
-		d2 = (double)filter_bandwidth[0] * fft_size / fft_sample_rate;
-				
-        // --------------------------------------------- удалено ---------------- S-метр для режимов RX2 и Split -------------- 14 RA3PKJ
+		d2 = (double)filter_bandwidth[0] * fft_size / fft_sample_rate;	
+        
+        // --------------------------------------------- удалено ---------------- S-метр для режимов RX2 и Split -------------- 14 RA3PKJ      			
 		//if (scan_blocks) {    // Use tx, not rx?? ERROR:
-		//	d1 = ((double)quisk_tx_tune_freq + vfo_screen - scan_vfo0 - scan_deltaf * ptFft->block) * fft_size / scan_sample_rate;
-		//	i = (int)(d1 - d2 / 2 + 0.5);
+			//d1 = ((double)quisk_tx_tune_freq + vfo_screen - scan_vfo0 - scan_deltaf * ptFft->block) * fft_size / scan_sample_rate;
+			//i = (int)(d1 - d2 / 2 + 0.5);
 		//}
 		//else
-		//	i = (int)((double)(rx_tune_freq + filter_start_offset) * fft_size / fft_sample_rate + 0.5);
-
+			//i = (int)((double)(rx_tune_freq + filter_start_offset) * fft_size / fft_sample_rate + 0.5);		
+			
         // ---------------------------------------------- взамен ---------------- S-метр для режимов RX2 и Split -------------- 14 RA3PKJ
 		if (scan_blocks)
 		{
@@ -5020,7 +5020,6 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 		    else
 			    i = (int)((double)(rx_tune_freq + filter_start_offset) * fft_size / fft_sample_rate + 0.5);
 		}	
-					
 			
 		n = (int)(floor(d2) + 0.01);		// number of whole bins to add
 		if (i > - fft_size / 2 && i + n + 1 < fft_size / 2) {	// too close to edge?

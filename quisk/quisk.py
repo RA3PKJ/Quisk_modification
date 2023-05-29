@@ -573,7 +573,7 @@ class HamlibHandlerSerial:
     else:
       self.Error(cmd, data)
   def FT(self, cmd, data, length):	# transmit VFO
-    if self.app.rx2_rxtx: # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if self.app.split_rxtx:
       vfo = '1'
     else:
       vfo = '0'
@@ -620,7 +620,7 @@ class HamlibHandlerSerial:
       code = self.Mo2CoKen.get(mode, 1)
       info += "%d" % code	# operating mode
     info += '00'
-    if self.app.rx2_rxtx:	# VFO split status # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if self.app.split_rxtx:
       info += '1'
     else:
       info += '0'
@@ -671,7 +671,7 @@ class HamlibHandlerSerial:
       self.Error(cmd, data)
   def ZZSP(self, cmd, data, length):	# the split status
     if length == 0:
-      if self.app.rx2_rxtx: # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+      if self.app.split_rxtx:
         self.Write("%s1;" % cmd)
       else:
         self.Write("%s0;" % cmd)
@@ -679,7 +679,7 @@ class HamlibHandlerSerial:
       self.Error(cmd, data)
   def ZZSW(self, cmd, data, length):	# transmit VFO is A or B
     if length == 0:
-      if self.app.rx2_rxtx: # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+      if self.app.split_rxtx:
         self.Write("%s1;" % cmd)
       else:
         self.Write("%s0;" % cmd)
@@ -1042,7 +1042,7 @@ class HamlibHandlerRig2:	# Test with telnet localhost 4532
         self.split_vfo = 'VFO'
       # If there are no multi receivers, this sets split Rx/Tx mode.
       if not self.app.multi_rx_screen.receiver_list:
-        self.app.rx2Button.SetValue(split, True) # ------------ изменено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+        self.app.splitButton.SetValue(split, True)
   def GetInfo(self):
     self.Reply("Info", self.app.main_frame.title, 0)
   def GetMode(self):
@@ -2292,7 +2292,7 @@ class GraphScreen(wx.Window):
   def OnLeftDown(self, event):
     # ------------------------------------------------------------- добавлено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
 
@@ -2315,7 +2315,8 @@ class GraphScreen(wx.Window):
 
     #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика, то...
     #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-    elif (application.rx2_rxtx or application.new_split) and application.split_locktx: # --- взамен --- реформа мышиного управления шторками --- 13 RA3PKJ
+    elif (application.split_rxtx or application.new_split) and application.split_locktx: # -- взамен -- реформа мышиного управления шторками --- 13 RA3PKJ
+
     # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
       #self.mouse_is_rx = True
     #elif application.split_rxtx and application.split_lockrx:
@@ -2383,7 +2384,7 @@ class GraphScreen(wx.Window):
   def OnMotion(self, event):
     # ---------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
 
@@ -2414,7 +2415,7 @@ class GraphScreen(wx.Window):
   def OnWheel(self, event):
     # ----------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.rx2_rxtx == False and application.new_split == False and application.split_locktx:
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
     if conf.freq_spacing:
@@ -2433,7 +2434,8 @@ class GraphScreen(wx.Window):
 
     #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика
     #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-    elif (application.rx2_rxtx or application.new_split) and application.split_locktx: # --- взамен --- реформа мышиного управления шторками --- 13 RA3PKJ
+    elif (application.split_rxtx or application.new_split) and application.split_locktx: # -- взамен -- реформа мышиного управления шторками --- 13 RA3PKJ
+
     # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
       #self.mouse_is_rx = True
     #elif application.split_rxtx and application.split_lockrx:
@@ -3987,7 +3989,11 @@ class App(wx.App):
       self.fldigi_server = None
     self.fldigi_rxtx = 'rx'
     self.fldigi_timer = 0
-    self.oldRxFreq = 0	# Last value of self.rxFreq ------------- добавлено ------------ чистка кнопки Split и замена её на RX2 ----------- 10 RA3PKJ
+
+    # последнее значение частоты приёмника ---------------------- добавлено ----------------------- реформа кнопок ------------------------ 12 RA3PKJ
+	# ----------------------------------------------------------- добавлено ------------ чистка кнопки Split и замена её на RX2 ----------- 10 RA3PKJ
+    self.oldRxFreq = 0
+
     self.screen = None
     # Display the audio FFT instead of the RX filter or bandscope when self.rate_audio_fft > 0.
     # The sample rate is self.rate_audio_fft. Add an instance of quisk_calc_audio_graph() to C code to provide data.
@@ -4006,14 +4012,12 @@ class App(wx.App):
     self.filter_bandwidth = 1000    # filter bandwidth
     self.zoom_deltaf = 0
     self.zooming = False
-    #self.split_rxtx = False		# Are we in split Rx/Tx mode? # --------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    self.split_rxtx = False		# Are we in split Rx/Tx mode?
+
+    self.new_split = False  # ------------------------------------------- добавлено ---------------------------------------- реформа кнопок ---------- 12 RA3PKJ
+
     self.split_locktx = False   # Flag Tx frequency is fixed
-
-    # ----------------------------------------------------------------------- добавлено --------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-    self.rx2_rxtx = False	# Are we in split Rx/Tx mode?
-    self.new_split = False
-
-    #self.split_lockrx = False	# Split mode Rx frequency is fixed. # ------- удалено ----------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    #self.split_lockrx = False	# Split mode Rx frequency is fixed. # ------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
     self.split_rxtx_play = 2    # Play 1=both, high on Right; 2=both, high on Left; 3=only Rx; 4=only Tx
     self.split_offset = 0	# current frequency difference when using Split
     self.savedState = {}
@@ -4984,7 +4988,7 @@ class App(wx.App):
     left_row3.append(b)
 
     # Split button (теперь кнопка называется RX2)
-# ----------------------------------------------------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    # ------------------------------------------------------------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##    self.split_menu = QuiskMenu("split_menu")
 ##    pl = self.split_rxtx_play
 ##    self.split_menu.AppendRadioItem('Play both, High Freq on R', self.OnMenuSplitPlay1, pl == 1)
@@ -4997,18 +5001,24 @@ class App(wx.App):
 ##    self.split_menu.AppendRadioItem('Lock Rx, Split Tx', self.OnMenuSplitLock, False)
 ##    self.split_menu.AppendSeparator()
 ##    self.split_menu.Append('Reverse Rx and Tx', self.OnMenuSplitRev)
-    # ------------------------------------------------- изменено ------------ чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-    b = QuiskCheckbutton(frame, self.OnBtnRX2, "RX2")
+##    b = QuiskCheckbutton(frame, self.OnBtnSplit, "Split")
+##    b.char_shortcut = 'l'
+##    self.MakeAccel(b)
+##    self.splitButton = WrapMenu(b, self.split_menu)
+##    if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
+##      self.splitButton.Enable(False)
+##    left_row3.append(self.splitButton)
+    # --------------------------------------------------------------- взамен ------------ чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    b = QuiskCheckbutton(frame, self.OnBtnSplit, "RX2")
     b.char_shortcut = 'l'
     self.MakeAccel(b)
-    #self.splitButton = WrapMenu(b, self.split_menu)
-    self.rx2Button = b
+    self.splitButton = b
     if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
-      self.rx2Button.Enable(False)
-    left_row3.append(self.rx2Button)
+      self.splitButton.Enable(False)
+    left_row3.append(self.splitButton)
 
     b = QuiskCheckbutton(frame, self.OnBtnFDX, 'FDX', color=conf.color_test)
-    # ----------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    # ------------------------------------------------------------ изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
     #if conf.add_fdx_button:
     b.char_shortcut = 'X'
     self.MakeAccel(b)
@@ -5632,7 +5642,7 @@ class App(wx.App):
 
 
   def MeasureAudioVoltage(self):
-    # --------------------------------------------- добавлено -------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
+    # --------------------------------------------- добавлено ------------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
     if self.remote_control_head: # --------- Client (пользователь)
       i = 0
       aa = Hardware.GetSmeter()
@@ -5644,20 +5654,20 @@ class App(wx.App):
 
     v = QS.measure_audio(-1)
     t = "%11.3f" % v
-    # ------------------------------------------------------------ удалено ------------------ вынос из малого окошка ------ 8 RA3PKJ
+    # ------------------------------------------------------------ удалено ---------------------------- вынос из малого окошка ------ 8 RA3PKJ
     #t = t[0:1] + ' ' + t[1:4] + ' ' + t[4:] + ' uV'
     #self.smeter.SetLabel(t)
-    self.measure_audio_str = t #строка напряжения аудио # --- взамен образована переменная --- вынос из малого окошка ----- 8 RA3PKJ
+    self.measure_audio_str = t #строка напряжения аудио # --- взамен образована переменная ------------- вынос из малого окошка ----- 8 RA3PKJ
   def MeasureFrequency(self):
     vfo = Hardware.ReturnVfoFloat()
     if vfo is None:
       vfo = self.VFO
     vfo += Hardware.transverter_offset
-# ------------------------- Не надо измерять частоту для второго окошка частоты ---- удалено --- вынос из малого окошка --- 8 RA3PKJ
+# ------------------------- Не надо измерять частоту для второго окошка частоты ---- удалено ------------- вынос из малого окошка --- 8 RA3PKJ
     #t = '%13.2f' % (QS.measure_frequency(-1) + vfo)
     #t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
     #self.smeter.SetLabel(t)
-# ----------------------------------------------------------------- взамен --------------- частота и SNR в малое окошко --- 9 RA3PKJ
+# ----------------------------------------------------------------- взамен ------------------------- частота и SNR в малое окошко --- 9 RA3PKJ
     if self.mode in ('FDV-U', 'FDV-L'):
       t = " SNR %3.0f" % self.snr #показать SNR freeDV
       self.smeter.SetLabel(t)
@@ -5671,7 +5681,7 @@ class App(wx.App):
       self.smeter.SetLabel(t)
       self.freqDisplay.Display(self.rxFreq + self.VFO)
       return
-    self.ab = self.rx2Button.GetValue() #проверить нажата ли кнопка RX2
+    self.ab = self.splitButton.GetValue() # проверить нажата ли кнопка RX2
     if self.ab == True:#если кнопка RX2 нажата
       t = '%13.2f' % (self.rxFreq + vfo + 0.5)
       t = 'RX2' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
@@ -6213,16 +6223,16 @@ class App(wx.App):
       QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
       QS.set_sidetone(self.sidetone_volume, self.sidetone_0to1, self.ritFreq, conf.keyupDelay)
 
-  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
-  # -------------------------------------------------------------------------------- добавлено -------------- выбор водопада ---------- 25 RA3PKJ
+  # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # ------------------------------------------------------------------------------- добавлено -------------- выбор водопада ---------- 25 RA3PKJ
   def OnBtnWaterFallPalette(self, event): # обработчик нажатия кнопки Palette
     self.multi_rx_screen.ChangePalette()
-  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
     rx = self.rxFreq
     self.rxFreq = self.txFreq
     self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
-  # -------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnLockVFO(self, event): # обработчик нажатия кнопки Lock
     self.lock_vfo = self.lockVFOButton.GetValue() # See that button turn On or Off?
     if self.lock_vfo:
@@ -6232,8 +6242,8 @@ class App(wx.App):
     self.lockVFOButton.Refresh()
 
 # ---------------------------------------------------------- удалено -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-##  def OnBtnSplit(self, event):
-##    self.split_rxtx = self.ЫздшеButton.GetValue()
+##  def OnBtnSplit(self, event):	# Called when the Split check button is pressed
+##    self.split_rxtx = self.splitButton.GetValue()
 ##    if self.split_rxtx:
 ##      if self.split_offset == 0:
 ##        if self.mode in ("CWL", "CWU"):
@@ -6250,11 +6260,11 @@ class App(wx.App):
 ##      self.ChangeHwFrequency(self.txFreq, self.VFO, 'OnSplit', event=event)
 ##    self.screen.SetTxFreq(self.txFreq, self.rxFreq)
  # ----------------------------------------------------------- взамен -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
-  def OnBtnRX2(self, event):
+  def OnBtnSplit(self, event):
     self.aa = self.newsplitButton.GetValue() #See that Split button turn On or Off?
     if self.aa == False:
-      self.rx2_rxtx = self.rx2Button.GetValue() #See that RX2 button turn On or Off?
-      if self.rx2_rxtx: #if button turn On
+      self.split_rxtx = self.splitButton.GetValue() #See that RX2 button turn On or Off?
+      if self.split_rxtx: #if button turn On
 
       #added by RA3PKJ to avoid a possible match between Rx frequency and Tx frequency when starting Quisk
         if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
@@ -6280,11 +6290,11 @@ class App(wx.App):
       QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
 
     else:
-      self.rx2Button.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
+      self.splitButton.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
 
   # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)
-      self.aa = self.rx2Button.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
+      self.aa = self.splitButton.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
       if self.aa == False:
         self.new_split = self.newsplitButton.GetValue() #проверить нажата или отжата кнопка Split после клика
         if self.new_split == False: #кнопка отжата после клика
@@ -6296,7 +6306,7 @@ class App(wx.App):
           self.oldRxFreq = self.rxFreq
           self.rxFreq = self.txFreq
 
-        self.rx2_rxtx = self.new_split #????????????????????????????????????--------------------------------------------------------
+        self.split_rxtx = self.new_split #????????????????????????????????????
 
         if self.new_split: #кнопка нажата после клика
           #added by RA3PKJ to avoid a possible match between Rx frequency and Tx frequency when starting Quisk
@@ -6324,7 +6334,6 @@ class App(wx.App):
 
       else:
         self.newsplitButton.SetValue(False) #выключить нажимаемую сейчас кнопку Split, т.к. оказалось, что уже включена кнопка RX2
-
 
 # ------------------------------------------------------------- удалено ------------ чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##  def OnMenuSplitPlay1(self, event):
@@ -6361,6 +6370,7 @@ class App(wx.App):
 ##  def OnMenuSplitRev(self, event):	# Called when the Split Reverse button is pressed
 ##    if self.split_rxtx:
 ##      self.ChangeHwFrequency(self.rxFreq, self.VFO, 'FreqEntry', rx_freq=self.txFreq)
+
   def OnBtnRit(self, event=None):	# Called when the RIT check button is pressed
     # Caution: event can be None
     if self.ritButton.GetValue():
@@ -6606,7 +6616,7 @@ class App(wx.App):
     The hardware will reply with the updated frequencies which may be different
     from those requested; use and display the returned tune and vfo.
     """
-    if not self.rx2_rxtx: # -----------------=--- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if not self.split_rxtx:
       self.rxFreq = tune	# rxFreq must be correct before the call to Hardware.ChangeFrequency()
     elif rx_freq is not None:
       self.rxFreq = rx_freq
@@ -6622,7 +6632,7 @@ class App(wx.App):
     if tune != self.txFreq or new_rxfreq:
       change = 1
       self.txFreq = tune
-      if not self.rx2_rxtx: # ------------------- изменено --------------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+      if not self.split_rxtx:
         self.rxFreq = self.txFreq
       if self.screen == self.bandscope_screen:
         self.screen.SetFrequency(tune + vfo)
@@ -6643,11 +6653,11 @@ class App(wx.App):
         QS.set_ampl_phase(ampl, phase, 0)
         ampl, phase = self.GetAmplPhase('tx')
         QS.set_ampl_phase(ampl, phase, 1)
-      #self.freqDisplay.Display(self.txFreq + self.VFO) # ------------------- удалено ---- реформа мышиного управления шторками ---- 13 RA3PKJ
+      #self.freqDisplay.Display(self.txFreq + self.VFO) # -------- удалено --------- реформа мышиного управления шторками -------- 13 RA3PKJ
       self.fldigi_new_freq = self.txFreq + self.VFO
     return change
   def ChangeRxTxFrequency(self, rx_freq=None, tx_freq=None):
-    if not self.rx2_rxtx and not tx_freq: # ------------ изменено --------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    if not self.split_rxtx and not tx_freq:
       tx_freq = rx_freq
     if tx_freq:
       tune = tx_freq - self.VFO
@@ -6659,13 +6669,13 @@ class App(wx.App):
         tune = tx_freq - vfo
         self.BandFromFreq(tx_freq)
       self.ChangeHwFrequency(tune, vfo, 'FreqEntry')
-    if rx_freq and self.rx2_rxtx: # Frequency must be on-screen # --- изменено ------ чистка кнопки Split и перевод её на RX2 ------ 10 RA3PKJ
+    if rx_freq and self.split_rxtx:
       tune = rx_freq - self.VFO
       self.ChangeHwFrequency(self.txFreq, self.VFO, 'FreqEntry', rx_freq=tune)
   def OnBtnMode(self, event):
     mode = self.modeButns.GetLabel()
 
-    # ---------------------------------------------------------------- добавлено ---------------------- SSB Offset ----------------- 29 RA3PKJ
+    # ---------------------------------------------------------------- добавлено --------------------- SSB Offset ----------------- 29 RA3PKJ
     if mode in ('LSB','USB'):
       self.ssb_offset.Enable(True) #кнопка смещения полосы SSB
     else:
