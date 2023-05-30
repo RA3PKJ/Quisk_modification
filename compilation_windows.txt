@@ -30,7 +30,8 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-15.0.7-1
 
 ------------------------------Исходники и библиотеки (они уже есть, просто проверьте)-------------------------
 
-6) Скачать модифицированный Quisk с Гитхаба (архив zip). Распаковать архив на диск C:\ . Появится папка C:\Quisk_modification-main 
+6) Скачать модифицированный Quisk с Гитхаба - https://github.com/RA3PKJ/Quisk_modification (архив zip). 
+Распаковать архив на диск C:\ . Появится папка C:\Quisk_modification-main 
 В папке должны присутствовать: 
 - папка fftw-3.3.5-dll32 с 32-битной версией fftw (источник - www.fftw.org/install/windows.html).
 - папка python39_32 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-395/):
