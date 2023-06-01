@@ -6282,10 +6282,12 @@ class App(wx.App):
         elif self.rxFreq > d:
           self.rxFreq = d
 
-        QS.set_split_rxtx(self.split_rxtx_play) # Make Split accoding choice mode (QS = _quisk.pyd, this is DLL)
+        #QS.set_split_rxtx(self.split_rxtx_play) # Make Split accoding choice mode (QS = _quisk.pyd, this is DLL)
+        QS.set_split_rxtx(2)
 
       else: #if button turn off
-        QS.set_split_rxtx(self.split_rxtx_play)
+        #QS.set_split_rxtx(self.split_rxtx_play)
+        QS.set_split_rxtx(2)
         self.oldRxFreq = self.rxFreq
         self.rxFreq = self.txFreq
 
