@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.19.5 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.19.6 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -3944,7 +3944,12 @@ class App(wx.App):
     self.hermes_LNA_dB = 20
     self.offset = 300 # --- цифра условная, т.к.берётся из файла ----- добавлено --------------------- SSB Offset ------------- 29 RA3PKJ
     self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------------------ шаг перестройки ----------- 30 RA3PKJ
-    self.picture_bmp = "Pano_1.jpg" # -------------------------------- добавлено -------------- картинка на панораме ----------- 5 RA3PKJ
+
+    # ---------------------------------------------------------------- добавлено -------------- картинка на панораме ----------- 5 RA3PKJ
+    self.picture_bmp = "Pano_1.jpg"
+    self.picture_list = [] # --- список картинок в папке
+    self.picture_len = 0   # --- длина списка картинок
+    self.picture_index = 0 # --- индекс в списке картинок
 
     # ---------------------------------------------------------------- добавлено ----------------- вынос из малого окошка ------ 8 RA3PKJ
     # ---------------------------------------------------------------- добавлено ----------- частота и SNR в малое окошко ------ 9 RA3PKJ
@@ -5303,28 +5308,23 @@ class App(wx.App):
     szr.Add(self.picture, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.picture.SetLabel("Picture")
     self.picture.Refresh()
+    # --- при старте загрузить картинку
     try:
       self.picture_bmp = configure.Settings[4]["Picture"]
-      if self.picture_bmp == "Pano_1.jpg":
-        self.picture.SetLabel("Picture 1")
-      elif self.picture_bmp == "Pano_2.jpg":
-        self.picture.SetLabel("Picture 2")
-      elif self.picture_bmp == "Pano_3.jpg":
-        self.picture.SetLabel("Picture 3")
-      elif self.picture_bmp == "Pano_4.jpg":
-        self.picture.SetLabel("Picture 4")
-      elif self.picture_bmp == "Pano_5.jpg":
-        self.picture.SetLabel("Picture 5")
-      elif self.picture_bmp == "Pano_6.jpg":
-        self.picture.SetLabel("Picture 6")
-      elif self.picture_bmp == "Pano_7.jpg":
-        self.picture.SetLabel("Picture 7")
-      else:
-        self.picture_bmp = "Pano_1.jpg"
-        self.picture.SetLabel("Picture 1")
     except:
       self.picture_bmp = "Pano_1.jpg"
-      self.picture.SetLabel("Picture 1")
+    # --- найти все картинки
+    import glob
+    picture_files = '*.jpg'
+    for file in glob.glob(picture_files, recursive=True):
+      self.picture_list.append(file)
+    self.picture_len = len(self.picture_list)
+    try:
+      self.picture_index = self.picture_list.index(self.picture_bmp)
+    except:
+      self.picture_bmp = "Pano_1.jpg"
+      self.picture_index = self.picture_list.index(self.picture_bmp)
+    self.picture.SetLabel("Picture " + str(self.picture_index + 1))
 
     # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -6812,38 +6812,20 @@ class App(wx.App):
 
   # ---- обработчик нажатия кнопки Picture ---------------------------- добавлено --------------------- картинка на панораме ------ 5 RA3PKJ
   def OnBtnPicture(self, event):
-    picture_label = self.picture.GetLabel()
-    if picture_label == "Picture 1":
-      self.picture.SetLabel("Picture 2")
-      self.picture_bmp = "Pano_2.jpg"
-    elif picture_label == "Picture 2":
-      self.picture.SetLabel("Picture 3")
-      self.picture_bmp = "Pano_3.jpg"
-    elif picture_label == "Picture 3":
-      self.picture.SetLabel("Picture 4")
-      self.picture_bmp = "Pano_4.jpg"
-    elif picture_label == "Picture 4":
-      self.picture.SetLabel("Picture 5")
-      self.picture_bmp = "Pano_5.jpg"
-    elif picture_label == "Picture 5":
-      self.picture.SetLabel("Picture 6")
-      self.picture_bmp = "Pano_6.jpg"
-    elif picture_label == "Picture 6":
-      self.picture.SetLabel("Picture 7")
-      self.picture_bmp = "Pano_7.jpg"
-    elif picture_label == "Picture 7":
-      self.picture.SetLabel("Picture 1")
-      self.picture_bmp = "Pano_1.jpg"
-    else:
-      self.picture.SetLabel("Picture 1")
-      self.picture_bmp = "Pano_1.jpg"
+    # --- выбрать следующую картинку
+    if self.picture_index in range (self.picture_len - 1):
+      self.picture_index = self.picture_index + 1
+    else: self.picture_index = 0
+    self.picture_bmp = self.picture_list[self.picture_index]
+    self.picture.SetLabel("Picture " + str(self.picture_index + 1))
+    # --- сохранить выбор
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["Picture"] = self.picture_bmp
     self.settings_changed = True
     configure.Configuration.SaveState(self)
     self.settings_changed = False
 
-  # --------------------------------------------------------------------------------- добавлено ------------ шаг перестройки ------- 30 RA3PKJ
+  # ------------------------------------------------------------------- добавлено ------------------------- шаг перестройки ------- 30 RA3PKJ
   def OnBtnStep(self, event):
     step_label = self.step_btn.GetLabel()
     if step_label == 'Step 1':
