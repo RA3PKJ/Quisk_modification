@@ -1258,7 +1258,7 @@ class RadioButtonGroup:
     if do_cmd and self.command and self.button:
       event = wx.PyEvent()
       event.SetEventObject(self.button)
-      self.command(event)
+      self.command(event) # --- вызов обработчика нажатия (находится в quisk.py)
   def GetButtons(self):
     return self.buttons
   def OnButton(self, event):

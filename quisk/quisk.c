@@ -4921,7 +4921,7 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 	complex double c;
 	static double meter = 0;	// RMS s-meter
 	static int job = 1;		// job==0 return raw data ; 1 return FFT ; 2 delete FFT data
-	static double * fft_avg=NULL;	// Array to average the FFT
+	static double * fft_avg=NULL;	// Массив для усреднения БПФ
 	static double * fft_tmp;
 	static int count_fft=0;			// how many fft's have occurred (for average)
 	static double time0=0;			// time of last graph
@@ -4990,6 +4990,8 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 		// d1 is the tune frequency
 		// d2 is the number of FFT bins required for the bandwidth
 		// i is the starting bin number from  - sample_rate / 2 to + sample_rate / 2
+		// vfo_screen is the VFO (center) frequency on the FFT screen
+		// fft_size is size of fft, например 1024
 		d2 = (double)filter_bandwidth[0] * fft_size / fft_sample_rate;	
         
         // --------------------------------------------- удалено ---------------- S-метр для режимов RX2 и Split -------------- 14 RA3PKJ      			
@@ -5007,7 +5009,7 @@ static PyObject * get_graph(PyObject * self, PyObject * args)	// Called by the G
 			{
 		        d1 = ((double)rx_tune_freq + vfo_screen - scan_vfo0 - scan_deltaf * ptFft->block) * fft_size / scan_sample_rate;
 			}
-		    else
+		    else//S-метр показывает в полосе приёмника
 			{
 			    d1 = ((double)quisk_tx_tune_freq + vfo_screen - scan_vfo0 - scan_deltaf * ptFft->block) * fft_size / scan_sample_rate;
 			}

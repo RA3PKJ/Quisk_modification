@@ -3942,7 +3942,7 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
-    self.offset = 300 # --- цифра условная, т.к.берётся из файла ----- добавлено --------------------- SSB Offset ------------- 29 RA3PKJ
+    self.offset = 300 # --- цифра условная, т.к.берётся из quisk_settings.json ----- добавлено ------- SSB Offset ------------- 29 RA3PKJ
     self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------------------ шаг перестройки ----------- 30 RA3PKJ
 
     # ---------------------------------------------------------------- добавлено -------------- картинка на панораме ----------- 5 RA3PKJ
@@ -4884,7 +4884,7 @@ class App(wx.App):
       if isinstance(label, (list, tuple)):
         label = label[0]
       shortcuts.append(conf.bandShortcuts.get(label, ''))
-    self.bandBtnGroup = RadioButtonGroup(frame, self.OnBtnBand, conf.bandLabels, None, shortcuts)
+    self.bandBtnGroup = RadioButtonGroup(frame, self.OnBtnBand, conf.bandLabels, None, shortcuts) # --- создание  группы кнопок диапазонов
 # ------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
 ##    else:
 ##      self.widget_row = 6		# Next available row for widgets
@@ -5150,7 +5150,7 @@ class App(wx.App):
 #        self.modeButns.AddSlider('IMD', self.OnImdSlider, slider_value=val, display=True)
 
     labels = ('2000', '2000', '2000', '2000', '2000', '2000')
-    self.filterButns = RadioButtonGroup(frame, self.OnBtnFilter, labels, None)
+    self.filterButns = RadioButtonGroup(frame, self.OnBtnFilter, labels, None) # --- создание ряда кнопок полос
     self.filterButns.idName = "filterButns"
     b = QuiskCheckbutton(frame, None, str(self.filterAdjBw1))
     b = WrapSlider(b, self.OnBtnAdjFilter, slider_value=self.filterAdjBw1, wintype='filter')
@@ -5233,8 +5233,9 @@ class App(wx.App):
     self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
 
-    # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    # ---------------------------------------------------------------- кнопка SSB Offset ----- добавлено --------------- SSB Offset ---- 29 RA3PKJ
+    # --- кнопка SSB Offset
+    # ----------------------------------------------------------------------добавлено ------------------------------ реформа кнопок ---- 12 RA3PKJ
+    # --------------------------------------------------------------------- добавлено ---------------------------------- SSB Offset ---- 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
     self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Lf")
@@ -6264,43 +6265,43 @@ class App(wx.App):
 ##    self.screen.SetTxFreq(self.txFreq, self.rxFreq)
  # ----------------------------------------------------------- взамен -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
   def OnBtnSplit(self, event):
-    self.aa = self.newsplitButton.GetValue() #See that Split button turn On or Off?
-    if self.aa == False:
+    aa = self.newsplitButton.GetValue() #See that Split button turn On or Off?
+    if aa == False:
       self.split_rxtx = self.splitButton.GetValue() #See that RX2 button turn On or Off?
       if self.split_rxtx: #if button turn On
 
-      #added by RA3PKJ to avoid a possible match between Rx frequency and Tx frequency when starting Quisk
+      # --- чтобы избежать возможного совпадения между частотой Rx и частотой Tx при запуске Quisk
         if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
           self.rxFreq = self.txFreq + 4000
         else:
           self.rxFreq = self.oldRxFreq
 
-        #if rxFreq outside of sample_rate, then move rxFreq on-screen into sample_rate
+        # --- если частота rx выходит за пределы sample_rate, то переместить частоту rx в область sample_rate
         d = self.sample_rate * 49 // 100
         if self.rxFreq < -d:
           self.rxFreq = -d
         elif self.rxFreq > d:
           self.rxFreq = d
 
-        #QS.set_split_rxtx(self.split_rxtx_play) # Make Split accoding choice mode (QS = _quisk.pyd, this is DLL)
-        QS.set_split_rxtx(2)
+        #QS.set_split_rxtx(self.split_rxtx_play) # --- не использовать переменную self.split_rxtx_play
+        QS.set_split_rxtx(2) # --- передать в dll значение для её переменной split_rxtx = 2
 
       else: #if button turn off
-        #QS.set_split_rxtx(self.split_rxtx_play)
-        QS.set_split_rxtx(2)
+        #QS.set_split_rxtx(self.split_rxtx_play) # --- не использовать переменную self.split_rxtx_play
+        QS.set_split_rxtx(0) # --- передать в dll значение для её переменной split_rxtx = 0
         self.oldRxFreq = self.rxFreq
         self.rxFreq = self.txFreq
 
-      self.screen.SetTxFreq(self.txFreq, self.rxFreq)
-      QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq)
+      self.screen.SetTxFreq(self.txFreq, self.rxFreq) # --- self.screen это текущий скрин (GraphScreen и другое)
+      QS.set_tune(self.rxFreq + self.ritFreq, self.txFreq) # --- передать в dll значения двух переменных
 
     else:
       self.splitButton.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
 
   # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)
-      self.aa = self.splitButton.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
-      if self.aa == False:
+      aa = self.splitButton.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
+      if aa == False:
         self.new_split = self.newsplitButton.GetValue() #проверить нажата или отжата кнопка Split после клика
         if self.new_split == False: #кнопка отжата после клика
           #Rx and Tx reverse
@@ -6311,23 +6312,22 @@ class App(wx.App):
           self.oldRxFreq = self.rxFreq
           self.rxFreq = self.txFreq
 
-        self.split_rxtx = self.new_split #????????????????????????????????????
+        self.split_rxtx = self.new_split # --- использовать те же методы, что и для кнопки RX2
 
         if self.new_split: #кнопка нажата после клика
-          #added by RA3PKJ to avoid a possible match between Rx frequency and Tx frequency when starting Quisk
+          # --- чтобы первоначально шторки не попадали друг на друга
           if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
             self.rxFreq = self.txFreq + 4000
           else:
             self.rxFreq = self.oldRxFreq
 
-          #added by RA3PKJ, if rxFreq outside of sample_rate, then move rxFreq on-screen into sample_rate
+          # --- if rxFreq outside of sample_rate, then move rxFreq on-screen into sample_rate
           d = self.sample_rate * 49 // 100
           if self.rxFreq < -d:
             self.rxFreq = -d
           elif self.rxFreq > d:
             self.rxFreq = d
 
-          #added by RA3PKJ
           QS.set_split_rxtx(0)
           #Rx and Tx reverse
           tx = self.rxFreq
@@ -6890,39 +6890,20 @@ class App(wx.App):
     else:
       self.ssb_offset.SetLabel("SSB Lf=300Hz")
       self.offset = 300
+
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
     self.settings_changed = True
     configure.Configuration.SaveState(self)
     self.settings_changed = False
 
-    # ---------- перерисовка фильтра (выжимка кода из функции OnBtnBand ниже)
-    band = self.lastBand	# former band in use
+    # --- через RadioButtonGroup.SetLabel (quisk_widgets.py) происходит вызов здесь функции OnBtnFilter для перерисовки фильтра
+    index = self.filterButns.GetIndex() # --- индекс кнопки текущей полосы фильтра
     try:
-      f1, f2 = conf.BandEdge[band]
-      if f1 <= self.VFO + self.txFreq <= f2:
-        self.bandState[band] = (self.VFO, self.txFreq, self.mode)
-    except KeyError:
-      pass
-    try:
-      vfo, tune, mode = self.bandState[band]
-    except KeyError:
-      vfo, tune, mode = (1000000, 0, 'LSB')
-    if band == '60':
-      freq60 = conf.freq60
-      freq = vfo + tune
-      half = self.sample_rate // 2 * self.graph_width // self.data_width
-      while freq - vfo <= -half + 1000:
-        vfo -= 10000
-      while freq - vfo >= +half - 5000:
-        vfo += 10000
-      tune = freq - vfo
-    elif band == 'Time':
-      vfo, tune, mode = conf.bandTime[btn.index]
-    self.modeButns.SetLabel(mode, True)
-    self.txFreq = self.VFO = -1		# demand change
-    self.ChangeBand(band)
-    self.ChangeHwFrequency(tune, vfo, 'BtnBand', band=band)
+      Lab = self.filterButns.buttons[index].GetLabel() # --- значение полосы на кнопке
+    except:
+      Lab = self.filterButns.buttons[0].GetLabel()
+    self.filterButns.SetLabel(Lab, True) # --- перерисовать фильтр (шторку)
 
   # --------------------------------------------------------------------------------- добавлено ------------- реформа кнопок ---- 12 RA3PKJ
   def OnBtnEmpty(self, event):
