@@ -5186,13 +5186,15 @@ class App(wx.App):
     # ---------------------------------------------------------------------------------------------- Band down button
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_bandupdown = szr
-    b = QuiskRepeatbutton(frame, self.OnBtnDownBand, conf.Xbtn_text_range_dn,
+    #b = QuiskRepeatbutton(frame, self.OnBtnDownBand, conf.Xbtn_text_range_dn, # ------------------ удалено -------- засветка при зумировании --------- 31 RA3PKJ
+    self.band_down = b = QuiskRepeatbutton(frame, self.OnBtnDownBand, conf.Xbtn_text_range_dn, # --- взамен -------- засветка при зумировании --------- 31 RA3PKJ
              self.OnBtnUpDnBandDone, use_right=True)
     b.idName = "Band " + b.idName
     self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     # ---------------------------------------------------------------------------------------------- Band up button
-    b = QuiskRepeatbutton(frame, self.OnBtnUpBand, conf.Xbtn_text_range_up,
+    #b = QuiskRepeatbutton(frame, self.OnBtnUpBand, conf.Xbtn_text_range_up, # -------------------- удалено -------- засветка при зумировании --------- 31 RA3PKJ
+    self.band_up = b = QuiskRepeatbutton(frame, self.OnBtnUpBand, conf.Xbtn_text_range_up, # ------- взамен -------- засветка при зумировании --------- 31 RA3PKJ
              self.OnBtnUpDnBandDone, use_right=True)
     b.idName = "Band " + b.idName
     self.idName2Button[b.idName] = b
@@ -6057,9 +6059,19 @@ class App(wx.App):
       self.bandscope_screen.ChangeZoom(zoom_control)
       self.bandscope_screen.SetTxFreq(self.txFreq, self.rxFreq)
       return
+
     # The display runs from f1 to f2. The original sample rate is "rate".
     # The new effective sample rate is rate * zoom.
     # f1 = deltaf + rate * (1 - zoom) / 2
+
+    # ------------------------------------------------------------------------- добавлено --------------- засветка при зумировании --------- 31 RA3PKJ
+    d = self.sample_rate // 10 # --- взять кусок, который будет зеркально, т.е. кусок и +кусок относительно средней (нулевой) линии
+    if self.rxFreq < -d:
+      self.band_down.SendCommand(self.OnBtnDownBand) # --- уйти влево по частоте (переместить шторку вправо)
+    elif self.rxFreq > d:
+      self.band_up.SendCommand(self.OnBtnUpBand) # --- уйти вправо по частоте (переместить шторку влево)
+    self.OnBtnUpDnBandDone(True) # --- переместить звук вслед за шторкой
+
     if zoom_control < 50:
       self.zoom = 1.0	# change back to not-zoomed mode
       self.zoom_deltaf = 0
@@ -6070,9 +6082,10 @@ class App(wx.App):
       if not self.zooming:		# set deltaf when zoom mode starts
         center = self.multi_rx_screen.graph.filter_center
         freq = self.rxFreq + center
-        self.zoom_deltaf = freq
+        self.zoom_deltaf = freq # --- при зумировании deltaf служит для совпадения шторки с реальным звуком
         self.zooming = True
-    zoom = self.zoom
+
+    zoom = self.zoom # --- степень зумирования панорамы, минимально 1.0
     deltaf = self.zoom_deltaf
     self.graph.ChangeZoom(zoom, deltaf, zoom_control)
     self.waterfall.ChangeZoom(zoom, deltaf, zoom_control)
