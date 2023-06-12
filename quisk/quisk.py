@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.19.6 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.19.7 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -4253,11 +4253,14 @@ class App(wx.App):
 
     self.station_screen = StationScreen(frame, width, conf.station_display_lines)
     self.station_screen.Hide()
-    # Make a vertical box to hold all the screens and the bottom box
+
+    # --- создать vertBox
     vertBox = self.vertBox = wx.BoxSizer(wx.VERTICAL)
     frame.SetSizer(vertBox)
+    #vertBox1 = self.vertBox1 = wx.BoxSizer(wx.VERTICAL)#-----------------bigon
+    #frame.SetSizer(vertBox1)
 
-    # Add the screens
+    # --- добавить скрины к vertBox
     vertBox.Add(top_screen) # --------------------------------- добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
     vertBox.Add(self.config_screen, 1, wx.EXPAND)
     vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
@@ -4269,19 +4272,23 @@ class App(wx.App):
       vertBox.Add(self.audio_fft_screen, 1)
     #vertBox.Add(self.help_screen, 1)    # ------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.station_screen)
+
     # Add the spacer
     vertBox.Add(Spacer(frame), 0, wx.EXPAND)
-    # Add the sizer for the controls
+
+    # --- добавить sizer для органов управления
     #gap = 2 # ---------------------------------------------------------------------- удалено -------------- кнопки в пределах окна --- 21 RA3PKJ
     gap = 1 # ------------------------------------------------------------------------ взамен -------------- кнопки в пределах окна --- 21 RA3PKJ
-    gbs = wx.GridBagSizer(gap, gap)
+    gbs = wx.GridBagSizer(gap, gap) # --- двухмерная сетка
     self.gbs = gbs
     vertBox.Add(gbs, flag=wx.EXPAND)
     gbs.SetEmptyCellSize((5, 5))
     # Add the bottom spacer
     vertBox.AddSpacer(5)		# Thanks to Christof, DJ4CM
     # End of vertical box.
-    self.MakeButtons(frame, gbs)
+
+    self.MakeButtons(frame, gbs) # --- создание и установка на место органов управления
+
     minw = width = self.graph.width
     maxw = maxh = -1
     minh = 100
@@ -5586,6 +5593,7 @@ class App(wx.App):
       gbs.AddGrowableCol(i,1)
     for i in range(button_start_col + 15, button_start_col + 21):
       gbs.AddGrowableCol(i,1)
+
 # ------------------------------------------------------------------------------------ удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
 ##    else:	# Small screen
 ##      gbs.Add(b_freqdisp, (0, button_start_col), (1, 6),
@@ -6059,31 +6067,43 @@ class App(wx.App):
       self.bandscope_screen.ChangeZoom(zoom_control)
       self.bandscope_screen.SetTxFreq(self.txFreq, self.rxFreq)
       return
-
     # The display runs from f1 to f2. The original sample rate is "rate".
     # The new effective sample rate is rate * zoom.
     # f1 = deltaf + rate * (1 - zoom) / 2
-
-    # ------------------------------------------------------------------------- добавлено --------------- засветка при зумировании --------- 31 RA3PKJ
-    d = self.sample_rate // 10 # --- взять кусок, который будет зеркально, т.е. кусок и +кусок относительно средней (нулевой) линии
+# ----------------------------------------------------------------------- удалено --------------- засветка при зумировании --------- 31 RA3PKJ
+##    if zoom_control < 50:
+##      self.zoom = 1.0	# change back to not-zoomed mode
+##      self.zoom_deltaf = 0
+##      self.zooming = False
+##    else:
+##      a = 1000.0 * self.sample_rate / (self.sample_rate - 2500.0)
+##      self.zoom = 1.0 - zoom_control / a
+##      if not self.zooming:		# set deltaf when zoom mode starts
+##        center = self.multi_rx_screen.graph.filter_center
+##        freq = self.rxFreq + center
+##        self.zoom_deltaf = freq # --- при зумировании deltaf служит для совпадения шторки с реальным звуком
+##        self.zooming = True
+    # -------------------------------------------------------------------- взамен --------------- засветка при зумировании --------- 31 RA3PKJ
+    d = self.sample_rate // 10 # --- взять кусок, который будет зеркально, т.е. -кусок и +кусок относительно средней (нулевой) линии
     if self.rxFreq < -d:
       self.band_down.SendCommand(self.OnBtnDownBand) # --- уйти влево по частоте (переместить шторку вправо)
+      self.OnBtnUpDnBandDone(True) # --- переместить звук вслед за шторкой
     elif self.rxFreq > d:
       self.band_up.SendCommand(self.OnBtnUpBand) # --- уйти вправо по частоте (переместить шторку влево)
-    self.OnBtnUpDnBandDone(True) # --- переместить звук вслед за шторкой
-
-    if zoom_control < 50:
-      self.zoom = 1.0	# change back to not-zoomed mode
-      self.zoom_deltaf = 0
-      self.zooming = False
+      self.OnBtnUpDnBandDone(True) # --- переместить звук вслед за шторкой
     else:
-      a = 1000.0 * self.sample_rate / (self.sample_rate - 2500.0)
-      self.zoom = 1.0 - zoom_control / a
-      if not self.zooming:		# set deltaf when zoom mode starts
-        center = self.multi_rx_screen.graph.filter_center
-        freq = self.rxFreq + center
-        self.zoom_deltaf = freq # --- при зумировании deltaf служит для совпадения шторки с реальным звуком
-        self.zooming = True
+      if zoom_control < 50:
+        self.zoom = 1.0	# change back to not-zoomed mode
+        self.zoom_deltaf = 0
+        self.zooming = False
+      else:
+        a = 1000.0 * self.sample_rate / (self.sample_rate - 2500.0)
+        self.zoom = 1.0 - zoom_control / a
+        if not self.zooming:		# set deltaf when zoom mode starts
+          center = self.multi_rx_screen.graph.filter_center
+          freq = self.rxFreq + center
+          self.zoom_deltaf = freq # --- при зумировании deltaf служит для совпадения шторки с реальным звуком
+          self.zooming = True
 
     zoom = self.zoom # --- степень зумирования панорамы, минимально 1.0
     deltaf = self.zoom_deltaf
