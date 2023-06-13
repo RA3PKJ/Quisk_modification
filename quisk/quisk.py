@@ -3942,17 +3942,22 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
-    self.offset = 300 # --- цифра условная, т.к.берётся из quisk_settings.json ----- добавлено ------- SSB Offset ------------- 29 RA3PKJ
-    self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------------------ шаг перестройки ----------- 30 RA3PKJ
+    self.offset = 300 # цифра условная, т.к.берётся из quisk_settings.json --- добавлено --- SSB Offset --- 29 RA3PKJ
+    self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------ шаг перестройки --- 30 RA3PKJ
 
-    # ---------------------------------------------------------------- добавлено -------------- картинка на панораме ----------- 5 RA3PKJ
+    # --- для слайдеров--------------------------------------- добавлено --------------- реформа кнопок --- 12 RA3PKJ
+    self.y_scale = 0
+    self.y_zoom = 0
+    self.zoom_control = 0
+
+    # -------------------------------------------------------- добавлено ---------- картинка на панораме --- 5 RA3PKJ
     self.picture_bmp = "Pano_1.jpg"
     self.picture_list = [] # --- список картинок в папке
     self.picture_len = 0   # --- длина списка картинок
     self.picture_index = 0 # --- индекс в списке картинок
 
-    # ---------------------------------------------------------------- добавлено ----------------- вынос из малого окошка ------ 8 RA3PKJ
-    # ---------------------------------------------------------------- добавлено ----------- частота и SNR в малое окошко ------ 9 RA3PKJ
+    # -------------------------------------------------------- добавлено --- вынос из малого окошка --------- 8 RA3PKJ
+    # -------------------------------------------------------- добавлено --- частота и SNR в малое окошко --- 9 RA3PKJ
     self.snr = 0.0
     self.freedv_flag = False # --- флаг моды freedv
     self.bandscope_flag = False
@@ -4232,7 +4237,7 @@ class App(wx.App):
     self.config_screen = ConfigScreen(frame, width, self.fft_size)
     self.config_screen.Hide()
 
-    # --------------------------------------------------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
+    # -------------------------------------------------- добавлено ------- кнопка Hardware --------- 15 RA3PKJ
     self.radios_screen = RadiosScreen(frame, width)
     self.radios_screen.Hide()
 
@@ -4245,49 +4250,56 @@ class App(wx.App):
     if self.rate_audio_fft:
       self.audio_fft_screen = AudioFFTScreen(frame, self.data_width, self.graph_width, self.rate_audio_fft)
       self.audio_fft_screen.Hide()
-    # ------------------------------------------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
+    # ----------------------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     #self.help_screen = HelpScreen(frame, width, self.screen_height // 10)
     #self.help_screen.Hide()
 
-    top_screen = TopScreen(frame, width, 23) # --------------- добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
+    top_screen = TopScreen(frame, width, 23) # ----- добавлено -------- создание строки состояния --- 28 RA3PKJ
 
     self.station_screen = StationScreen(frame, width, conf.station_display_lines)
     self.station_screen.Hide()
 
-    # --- создать vertBox
+    # --- создать vertBox на поле frame
     vertBox = self.vertBox = wx.BoxSizer(wx.VERTICAL)
     frame.SetSizer(vertBox)
-    #vertBox1 = self.vertBox1 = wx.BoxSizer(wx.VERTICAL)#-----------------bigon
-    #frame.SetSizer(vertBox1)
 
     # --- добавить скрины к vertBox
-    vertBox.Add(top_screen) # --------------------------------- добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
+    vertBox.Add(top_screen) # -------------------- добавлено ------ создание строки состояния ------- 28 RA3PKJ
     vertBox.Add(self.config_screen, 1, wx.EXPAND)
-    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ------------------------------- добавлено ------------- кнопка Hardware ----------- 15 RA3PKJ
+    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # --- добавлено ------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.multi_rx_screen, 1)
     vertBox.Add(self.scope, 1)
     vertBox.Add(self.bandscope_screen, 1)
     vertBox.Add(self.filter_screen, 1)
     if self.rate_audio_fft:
       vertBox.Add(self.audio_fft_screen, 1)
-    #vertBox.Add(self.help_screen, 1)    # ------------------------------------------ удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
+    #vertBox.Add(self.help_screen, 1)    # -------- удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.station_screen)
 
     # Add the spacer
     vertBox.Add(Spacer(frame), 0, wx.EXPAND)
 
     # --- добавить sizer для органов управления
-    #gap = 2 # ---------------------------------------------------------------------- удалено -------------- кнопки в пределах окна --- 21 RA3PKJ
-    gap = 1 # ------------------------------------------------------------------------ взамен -------------- кнопки в пределах окна --- 21 RA3PKJ
+    #gap = 2 # ------------------------------------ удалено -------------- кнопки в пределах окна --- 21 RA3PKJ
+    gap = 1 # -------------------------------------- взамен -------------- кнопки в пределах окна --- 21 RA3PKJ
     gbs = wx.GridBagSizer(gap, gap) # --- двухмерная сетка
     self.gbs = gbs
     vertBox.Add(gbs, flag=wx.EXPAND)
     gbs.SetEmptyCellSize((5, 5))
     # Add the bottom spacer
-    vertBox.AddSpacer(5)		# Thanks to Christof, DJ4CM
+    #vertBox.AddSpacer(5) # Thanks to Christof, DJ4CM --- удалено ---------------- реформа кнопок --- 12 RA3PKJ
     # End of vertical box.
-
     self.MakeButtons(frame, gbs) # --- создание и установка на место органов управления
+
+    # --------------------------------------------- добавлено -------------------- реформа кнопок --- 12 RA3PKJ
+    self.bs2 = wx.BoxSizer()
+    vertBox.Add(self.bs2, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+    self.bs1_text = wx.BoxSizer()
+    vertBox.Add(self.bs1_text, flag=wx.LEFT, border=10)
+    self.bs1 = wx.BoxSizer()
+    vertBox.Add(self.bs1, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+    vertBox.AddSpacer(5)
+    self.MakeNewButtons(frame) # --- создание и установка на место органов управления
 
     minw = width = self.graph.width
     maxw = maxh = -1
@@ -4861,50 +4873,235 @@ class App(wx.App):
     rid = self.QuiskNewId()
     self.main_frame.Bind(wx.EVT_MENU, button.Shortcut, id=rid)
     self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
+
+  # ------------------------------------------------------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+  def MakeNewButtons(self, frame):
+    # --- создание слайдеров
+    self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
+    self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
+    self.sliderYs = SliderBoxHH(frame, 'Yscale', self.y_scale, 0, 160, self.ChangeYscale, display=False, scale=1)
+    self.sliderYz = SliderBoxHH(frame, 'Yshift', self.y_zoom, 0, 160, self.ChangeYzero, display=False, scale=1)
+    self.sliderZo = SliderBoxHH(frame, 'Zoom', self.zoom_control, 0, 1000, self.OnChangeZoom, display=False, scale=1)
+    self.ritScale = SliderBoxHH(frame, 'RIT', self.ritFreq, -2000, 2000, self.OnRitScale, display=False, scale=1)
+    self.ChangeVolume()		# set initial volume level
+    self.ChangeSidetone()
+    self.sliderZo.SetValue(0)
+
+    # --- кнопка SSB Offset-------------------------------------- добавлено ------- SSB Offset ------ 29 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_ssb_offset = szr
+    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Lf")
+    szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.ssb_offset.SetLabel("SSB Lf")
+    self.ssb_offset.Refresh()
+    self.ssb_offset.Enable(False)
+    if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
+      self.ssb_offset.Enable(True)
+    try:
+      self.offset = configure.Settings[4]["offset_SSB_bandwidth"]
+      if self.offset == 300:
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
+      elif self.offset == 250:
+        self.ssb_offset.SetLabel("SSB Lf=250Hz")
+      elif self.offset == 200:
+        self.ssb_offset.SetLabel("SSB Lf=200Hz")
+      elif self.offset == 150:
+        self.ssb_offset.SetLabel("SSB Lf=150Hz")
+      elif self.offset == 100:
+        self.ssb_offset.SetLabel("SSB Lf=100Hz")
+      elif self.offset == 50:
+        self.ssb_offset.SetLabel("SSB Lf=50Hz")
+      elif self.offset == 0:
+        self.ssb_offset.SetLabel("SSB Lf=0Hz")
+      else:
+        self.offset = 300
+        self.ssb_offset.SetLabel("SSB Lf=300Hz")
+    except:
+      self.offset = 300
+      self.ssb_offset.SetLabel("SSB Lf=300Hz")
+
+    # --- кнопка Step ------------------------------------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_step = szr
+    self.step_btn = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    szr.Add(self.step_btn, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.step_btn.SetLabel("Step")
+    self.step_btn.Refresh()
+    try:
+      self.freq_step = configure.Settings[4]["FrequencyStep"]
+      if self.freq_step == 1:
+        self.step_btn.SetLabel("Step 1")
+      elif self.freq_step == 10:
+        self.step_btn.SetLabel("Step 10")
+      elif self.freq_step == 25:
+        self.step_btn.SetLabel("Step 25")
+      elif self.freq_step == 50:
+        self.step_btn.SetLabel("Step 50")
+      elif self.freq_step == 100:
+        self.step_btn.SetLabel("Step 100")
+      elif self.freq_step == 250:
+        self.step_btn.SetLabel("Step 250")
+      elif self.freq_step == 500:
+        self.step_btn.SetLabel("Step 500")
+      elif self.freq_step == 1000:
+        self.step_btn.SetLabel("Step 1kHz")
+      else:
+        self.freq_step = 50
+        self.step_btn.SetLabel("Step 50")
+    except:
+      self.freq_step = 50
+      self.step_btn.SetLabel("Step 50")
+
+    # --- кнопка Picture --------------------------- добавлено ---------- картинка на панораме ------- 5 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_picture = szr
+    self.picture = QuiskPushbutton(frame, self.OnBtnPicture, "Picture")
+    szr.Add(self.picture, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.picture.SetLabel("Picture")
+    self.picture.Refresh()
+    # --- при старте загрузить картинку
+    try:
+      self.picture_bmp = configure.Settings[4]["Picture"]
+    except:
+      self.picture_bmp = "Pano_1.jpg"
+    # --- найти все картинки
+    import glob
+    picture_files = '*.jpg'
+    for file in glob.glob(picture_files, recursive=True):
+      self.picture_list.append(file)
+    self.picture_len = len(self.picture_list)
+    try:
+      self.picture_index = self.picture_list.index(self.picture_bmp)
+    except:
+      self.picture_bmp = "Pano_1.jpg"
+      self.picture_index = self.picture_list.index(self.picture_bmp)
+    self.picture.SetLabel("Picture " + str(self.picture_index + 1))
+
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty3 = szr
+    self.Empty3 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty3, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty3.SetLabel(" ")
+    self.Empty3.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty4 = szr
+    self.Empty4 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty4, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty4.SetLabel(" ")
+    self.Empty4.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty5 = szr
+    self.Empty5 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty5, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty5.SetLabel(" ")
+    self.Empty5.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty6 = szr
+    self.Empty6 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty6, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty6.SetLabel(" ")
+    self.Empty6.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty7 = szr
+    self.Empty7 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty7, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty7.SetLabel(" ")
+    self.Empty7.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty8 = szr
+    self.Empty8 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty8, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty8.SetLabel(" ")
+    self.Empty8.Refresh()
+    # ---------------------------------------------------- пустая кнопка
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_Empty9 = szr
+    self.Empty9 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
+    szr.Add(self.Empty9, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Empty9.SetLabel(" ")
+    self.Empty9.Refresh()
+
+    # ----------------------------------------------------- Слайдеры
+    self.bs2.Add(self.sliderVol, wx.EXPAND)
+    self.bs2.AddSpacer(6)
+    self.bs2.Add(self.sliderSto, wx.EXPAND)
+    self.bs2.AddSpacer(6)
+    self.bs2.Add(self.sliderYs, wx.EXPAND)
+    self.bs2.AddSpacer(6)
+    self.bs2.Add(self.sliderYz, wx.EXPAND)
+    self.bs2.AddSpacer(6)
+    self.bs2.Add(self.sliderZo, wx.EXPAND)
+    self.bs2.AddSpacer(6)
+    self.bs2.Add(self.ritScale, wx.EXPAND)
+
+    # ------------------------------------------------заголовок кнопок
+    st = wx.StaticText(frame, label="Options")
+    self.bs1_text.Add(st)
+
+    self.bs1.Add(b_picture, wx.EXPAND)
+    self.bs1.Add(b_step, wx.EXPAND)
+    self.bs1.Add(b_ssb_offset, wx.EXPAND)
+    self.bs1.AddSpacer(8)
+    self.bs1.Add(b_Empty3, wx.EXPAND)
+    self.bs1.Add(b_Empty4, wx.EXPAND)
+    self.bs1.Add(b_Empty5, wx.EXPAND)
+    self.bs1.Add(b_Empty6, wx.EXPAND)
+    self.bs1.Add(b_Empty7, wx.EXPAND)
+    self.bs1.Add(b_Empty8, wx.EXPAND)
+    self.bs1.Add(b_Empty9, wx.EXPAND)
+
   def MakeButtons(self, frame, gbs):
     from quisk_widgets import button_text_width
     margin = button_text_width
+    # --------------------------------------------- удалено -------------------- реформа кнопок --- 12 RA3PKJ
     # Make one or two sliders on the left
-    self.sliderVol = SliderBoxV(frame, 'Vol', self.volumeAudio, 1000, self.ChangeVolume)
-    self.ChangeVolume()		# set initial volume level
+    #self.sliderVol = SliderBoxV(frame, 'Vol', self.volumeAudio, 1000, self.ChangeVolume)
+    #self.ChangeVolume()		# set initial volume level
 
-    # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    # --------------------------------------------- изменено ----- инициализация скрытых кнопок --- 18 RA3PKJ
     #if conf.use_sidetone:
-    self.sliderSto = SliderBoxV(frame, 'STo', self.sidetone_volume, 1000, self.ChangeSidetone)
-    self.ChangeSidetone()
+    #self.sliderSto = SliderBoxV(frame, 'STo', self.sidetone_volume, 1000, self.ChangeSidetone) # удалено -- реформа кнопок -- 12 RA3PKJ
+    #self.ChangeSidetone()
     #else:
       #self.sliderSto = None
 
-    # Make four sliders on the right
-    self.ritScale = SliderBoxV(frame, 'Rit', self.ritFreq, 2000, self.OnRitScale, False, themin=-2000)
-    self.sliderYs = SliderBoxV(frame, 'Ys', 0, 160, self.ChangeYscale, True)
-    self.sliderYz = SliderBoxV(frame, 'Yz', 0, 160, self.ChangeYzero, True)
-    self.sliderZo = SliderBoxV(frame, 'Zo', 0, 1000, self.OnChangeZoom)
-    self.sliderZo.SetValue(0)
+    # ---------------------------------------------удалено ------------------ реформа кнопок ------ 12 RA3PKJ
+    #self.ritScale = SliderBoxV(frame, 'Rit', self.ritFreq, 2000, self.OnRitScale, False, themin=-2000)
+    #self.sliderYs = SliderBoxV(frame, 'Ys', 0, 160, self.ChangeYscale, True)
+    #self.sliderYz = SliderBoxV(frame, 'Yz', 0, 160, self.ChangeYzero, True)
+    #self.sliderZo = SliderBoxV(frame, 'Zo', 0, 1000, self.OnChangeZoom)
+    #self.sliderZo.SetValue(0)
+
     flag = wx.EXPAND
     # Add band buttons
-    #if conf.button_layout == 'Large screen': # --------------------- удалено ------------------- удаление маленького экрана --- 16 RA3PKJ
-    #self.widget_row = 4 # ------------------------------------------ удалено ----------------------------- реформа кнопок ----- 12 RA3PKJ
-    self.widget_row = 7  # --- ряды кнопок 0,1,2,3,4,5,6 --- взамен --- добавлены нижние ряды кнопок ------ реформа кнопок ----- 12 RA3PKJ
+    #if conf.button_layout == 'Large screen': # ------------- удалено ---- удаление маленького экрана --- 16 RA3PKJ
+    #self.widget_row = 4 # ---------------------------------- удалено -------------- реформа кнопок ----- 12 RA3PKJ
+    self.widget_row = 7  # --- ряды кнопок 0,1,2,3,4,5,6 ----- взамен -------------- реформа кнопок ----- 12 RA3PKJ
     shortcuts = []
     for label in conf.bandLabels:
       if isinstance(label, (list, tuple)):
         label = label[0]
       shortcuts.append(conf.bandShortcuts.get(label, ''))
     self.bandBtnGroup = RadioButtonGroup(frame, self.OnBtnBand, conf.bandLabels, None, shortcuts) # --- создание  группы кнопок диапазонов
-# ------------------------------------------------------------------- удалено ---------------- удаление маленького экрана --------- 16 RA3PKJ
+# ----------------------------------------------------------- удалено ---- удаление маленького экрана --- 16 RA3PKJ
 ##    else:
 ##      self.widget_row = 6		# Next available row for widgets
 ##      self.bandBtnGroup = RadioBtnPopup(frame, self.OnBtnBand, conf.bandLabels, None, 'bandBtnGroup')
     self.bandBtnGroup.idName = 'bandBtnGroup'
     # Add sliders on the left
-    gbs.Add(self.sliderVol, (0, 0), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin)
+    #gbs.Add(self.sliderVol, (6, 2), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin) # удалено -- реформа кнопок -- 12 RA3PKJ
 
-    # ----------------------------------- изменено ------------------------------ инициализация скрытых кнопок -------------------- 18 RA3PKJ
+    # ------------------------------------------------------ изменено --- инициализация скрытых кнопок --- 18 RA3PKJ
     #if conf.use_sidetone:
     button_start_col = 2
     self.slider_columns = [0, 1]
-    gbs.Add(self.sliderSto, (0, 1), (self.widget_row, 1), flag=flag)
+    #gbs.Add(self.sliderSto, (6, 4), (self.widget_row, 1), flag=flag) # --- удалено --- реформа кнопок --- 12 RA3PKJ
     #else:
       #self.slider_columns = [0]
       #button_start_col = 1
@@ -5234,160 +5431,14 @@ class App(wx.App):
     b_tmprec = szr
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
-    # --------------------------------------------------------------- Palette  button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ---------------------------------------------------- Palette  button -------- добавлено --- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
     self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
-
-    # --- кнопка SSB Offset
-    # ----------------------------------------------------------------------добавлено ------------------------------ реформа кнопок ---- 12 RA3PKJ
-    # --------------------------------------------------------------------- добавлено ---------------------------------- SSB Offset ---- 29 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_ssb_offset = szr
-    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Lf")
-    szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.ssb_offset.SetLabel("SSB Lf")
-    self.ssb_offset.Refresh()
-    self.ssb_offset.Enable(False)
-    if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
-      self.ssb_offset.Enable(True)
-    try:
-      self.offset = configure.Settings[4]["offset_SSB_bandwidth"]
-      if self.offset == 300:
-        self.ssb_offset.SetLabel("SSB Lf=300Hz")
-      elif self.offset == 250:
-        self.ssb_offset.SetLabel("SSB Lf=250Hz")
-      elif self.offset == 200:
-        self.ssb_offset.SetLabel("SSB Lf=200Hz")
-      elif self.offset == 150:
-        self.ssb_offset.SetLabel("SSB Lf=150Hz")
-      elif self.offset == 100:
-        self.ssb_offset.SetLabel("SSB Lf=100Hz")
-      elif self.offset == 50:
-        self.ssb_offset.SetLabel("SSB Lf=50Hz")
-      elif self.offset == 0:
-        self.ssb_offset.SetLabel("SSB Lf=0Hz")
-      else:
-        self.offset = 300
-        self.ssb_offset.SetLabel("SSB Lf=300Hz")
-    except:
-      self.offset = 300
-      self.ssb_offset.SetLabel("SSB Lf=300Hz")
-
-    # -------------------------------------------------------------------- кнопка Step ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    # -------------------------------------------------------------------- кнопка Step ------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_step = szr
-    self.step_btn = QuiskPushbutton(frame, self.OnBtnStep, "Step")
-    szr.Add(self.step_btn, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.step_btn.SetLabel("Step")
-    self.step_btn.Refresh()
-    try:
-      self.freq_step = configure.Settings[4]["FrequencyStep"]
-      if self.freq_step == 1:
-        self.step_btn.SetLabel("Step 1")
-      elif self.freq_step == 10:
-        self.step_btn.SetLabel("Step 10")
-      elif self.freq_step == 25:
-        self.step_btn.SetLabel("Step 25")
-      elif self.freq_step == 50:
-        self.step_btn.SetLabel("Step 50")
-      elif self.freq_step == 100:
-        self.step_btn.SetLabel("Step 100")
-      elif self.freq_step == 250:
-        self.step_btn.SetLabel("Step 250")
-      elif self.freq_step == 500:
-        self.step_btn.SetLabel("Step 500")
-      elif self.freq_step == 1000:
-        self.step_btn.SetLabel("Step 1kHz")
-      else:
-        self.freq_step = 50
-        self.step_btn.SetLabel("Step 50")
-    except:
-      self.freq_step = 50
-      self.step_btn.SetLabel("Step 50")
-
-    # -------------------------------------------------------------------- кнопка Picture ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    # -------------------------------------------------------------------- кнопка Picture ----- добавлено ------ картинка на панораме ---- 5 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_picture = szr
-    self.picture = QuiskPushbutton(frame, self.OnBtnPicture, "Picture")
-    szr.Add(self.picture, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.picture.SetLabel("Picture")
-    self.picture.Refresh()
-    # --- при старте загрузить картинку
-    try:
-      self.picture_bmp = configure.Settings[4]["Picture"]
-    except:
-      self.picture_bmp = "Pano_1.jpg"
-    # --- найти все картинки
-    import glob
-    picture_files = '*.jpg'
-    for file in glob.glob(picture_files, recursive=True):
-      self.picture_list.append(file)
-    self.picture_len = len(self.picture_list)
-    try:
-      self.picture_index = self.picture_list.index(self.picture_bmp)
-    except:
-      self.picture_bmp = "Pano_1.jpg"
-      self.picture_index = self.picture_list.index(self.picture_bmp)
-    self.picture.SetLabel("Picture " + str(self.picture_index + 1))
-
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty3 = szr
-    self.Empty3 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty3, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty3.SetLabel(" ")
-    self.Empty3.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty4 = szr
-    self.Empty4 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty4, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty4.SetLabel(" ")
-    self.Empty4.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty5 = szr
-    self.Empty5 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty5, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty5.SetLabel(" ")
-    self.Empty5.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty6 = szr
-    self.Empty6 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty6, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty6.SetLabel(" ")
-    self.Empty6.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty7 = szr
-    self.Empty7 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty7, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty7.SetLabel(" ")
-    self.Empty7.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty8 = szr
-    self.Empty8 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty8, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty8.SetLabel(" ")
-    self.Empty8.Refresh()
-    # -------------------------------------------------------------------- пустая кнопка ----- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
-    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
-    b_Empty9 = szr
-    self.Empty9 = QuiskPushbutton(frame, self.OnBtnEmpty, " ")
-    szr.Add(self.Empty9, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.Empty9.SetLabel(" ")
-    self.Empty9.Refresh()
-
-
-    # ------------------------------------------------------------------------ Split button ------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------- Split button ------- добавлено --- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_newsplit = szr #дать своё имя образцу кнопки
     self.newsplitButton = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
@@ -5395,7 +5446,7 @@ class App(wx.App):
     szr.Add(self.newsplitButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.newsplitButton.SetLabel("Split")
     self.newsplitButton.Refresh()
-    # -------------------------------------------------------------------------A<>B button -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ---------------------------------------------------------A<>B button -------- добавлено --- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_vfoAB = szr
     self.vfoABButton = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
@@ -5403,14 +5454,14 @@ class App(wx.App):
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
     self.vfoABButton.Refresh()
-    # ------------------------------------------------------------------------ кнопка Help -------- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # -------------------------------------------------------- кнопка Help -------- добавлено --- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Help = szr
     self.Help = QuiskPushbutton(frame, self.OnBtnHelp, "Help")
     szr.Add(self.Help, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.Help.SetLabel("Help")
     self.Help.Refresh()
-    # --------------------------------------------------------------------- Lock TX VFO button ---- добавлено ----------- реформа кнопок ---- 12 RA3PKJ
+    # ----------------------------------------------------- Lock TX VFO button ---- добавлено --- реформа кнопок ---- 12 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
     self.lockVFOButton = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
@@ -5559,10 +5610,13 @@ class App(wx.App):
     gbs.Add(b_addrx,       (0, button_start_col + 19), (1, 2), flag=flag)   # второй аппаратный приёмник (Hermes)
     col = button_start_col + 21
     self.slider_columns += [col, col + 1, col + 2, col + 3]
-    gbs.Add(self.ritScale, (0, col    ), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin)
-    gbs.Add(self.sliderYs, (0, col + 1), (self.widget_row, 1), flag=flag)
-    gbs.Add(self.sliderYz, (0, col + 2), (self.widget_row, 1), flag=flag)
-    gbs.Add(self.sliderZo, (0, col + 3), (self.widget_row, 1), flag=flag)
+
+    # -------------------------------удалено -------------------------- реформа кнопок ---- 12 RA3PKJ
+    #gbs.Add(self.ritScale, (6, 6), (self.widget_row, 1), flag=flag|wx.LEFT, border=margin)
+    #gbs.Add(self.sliderYs, (6, 10), (self.widget_row, 1), flag=flag)
+    #gbs.Add(self.sliderYz, (6, 14), (self.widget_row, 1), flag=flag)
+    #gbs.Add(self.sliderZo, (6, 18), (self.widget_row, 1), flag=flag)
+
     gbs.Add(b_membtn,      (1, button_start_col + 15), (1, 3), flag=flag) # кнопки памяти частоты
     gbs.Add(b_rit,         (1, button_start_col + 18), (1, 3), flag=flag)   # кнопка RIT
     gbs.Add(b_Help,        (2, button_start_col + 12), (1, 2), flag=flag)   # кнопка Help
@@ -5576,17 +5630,6 @@ class App(wx.App):
       #b = QuiskCheckbutton(frame, None, text='')
       #gbs.Add(b, (1, button_start_col + col), (1, 1), flag=flag)
       #col += 1
-
-    gbs.Add(b_picture,    (6, button_start_col), (1, 2), flag=flag)
-    gbs.Add(b_step,       (6, button_start_col + 2), (1, 2), flag=flag)
-    gbs.Add(b_ssb_offset, (6, button_start_col + 4), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty3,     (6, button_start_col + 6), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty4,     (6, button_start_col + 8), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty5,     (6, button_start_col + 10), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty6,     (6, button_start_col + 12), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty7,     (6, button_start_col + 15), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty8,     (6, button_start_col + 17), (1, 2), flag=flag) # пустая кнопка
-    gbs.Add(b_Empty9,     (6, button_start_col + 19), (1, 2), flag=flag) # пустая кнопка
 
     # ------------ растяжка кнопок в заданный диапазон длины
     for i in range(button_start_col, button_start_col + 14):
@@ -5650,7 +5693,6 @@ class App(wx.App):
 ##      for i in range(button_start_col, button_start_col + 12):
 ##        gbs.AddGrowableCol(i,1)
     self.button_start_col = button_start_col
-
 
   def MeasureAudioVoltage(self):
     # --------------------------------------------- добавлено ------------------- текстовая инфо на панораме для удалёнки ---------- 17 RA3PKJ
