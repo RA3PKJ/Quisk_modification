@@ -1,4 +1,5 @@
-# Quisk modification
+# Quisk modification. The GNU General Public License (GPL)
+Version 2, June 1991
 
 Quisk modification for Windows and Linux
 
