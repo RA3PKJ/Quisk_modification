@@ -294,7 +294,7 @@ class Configuration:
 
     # -------------------------------- изменено ----------------------------------------------- цветовая схема ----------- 22 RA3PKJ
     if conf.color_scheme == 'A':
-      conf.__dict__.update(conf.color_scheme_A)
+      conf.__dict__.update(conf.color_scheme_C)
     elif conf.color_scheme == 'B':
       conf.__dict__.update(conf.color_scheme_B)
     elif conf.color_scheme == 'C':

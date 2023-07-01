@@ -138,8 +138,13 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     self.points = points
     border = self.border = (height - self.height) // 2
     self.height_and_border = h + border * 2
-    self.SetBackgroundColour(conf.color_freq)
-    self.SetForegroundColour(conf.color_freq_txt)
+    # ---------------------------------------------------- удалено ------------------- реформа кнопок ----------- 12 RA3PKJ
+##    self.SetBackgroundColour(conf.color_freq)
+##    self.SetForegroundColour(conf.color_freq_txt)
+    # ---------------------------------------------------- взамен -------------------- реформа кнопок ----------- 12 RA3PKJ
+    self.SetBackgroundColour('#000000')
+    self.SetForegroundColour('#ECB129')
+
     self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)	# Click on a digit changes the frequency
     self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDown)
     self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)

@@ -1861,11 +1861,11 @@ Ubtn_text_play = "Play" + u"\u25BA"							# Play button
 Ubtn_text_rec = "Rec" + u"\u25CF"							# Record button, a filled dot
 Ubtn_text_file_rec = "File " + u"\u25CF"           # Record to file
 Ubtn_text_file_play = "File " + u"\u25BA"          # Play from file
-Ubtn_text_fav_add    = "Fav" + u"\u25CF"  # Add to favorites
-Ubtn_text_fav_recall = "Fav" + u"\u25BA"  # Jump to favorites screen
-Ubtn_text_mem_add  = "Mem"    # Add to memory
-Ubtn_text_mem_next = "Rest"    # Next memory
-Ubtn_text_mem_del  = "Del"    # Delete from memory
+Ubtn_text_fav_add    = "Favor" + u"\u25CF"  # Add to favorites
+Ubtn_text_fav_recall = "Favor" + u"\u25BA"  # Jump to favorites screen
+Ubtn_text_mem_add  = "Save"    # Add to memory
+Ubtn_text_mem_next = "Restore"    # Next memory
+Ubtn_text_mem_del  = "Delete"    # Delete from memory
 # -------------------------------------------------- удалено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
 # These are the text symbols to display on buttons.
 #Tbtn_text_range_dn = "Dn"
@@ -1967,7 +1967,7 @@ waterfall_palette = 'B'
 #color_graph_msg_bg	= '#111111'
 
 # --- цветовая схема C по умолчанию -------------------------------------------------------- цветовая схема ---------- 22 RA3PKJ
-color_bg			= '#123456'
+color_bg			= '#002222'
 color_bg_txt		= 'white'
 color_graph		    = 'lightcyan3'
 color_config2		= '#0000FF'
@@ -1975,7 +1975,7 @@ color_gl			= '#555555'
 color_graphticks	= '#DDDDDD'
 color_graphline	    = '#00AA00'
 color_graphlabels	= '#000000'
-color_btn			= '#223344'
+color_btn			= '#112233'
 color_check_btn	    = '#A07315'
 color_cycle_btn	    = '#0031C4'
 color_adjust_btn	= '#669999'
@@ -2057,7 +2057,7 @@ color_scheme_B = {
 # --- подключаемая цветовая схема C ------------------------------------------------------ цветовая схема ----------- 22 RA3PKJ
 # color scheme designed by Sergio, IK8HTM.  04/06/2016
 color_scheme_C = {
-'color_bg'			: '#123456',
+'color_bg'			: '#002222',
 'color_bg_txt'		: 'white',
 'color_graph'		: 'lightcyan3',
 'color_config2'		: '#0000FF',
@@ -2065,7 +2065,7 @@ color_scheme_C = {
 'color_graphticks'	: '#DDDDDD',
 'color_graphline'	: '#00AA00',
 'color_graphlabels'	: '#000000',
-'color_btn'			: '#223344',
+'color_btn'			: '#112233',
 'color_check_btn'	: '#A07315',
 'color_cycle_btn'	: '#0031C4',
 'color_adjust_btn'	: '#669999',
