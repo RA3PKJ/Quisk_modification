@@ -1,3 +1,7 @@
+Quisk Version 4.2.20  July 2023
+===============================
+I fixed a bug in the HiQSDR radio that caused the CW sidetone to play when not in CW mode.
+
 Quisk Version 4.2.19  May 2023
 ==============================
 I added the Flex ZZAR command to the Hamlib interface. This controls the AGC level from -20 to +120 dB.

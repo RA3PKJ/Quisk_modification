@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.19.7 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.20.8 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -5467,7 +5467,7 @@ class App(wx.App):
     text = wx.StaticText(frame, label=" Mode")
     text.SetForegroundColour(color)
     self.bs6.Add(text)
-    self.bs6.AddSpacer(4)
+    self.bs6.AddSpacer(3)
     for b in  self.modeButns.GetButtons():
       self.idName2Button[b.idName] = b
       self.bs6.Add(b, wx.EXPAND)

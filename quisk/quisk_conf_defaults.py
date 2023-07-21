@@ -1855,14 +1855,22 @@ Tsym_stat_dx = 'Dx'
 
 # ------------------------------------------------- изменено -------------------------- надписи на кнопках ----------- 20 RA3PKJ
 # These are the Unicode symbols to display on buttons.  Thanks to Christof, DJ4CM.
-Ubtn_text_range_dn =  u"\u25C0" + u"\u2500"						# Down band, left arrow
-Ubtn_text_range_up =  u"\u2500" + u"\u25B6"						# Up band, right arrow
-Ubtn_text_play = "Play" + u"\u25BA"							# Play button
-Ubtn_text_rec = "Rec" + u"\u25CF"							# Record button, a filled dot
-Ubtn_text_file_rec = "File " + u"\u25CF"           # Record to file
-Ubtn_text_file_play = "File " + u"\u25BA"          # Play from file
-Ubtn_text_fav_add    = "Favor" + u"\u25CF"  # Add to favorites
-Ubtn_text_fav_recall = "Favor" + u"\u25BA"  # Jump to favorites screen
+#Ubtn_text_range_dn =  u"\u25C0" + u"\u2500"						# Down band, left arrow
+Ubtn_text_range_dn = "Left"
+#Ubtn_text_range_up =  u"\u2500" + u"\u25B6"						# Up band, right arrow
+Ubtn_text_range_up = "Right"
+#Ubtn_text_play = "Play" + u"\u25BA"							# Play button
+Ubtn_text_play = "Play"
+#Ubtn_text_rec = "Rec" + u"\u25CF"							# Record button, a filled dot
+Ubtn_text_rec = "Rec"
+#Ubtn_text_file_rec = "File " + u"\u25CF"           # Record to file
+Ubtn_text_file_rec = "Save"
+#Ubtn_text_file_play = "File " + u"\u25BA"          # Play from file
+Ubtn_text_file_play = "Play"
+#Ubtn_text_fav_add    = "Favor" + u"\u25CF"  # Add to favorites
+Ubtn_text_fav_add    = "Copy"
+#Ubtn_text_fav_recall = "Favor" + u"\u25BA"  # Jump to favorites screen
+Ubtn_text_fav_recall = "Set"
 Ubtn_text_mem_add  = "Save"    # Add to memory
 Ubtn_text_mem_next = "Restore"    # Next memory
 Ubtn_text_mem_del  = "Delete"    # Delete from memory

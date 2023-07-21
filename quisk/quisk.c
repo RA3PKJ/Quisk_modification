@@ -5621,8 +5621,9 @@ void quisk_set_play_state(void)
 	static double TimeoutTimer = 1E30;	// Timer for maximum Tx time limit.
 	//static int change = 0;
 	//int i;
-
-	if (IS_HW_CWKEY && quisk_play_state != HARDWARE_CWKEY) {	// work around HL2 gateware bug that uses CWX when key goes down
+	
+	if (quisk_use_rx_udp == 10 && IS_HW_CWKEY && quisk_play_state != HARDWARE_CWKEY) {	
+        // work around HL2 gateware bug that uses CWX when key goes down
 		Time0 = TimeoutTimer = QuiskTimeSec();
 		quisk_play_state = HARDWARE_CWKEY;
 		set_stone();
@@ -5650,6 +5651,13 @@ void quisk_set_play_state(void)
 			if (key_is_down) {
 				Time0 = TimeoutTimer = QuiskTimeSec();
 				quisk_play_state = SOFTWARE_PTT;
+				hermes_mox_bit = 1;
+			}
+			else if (IS_HW_CWKEY) {
+				Time0 = TimeoutTimer = QuiskTimeSec();
+				quisk_play_state = HARDWARE_CWKEY;
+				set_stone();
+				quisk_play_sidetone(&quisk_Playback);
 				hermes_mox_bit = 1;
 			}
 			else if (IS_SW_CWKEY) {
