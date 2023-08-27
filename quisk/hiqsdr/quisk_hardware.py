@@ -385,6 +385,7 @@ class Hardware(BaseHardware):
       QS.set_sample_bytes(2)
     self.NewUdpStatus()
     return int(float(self.conf.rx_udp_clock) / dec + 0.5)
+
   def VarDecimRange(self):
     return (48000, 960000)
   def NewUdpStatus(self, do_tx=False):

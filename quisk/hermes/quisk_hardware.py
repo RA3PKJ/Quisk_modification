@@ -18,6 +18,23 @@ DEBUG_I2C = 0
 
 class IOBoard:
   "This class controls the N2ADR IO Board for the HermesLite 2"
+  REG_TX_FREQ_BYTE4 = 0
+  REG_TX_FREQ_BYTE3 = 1
+  REG_TX_FREQ_BYTE2 = 2
+  REG_TX_FREQ_BYTE1 = 3
+  REG_TX_FREQ_BYTE0 = 4
+  REG_CONTROL = 5
+  REG_RF_INPUTS = 11
+  REG_FAN_SPEED = 12
+  REG_FCODE_RX1 = 13
+  REG_FCODE_RX2 = 14
+  REG_FCODE_RX12 = 24
+  REG_ADC0_MSB = 25
+  REG_ADC0_LSB = 26
+  REG_ADC1_MSB = 27
+  REG_ADC1_LSB = 28
+  REG_ADC2_MSB = 29
+  REG_ADC2_LSB = 30
   def __init__(self, hardware):
     self.DEBUG = 0
     self.hardware = hardware
@@ -25,6 +42,9 @@ class IOBoard:
     self.have_board_counter = 3
     self.tx_timer = 0
     self.current_tx_freq = 0
+    self.current_vfo = 0
+    self.old_receive = None
+    self.slow = 0
   def HeartBeat(self):	# Called at 10 Hz for housekeeping tasks
     if not QS.get_params('rx_udp_started'):
       return
@@ -34,6 +54,8 @@ class IOBoard:
         self.have_IO_Board = True
         if self.DEBUG or DEBUG_I2C:
           print ('Have IO_Board')
+        self.hardware.WriteI2C(0x7d, 0x1D, self.REG_CONTROL, 1)
+        if self.DEBUG: print ("IO Board RESET")
         self.hardware.ImmediateChange('hermes_iob_rxin')
       else:
         self.have_board_counter -= 1
@@ -43,36 +65,75 @@ class IOBoard:
             print ('No IO board')
     if not self.have_IO_Board:
       return
+    if self.hardware.vfo_frequency != self.current_vfo:		# defeat phase error in ChangeFrequency()
+      self.current_vfo = self.hardware.vfo_frequency
+      self.NewRxFreq(0, self.current_vfo)
     if self.hardware.tx_frequency != self.current_tx_freq and time.time() - self.tx_timer > 0.50:
       self.current_tx_freq = self.hardware.tx_frequency
       self.tx_timer = time.time()
       tx = self.current_tx_freq		# Send Tx frequency to IO Board
-      self.hardware.WriteI2C(0x7d, 0x1D, 0, (tx >> 32) & 0xFF)	# MSB
-      self.hardware.WriteI2C(0x7d, 0x1D, 1, (tx >> 24) & 0xFF)
-      self.hardware.WriteI2C(0x7d, 0x1D, 2, (tx >> 16) & 0xFF)
-      self.hardware.WriteI2C(0x7d, 0x1D, 3, (tx >>  8) & 0xFF)
-      self.hardware.WriteI2C(0x7d, 0x1D, 13, tx        & 0xFF)	# LSB
-      #self.Receive()
-  def Receive(self, register=0):	# Get the response from the IO board
+      if self.DEBUG: print ("IO Board TxFreq", tx)
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_TX_FREQ_BYTE4, (tx >> 32) & 0xFF)	# MSB
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_TX_FREQ_BYTE3, (tx >> 24) & 0xFF)
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_TX_FREQ_BYTE2, (tx >> 16) & 0xFF)
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_TX_FREQ_BYTE1, (tx >>  8) & 0xFF)
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_TX_FREQ_BYTE0, tx        & 0xFF)	# LSB
+    if self.DEBUG > 1:
+      self.slow += 1
+      if self.slow >= 10:
+        self.slow = 0
+        ret = self.Receive(self.REG_ADC0_MSB)
+        #print ('IO Board  ADC: 0x%X 0x%X 0x%X 0x%X 0x%X' % tuple(ret))
+        v0 = (ret[4] << 8 | ret[3]) / 4096.0 * 3.0
+        v1 = (ret[2] << 8 | ret[1]) / 4096.0 * 3.0
+        #print ('IO Board  ADC 0 %4.3f  ADC1  %4.3f' % (v0, v1))
+      ret = self.Receive(self.REG_TX_FREQ_BYTE3)
+      if ret and ret != self.old_receive:
+        self.old_receive = ret
+        f = ret[1] | ret[2]<< 8 | ret[3] << 16 | ret[4] << 24
+        print ('IO Board Freq: 0x%X 0x%X 0x%X 0x%X 0x%X   %d' % (tuple(ret) + (f,)))
+  def Receive(self, register):	# Get the response from the IO board
     if not self.have_IO_Board:
-      return
+      return None
     ret = self.hardware.ReadI2C(0x7d, 0x1D, register)
-    if self.DEBUG:
-      print ('IO Board: 0x%X 0x%X 0x%X 0x%X 0x%X' % tuple(ret))
     return ret
   def FanLevel(self, level):
     if not self.have_IO_Board:
       return
     # Send the fan level as I2C register 2
     # level is an integer from 0 to 255
-    self.hardware.WriteI2C(0x7d, 0x1D, 12, level)
+    if self.DEBUG: print ("IO Board: Fan level", level)
+    self.hardware.WriteI2C(0x7d, 0x1D, self.REG_FAN_SPEED, level)
   def AuxRxInput(self, mode):
     # 0: The HL2 operates as usual. The receive input is not used. The Pure Signal input is available.
     # 1: The receive input is used instead of the usual HL2 Rx input. Pure Signal is not available.
     # 2: The receive input is used for Rx, and the Pure Signal input is used during Tx.
     if not self.have_IO_Board:
       return
-    self.hardware.WriteI2C(0x7d, 0x1D, 11, mode)
+    if self.DEBUG: print ("IO Board: Rx mode", mode)
+    self.hardware.WriteI2C(0x7d, 0x1D, self.REG_RF_INPUTS, mode)
+  def hertz2code(self, freq):	# frequency codes for the IO board
+    if freq == 0:
+      return 0
+    code = int(0.5 + 15.47 * math.log(freq / 18748.1))
+    if code < 1:
+      return 1
+    elif code > 255:
+      return 255
+    return code
+  def code2hertz(self, code):
+    if code == 0:
+      return 0
+    freq = int(0.5 + 18748.1 * math.exp(code / 15.47))
+    return freq
+  def NewRxFreq(self, index, freq):
+    if not self.have_IO_Board:
+      return
+    if 0 <= index < 12:	
+      fcode = self.hertz2code(freq)
+      self.hardware.WriteI2C(0x7d, 0x1D, self.REG_FCODE_RX1 + index, fcode)
+      if self.DEBUG:
+        print ("IO Board RxFreq index %d freq %d code %d"  % (index, freq, fcode))
 
 class Hardware(BaseHardware):
   var_rates = ['48', '96', '192', '384']
@@ -586,13 +647,27 @@ class Hardware(BaseHardware):
     self.pc2hermes[3] = 0x04 | count << 3
     QS.pc_to_hermes(self.pc2hermes)
     if DEBUG: print("Change MultiRx count to", count)
-  def MultiRxFrequency(self, index, vfo):	# index of multi rx receiver: 0, 1, 2, ...
-    if DEBUG: print("Change MultiRx %d frequency to %d" % (index, vfo))
-    index = index * 4 + 12		# index does not include first Tx/Rx receiver in C0 index == 1, 2
-    self.pc2hermes[index    ] = vfo >> 24 & 0xff
-    self.pc2hermes[index + 1] = vfo >> 16 & 0xff		# C1, C2, C3, C4: Rx freq, MSB in C1
-    self.pc2hermes[index + 2] = vfo >>  8 & 0xff
-    self.pc2hermes[index + 3] = vfo       & 0xff
+  def MultiRxFrequency(self, index, vfo, band):	# index of multi rx receiver: 0, 1, 2, ...
+    self.io_board.NewRxFreq(index + 1, vfo)
+    try:
+      vfo -= self.conf.bandTransverterOffset[band]
+    except:
+      pass
+    if DEBUG: print("Change MultiRx %d frequency to %d in band %s" % (index, vfo, band))
+    if index <= 5:
+      C0 = index + 3
+      jndex = C0 * 4
+      self.pc2hermes[jndex    ] = vfo >> 24 & 0xff
+      self.pc2hermes[jndex + 1] = vfo >> 16 & 0xff		# C1, C2, C3, C4: Rx freq, MSB in C1
+      self.pc2hermes[jndex + 2] = vfo >>  8 & 0xff
+      self.pc2hermes[jndex + 3] = vfo       & 0xff
+    elif index <= 10:
+      C0 = index + 12
+      jndex = C0 * 4
+      self.pc2hermes[jndex    ] = vfo >> 24 & 0xff
+      self.pc2hermes[jndex + 1] = vfo >> 16 & 0xff		# C1, C2, C3, C4: Rx freq, MSB in C1
+      self.pc2hermes[jndex + 2] = vfo >>  8 & 0xff
+      self.pc2hermes[jndex + 3] = vfo       & 0xff
     QS.pc_to_hermes(self.pc2hermes)
   def SetVNA(self, key_down=None, vna_start=None, vna_stop=None, vna_count=None, do_tx=False):
     if vna_count is not None:	# must be called first
@@ -962,7 +1037,7 @@ class Hardware(BaseHardware):
         if resp[0] != 0:
           #print ("0x%X 0x%X 0x%X 0x%X 0x%X" % tuple(resp))
           if bus & 0x3F == (resp[0] >> 1) & 0x3F:
-            if DEBUG_I2C or DEBUG:
+            if DEBUG_I2C > 1 or DEBUG:
               print ("Write I2C bus OK 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
           else:
             if DEBUG_I2C or DEBUG:
@@ -972,7 +1047,7 @@ class Hardware(BaseHardware):
         if DEBUG_I2C or DEBUG:
           print ("Write I2C bus TIMEOUT 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
     else:
-      if True or DEBUG: print ("Write I2C bus 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
+      if DEBUG_I2C > 1 or DEBUG: print ("Write I2C bus 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
   def ReadI2C(self, bus, i2caddr, control):
     # bus is 0x7c or 0x7d
     self.WriteQueue(0)		# Finish any writes

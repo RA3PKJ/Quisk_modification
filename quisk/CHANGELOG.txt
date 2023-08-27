@@ -1,3 +1,11 @@
+Quisk Version 4.2.22  August 2023
+=================================
+This version adds more support for the Hermes Lite2 IO board.
+
+Quisk Version 4.2.21  July 2023
+===============================
+This version includes Windows support for Python 3.11. It also has the new IO board register numbers.
+
 Quisk Version 4.2.20  July 2023
 ===============================
 I fixed a bug in the HiQSDR radio that caused the CW sidetone to play when not in CW mode.
