@@ -4346,21 +4346,22 @@ class App(wx.App):
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
       Hardware.pre_open()
 
+    # ------- установка нижнего ряда
     if self.local_conf.GetWidgets(self, Hardware, conf, frame, gbs, vertBox):
       pass
     elif conf.quisk_widgets:
       self.bottom_widgets = conf.quisk_widgets.BottomWidgets(self, Hardware, conf, frame, gbs, vertBox)
 
-    # ----------------------------------------- удалено ---------- дополнительный нижний ряд ------ 19 RA3PKJ
-    #if self.bottom_widgets:		# Extend the sliders to the bottom of the screen
-      #try:
-        #i = self.bottom_widgets.num_rows_added		# No way to get total rows until ver 2.9 !!
-      #except:
-        #i = 1
-      #rows = self.widget_row + i
-      #for i in self.slider_columns:
-        #item = gbs.FindItemAtPosition((0, i))
-        #item.SetSpan((row, 1))
+# ----------------------------------------------- удалено ---------- дополнительный нижний ряд ------ 19 RA3PKJ
+##    if self.bottom_widgets:		# Extend the sliders to the bottom of the screen
+##      try:
+##        i = self.bottom_widgets.num_rows_added		# No way to get total rows until ver 2.9 !!
+##      except:
+##        i = 1
+##      rows = self.widget_row + i
+##      for i in self.slider_columns:
+##        item = gbs.FindItemAtPosition((0, i))
+##        item.SetSpan((row, 1))
 
     self.OpenHardware()
     msg = QS.open_key(port=conf.quisk_serial_port, cts=conf.quisk_serial_cts, dsr=conf.quisk_serial_dsr)
@@ -5083,12 +5084,13 @@ class App(wx.App):
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
     # --- создание слайдеров
-    self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
-    self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
-    self.sliderYs = SliderBoxHH(frame, 'Yscale', self.y_scale, 0, 160, self.ChangeYscale, display=False, scale=1)
-    self.sliderYz = SliderBoxHH(frame, 'Yshift', self.y_zoom, 0, 160, self.ChangeYzero, display=False, scale=1)
-    self.sliderZo = SliderBoxHH(frame, 'Zoom', self.zoom_control, 0, 1000, self.OnChangeZoom, display=False, scale=1)
-    self.ritScale = SliderBoxHH(frame, 'RIT', self.ritFreq, -2000, 2000, self.OnRitScale, display=False, scale=1)
+    # --- display=True это показывать значение %d
+    self.sliderVol = SliderBoxHH(frame, 'Volume %d', self.volumeAudio, 0, 1000, self.ChangeVolume, display=True, scale=1)
+    self.sliderSto = SliderBoxHH(frame, 'SideTone %d', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=True, scale=1)
+    self.sliderYs = SliderBoxHH(frame, 'Yscale %d', self.y_scale, 0, 160, self.ChangeYscale, display=True, scale=1)
+    self.sliderYz = SliderBoxHH(frame, 'Yshift %d', self.y_zoom, 0, 160, self.ChangeYzero, display=True, scale=1)
+    self.sliderZo = SliderBoxHH(frame, 'Zoom %d', self.zoom_control, 0, 1000, self.OnChangeZoom, display=True, scale=1)
+    self.ritScale = SliderBoxHH(frame, 'RIT %d', self.ritFreq, -2000, 2000, self.OnRitScale, display=True, scale=1)
     self.ChangeVolume()		# set initial volume level
     self.ChangeSidetone()
     self.sliderZo.SetValue(0)
@@ -5413,23 +5415,24 @@ class App(wx.App):
     self.bs1.Add(b_tmprec, wx.EXPAND)
 
     # -------------------------- установка слайдеров в сайзер bs2
+    self.bs2.AddSpacer(9)
     self.bs2.Add(self.sliderVol, wx.EXPAND)
-    self.bs2.AddSpacer(6)
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderSto, wx.EXPAND)
-    self.bs2.AddSpacer(6)
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderYs, wx.EXPAND)
-    self.bs2.AddSpacer(6)
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderYz, wx.EXPAND)
-    self.bs2.AddSpacer(6)
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderZo, wx.EXPAND)
-    self.bs2.AddSpacer(6)
+    self.bs2.AddSpacer(15)
     self.bs2.Add(self.ritScale, wx.EXPAND)
 
     # ----------------------------- установка кнопок в сайзер bs3
     text = wx.StaticText(frame, label="   Band")
     text.SetForegroundColour(color)
     self.bs3.Add(text)
-    self.bs3.AddSpacer(3)
+    self.bs3.AddSpacer(1)
     for b in band_buttons[0:14]:
       self.idName2Button[b.idName] = b
       self.bs3.Add(b, wx.EXPAND)
@@ -5455,7 +5458,7 @@ class App(wx.App):
     text = wx.StaticText(frame, label="Screen")
     text.SetForegroundColour(color)
     self.bs5.Add(text)
-    self.bs5.AddSpacer(3)
+    self.bs5.AddSpacer(1)
     for i in range(0, 6):
       b = row_screen[i]
       self.bs5.Add(b, wx.EXPAND)
@@ -5489,7 +5492,7 @@ class App(wx.App):
     text = wx.StaticText(frame, label="   Filter")
     text.SetForegroundColour(color)
     self.bs7.Add(text)
-    self.bs7.AddSpacer(3)
+    self.bs7.AddSpacer(1)
     for i in range(0, 6):
       b = row_width[i]
       if isinstance(b, WrapSlider):

@@ -25,14 +25,14 @@ class BottomWidgets:	# Add extra widgets to the bottom of the screen
     b = app.QuiskCheckbutton(frame, self.OnAGC, 'RfAgc')
     if hardware.hermes_code_version >= 40:
       b.Enable(False)
-    gbs.Add(b, (start_row, self.start_col), (1, 2), flag=wx.EXPAND)
+    gbs.Add(b, (start_row, self.start_col), (1, 10), flag=wx.EXPAND)
     bw, bh = b.GetMinSize()
     init = app.hermes_LNA_dB
-    self.sliderLNA = app.SliderBoxHH(frame, 'RfLna %d dB', init, -12, 48, self.OnLNA, True)
+    self.sliderLNA = app.SliderBoxHH(frame, 'RfLna %d dB', init, -12, 48, self.OnLNA, display=True) # ---- display=True это показывать значение %d
     self.sliderLNA.idName = "RfLna"
     app.midiControls["RfLna"]	= (self.sliderLNA,	self.OnLNA)
     hardware.ChangeLNA(init)
-    gbs.Add(self.sliderLNA, (start_row, self.start_col + 2), (1, 8), flag=wx.EXPAND)
+    gbs.Add(self.sliderLNA, (start_row, self.start_col + 14), (1, 50), flag=wx.EXPAND) # -- 14 (было 2) -- 50 (было 8) -- дополнительный нижний ряд -- 19 RA3PKJ
 # --------------------------------------------------- удалено ------------------------------ удаление маленького экрана ------ 16 RA3PKJ
 ##    if conf.button_layout == "Small screen":
 ##      # Display four data items in a single window
@@ -61,7 +61,7 @@ class BottomWidgets:	# Add extra widgets to the bottom of the screen
 ##      app.Bind(wx.EVT_MENU, self.OnDataSwr, item)
 ##    else:
     szr = wx.BoxSizer(wx.HORIZONTAL)
-    gbs.Add(szr, (start_row, self.start_col + 10), (1, 18), flag=wx.EXPAND)
+    gbs.Add(szr, (start_row, self.start_col + 69), (1, 18), flag=wx.EXPAND) # ------- 69 (было 10) --- дополнительный нижний ряд --- 19 RA3PKJ
     text_temperature = wx.StaticText(frame, -1, ' Temp 100DC XX', style=wx.ST_NO_AUTORESIZE)
     size = text_temperature.GetBestSize()
     text_temperature.Destroy()
