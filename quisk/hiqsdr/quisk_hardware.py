@@ -366,7 +366,7 @@ class Hardware(BaseHardware):
     if index is None:		# initial call to set decimation before the call to open()
       rate = self.application.vardecim_set		# May be None or from different hardware
       try:
-        dec = int(float(self.conf.rx_udp_clock // rate + 0.5))
+        dec = int(float(self.conf.rx_udp_clock / rate + 0.5))
         self.index = self.decimations.index(dec)
       except:
         try:

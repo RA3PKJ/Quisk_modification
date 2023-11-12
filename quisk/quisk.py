@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.22.8 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.23.9 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -4087,11 +4087,6 @@ class App(wx.App):
       self.FixAmplPhase()		# Convert to new format Oct 2020
     if Hardware.VarDecimGetChoices():	# Hardware can change the decimation.
       self.sample_rate = Hardware.VarDecimSet()	# Get the sample rate.
-
-      # --------------------- добавлено -------------------------------- ширина панорамы ---------- 33 RA3PKJ
-      abc = round(self.sample_rate / 1000)
-      self.sample_rate = abc * 1000
-
       self.vardecim_set = self.sample_rate
       try:
         var_rate1, var_rate2 = Hardware.VarDecimRange()
@@ -6071,11 +6066,6 @@ class App(wx.App):
     if event:
       i = event.GetSelection()
       rate = Hardware.VarDecimSet(i)
-
-      # --------------------- добавлено ------------------------- ширина панорамы ---------- 33 RA3PKJ
-      abc = round(rate / 1000)
-      rate = abc * 1000
-
     self.vardecim_set = rate
     if rate != self.sample_rate:
       self.sample_rate = rate

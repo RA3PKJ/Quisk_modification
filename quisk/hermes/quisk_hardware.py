@@ -129,11 +129,17 @@ class IOBoard:
   def NewRxFreq(self, index, freq):
     if not self.have_IO_Board:
       return
-    if 0 <= index < 12:	
+    if 0 <= index < 12:
       fcode = self.hertz2code(freq)
       self.hardware.WriteI2C(0x7d, 0x1D, self.REG_FCODE_RX1 + index, fcode)
       if self.DEBUG:
         print ("IO Board RxFreq index %d freq %d code %d"  % (index, freq, fcode))
+  def Antenna(self, Tx, Rx):
+    if not self.have_IO_Board:
+      return
+    ant = Tx << 4 | Rx
+    if self.DEBUG: print ("IO Board: antenna 0x%X" % ant)
+    self.hardware.WriteI2C(0x7d, 0x1D, 31, ant)
 
 class Hardware(BaseHardware):
   var_rates = ['48', '96', '192', '384']
@@ -513,6 +519,7 @@ class Hardware(BaseHardware):
   def OnButtonAntenna(self, event):
     btn = event.GetEventObject()
     self.antenna_index = btn.index
+    self.io_board.Antenna(self.antenna_index, self.antenna_index)
     self.ChangeBandFilters()
   def ChangeBandFilters(self):
     if not hasattr(self.application, "multi_rx_screen"):
@@ -592,7 +599,7 @@ class Hardware(BaseHardware):
     return rate
   def VarDecimRange(self):
     return (48000, 384000)
-  ## Hardware AGC is no longer supported in HL2 identifying as version >=40   
+  ## Hardware AGC is no longer supported in HL2 identifying as version >=40
   def ChangeAGC(self, value):
     if value:
       self.pc2hermes[2] |= 0x10		# C0 index == 0, C3[4]: AGC enable
@@ -634,7 +641,7 @@ class Hardware(BaseHardware):
       reduc = self.application.digital_tx_level
     else:
       reduc = self.application.tx_level
-    tx_level = int(tx_level *reduc/100.0)  
+    tx_level = int(tx_level *reduc/100.0)
     if tx_level < 0:
       tx_level = 0
     elif tx_level > 255:
@@ -815,7 +822,7 @@ class Hardware(BaseHardware):
   ## Bias is 0 indexed to match schematic
   ## Changes for HermesLite v2 thanks to Steve, KF7O
   def ChangeBias0(self, value):
-    if self.hermes_code_version >= 60: 
+    if self.hermes_code_version >= 60:
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
@@ -823,15 +830,15 @@ class Hardware(BaseHardware):
     self.WriteQueue(1)
     if DEBUG: print ("Change bias 0", value)
   def ChangeBias1(self, value):
-    if self.hermes_code_version >= 60: 
+    if self.hermes_code_version >= 60:
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x10,value 
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x10,value
     self.WriteQueue(1)
     if DEBUG: print ("Change bias 1", value)
   def WriteBias(self, value0, value1):
-    if self.hermes_code_version >= 60: 
+    if self.hermes_code_version >= 60:
       i2caddr,value0 = 0xac,(value0%256)
     else:
       i2caddr,value0 = 0xa8,(255-(value0%256))
@@ -840,12 +847,12 @@ class Hardware(BaseHardware):
     ## Wait >10ms as that is the longest EEPROM write cycle time
     time.sleep(0.015)
     value1 = (value1%256) if self.hermes_code_version >= 60 else (255-(value1%256))
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1 
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1
     self.WriteQueue(1)
     ## Double write bias to EEPROM
     time.sleep(0.030)
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1 
-    self.WriteQueue(1)    
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1
+    self.WriteQueue(1)
     time.sleep(0.015)
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x20,value0
     self.WriteQueue(1)
@@ -980,8 +987,8 @@ class Hardware(BaseHardware):
     ## hw.WriteEEPROM(13,66)
     ## To enable the fixed IP and alternate MAC, and favor DHCP
     ## hw.WriteEEPROM(6, 0x80 | 0x40 | 0x20)
-    ## See https://github.com/softerhardware/Hermes-Lite2/wiki/Protocol  
-    if self.hermes_code_version >= 60: 
+    ## See https://github.com/softerhardware/Hermes-Lite2/wiki/Protocol
+    if self.hermes_code_version >= 60:
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
@@ -993,7 +1000,7 @@ class Hardware(BaseHardware):
     ## To read the bias settings for bias0 and bias1
     ## hw.ReadEEPROM(2)
     ## hw.ReadEEPROM(3)
-    if self.hermes_code_version >= 60: 
+    if self.hermes_code_version >= 60:
       i2caddr = 0xac
     else:
       i2caddr = 0xa8

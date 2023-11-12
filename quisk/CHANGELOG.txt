@@ -1,3 +1,8 @@
+Quisk Version 4.2.23  September 2023
+====================================
+I fixed a bug in the HiQSDR when the clock is not a multiple of 48 kHz. I added more support for
+the IO board.
+
 Quisk Version 4.2.22  August 2023
 =================================
 This version adds more support for the Hermes Lite2 IO board.
