@@ -83,20 +83,24 @@ class IOBoard:
       if self.slow >= 10:
         self.slow = 0
         ret = self.Receive(self.REG_ADC0_MSB)
-        #print ('IO Board  ADC: 0x%X 0x%X 0x%X 0x%X 0x%X' % tuple(ret))
-        v0 = (ret[4] << 8 | ret[3]) / 4096.0 * 3.0
-        v1 = (ret[2] << 8 | ret[1]) / 4096.0 * 3.0
+        #print ('IO Board  ADC: 0x%X 0x%X 0x%X 0x%X' % tuple(ret))
+        v0 = (ret[0] << 8 | ret[1]) / 4096.0 * 3.0
+        v1 = (ret[2] << 8 | ret[3]) / 4096.0 * 3.0
         #print ('IO Board  ADC 0 %4.3f  ADC1  %4.3f' % (v0, v1))
       ret = self.Receive(self.REG_TX_FREQ_BYTE3)
       if ret and ret != self.old_receive:
         self.old_receive = ret
-        f = ret[1] | ret[2]<< 8 | ret[3] << 16 | ret[4] << 24
-        print ('IO Board Freq: 0x%X 0x%X 0x%X 0x%X 0x%X   %d' % (tuple(ret) + (f,)))
+        f = ret[3] | ret[2] << 8 | ret[1] << 16 | ret[0] << 24
+        print ('IO Board Freq: 0x%X 0x%X 0x%X 0x%X   %d' % (tuple(ret) + (f,)))
   def Receive(self, register):	# Get the response from the IO board
     if not self.have_IO_Board:
       return None
     ret = self.hardware.ReadI2C(0x7d, 0x1D, register)
-    return ret
+    if not ret:
+      return ret
+    # Return four registers in numeric order
+    ret.reverse()
+    return ret[0:4]
   def FanLevel(self, level):
     if not self.have_IO_Board:
       return
@@ -129,7 +133,7 @@ class IOBoard:
   def NewRxFreq(self, index, freq):
     if not self.have_IO_Board:
       return
-    if 0 <= index < 12:
+    if 0 <= index < 12:	
       fcode = self.hertz2code(freq)
       self.hardware.WriteI2C(0x7d, 0x1D, self.REG_FCODE_RX1 + index, fcode)
       if self.DEBUG:
@@ -203,7 +207,7 @@ class Hardware(BaseHardware):
     #    C2 = 7-bit I2C address | stop;  Where "stop" is 0x80 to stop at end; else zero for continue
     #    C3 = 8-bit I2C control (often a register address)
     #    C4 = 8-bit I2C data for write, else 0
-    self.pc2hermeslitewritequeue = bytearray(4 * 5)	# Four of (C0, C1, C2, C3, C4)
+    self.pc2hermeslitewritequeue = bytearray(5)
     # Initialize some data
     self.pc2hermes[3] = 0x04	# C0 index == 0, C4[5:3]: number of receivers 0b000 -> one receiver; C4[2] duplex on
     self.pc2hermes[4 * 9] = 63	# C0 index == 0b1001, C1[7:0] Tx level
@@ -326,7 +330,8 @@ class Hardware(BaseHardware):
     self.ChangeLNA(2)	# Initialize the LNA using the correct LNA code from the FPGA code version
   def open(self):
     self.delay_config = True	# Delay sending message to HL2 until after sound starts
-    for name in ('hermes_tx_buffer_latency', 'keyupDelay',
+    # This list only changes control bits; no use of WriteQueue()
+    for name in ('keyupDelay',
         'hermes_lowpwr_tr_enable', 'hermes_PWM', 'hermes_disable_sync', 'hermes_power_amp', 'Hermes_BandDictEnTx'):
       self.ImmediateChange(name)
     return self.config_text
@@ -492,7 +497,7 @@ class Hardware(BaseHardware):
         self.application.bottom_widgets.UpdateText()
     if self.delay_config and QS.get_params('rx_udp_started'):
       self.delay_config = False
-      for name in ('hermes_disable_watchdog', 'hermes_reset_on_disconnect', 'hermes_iob_rxin'):
+      for name in ('hermes_disable_watchdog', 'hermes_tx_buffer_latency', 'hermes_reset_on_disconnect', 'hermes_iob_rxin'):
         self.ImmediateChange(name)
     self.io_board.HeartBeat()
   def RepeaterOffset(self, offset=None):	# Change frequency for repeater offset during Tx
@@ -599,7 +604,7 @@ class Hardware(BaseHardware):
     return rate
   def VarDecimRange(self):
     return (48000, 384000)
-  ## Hardware AGC is no longer supported in HL2 identifying as version >=40
+  ## Hardware AGC is no longer supported in HL2 identifying as version >=40   
   def ChangeAGC(self, value):
     if value:
       self.pc2hermes[2] |= 0x10		# C0 index == 0, C3[4]: AGC enable
@@ -641,7 +646,7 @@ class Hardware(BaseHardware):
       reduc = self.application.digital_tx_level
     else:
       reduc = self.application.tx_level
-    tx_level = int(tx_level *reduc/100.0)
+    tx_level = int(tx_level *reduc/100.0)  
     if tx_level < 0:
       tx_level = 0
     elif tx_level > 255:
@@ -740,8 +745,8 @@ class Hardware(BaseHardware):
       elif hang > 31:
         hang = 31
       self.pc2hermeslitewritequeue[0:5] = 0x17 | 0x40, 0, 0, hang, lat
-      self.WriteQueue(1)
-      if DEBUG: print ("Change tx_buffer_latency %d, PTT_hang_time %d" % (lat, hang))
+      self.WriteQueue()
+      if DEBUG: print ("WriteQueue: Change tx_buffer_latency %d, PTT_hang_time %d" % (lat, hang))
     elif name == 'hermes_PWM':
       if self.conf.hermes_PWM[0:4] == 'Fan ':
         self.SetControlBit(0x00, 11, 0)
@@ -758,21 +763,21 @@ class Hardware(BaseHardware):
     elif name == 'hermes_disable_watchdog':
       if self.conf.hermes_disable_watchdog:
         self.pc2hermeslitewritequeue[0:5] = 0x39 | 0x40, 0x09, 0, 0, 0
-        self.WriteQueue(1)
-        if DEBUG: print ("Set hermes_disable_watchdog")
+        self.WriteQueue()
+        if DEBUG: print ("WriteQueue: Set hermes_disable_watchdog")
       else:
         self.pc2hermeslitewritequeue[0:5] = 0x39 | 0x40, 0x08, 0, 0, 0
-        self.WriteQueue(1)
-        if DEBUG: print ("Clear hermes_disable_watchdog")
+        self.WriteQueue()
+        if DEBUG: print ("WriteQueue: Clear hermes_disable_watchdog")
     elif name == 'hermes_reset_on_disconnect':
       if self.conf.hermes_reset_on_disconnect:
         self.pc2hermeslitewritequeue[0:5] = 0x3A | 0x40, 0, 0, 0, 0x01
-        self.WriteQueue(1)
-        if DEBUG: print ("Set hermes_reset_on_disconnect")
+        self.WriteQueue()
+        if DEBUG: print ("WriteQueue: Set hermes_reset_on_disconnect")
       else:
         self.pc2hermeslitewritequeue[0:5] = 0x3A | 0x40, 0, 0, 0, 0
-        self.WriteQueue(1)
-        if DEBUG: print ("Clear hermes_reset_on_disconnect")
+        self.WriteQueue()
+        if DEBUG: print ("WriteQueue: Clear hermes_reset_on_disconnect")
     elif name == 'hermes_lowpwr_tr_enable':
       if self.conf.hermes_lowpwr_tr_enable:
         self.SetControlBit(0x09, 18, 1)
@@ -822,57 +827,63 @@ class Hardware(BaseHardware):
   ## Bias is 0 indexed to match schematic
   ## Changes for HermesLite v2 thanks to Steve, KF7O
   def ChangeBias0(self, value):
-    if self.hermes_code_version >= 60:
+    if self.hermes_code_version >= 60: 
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x00,value
-    self.WriteQueue(1)
+    self.WriteQueue()
     if DEBUG: print ("Change bias 0", value)
   def ChangeBias1(self, value):
-    if self.hermes_code_version >= 60:
+    if self.hermes_code_version >= 60: 
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x10,value
-    self.WriteQueue(1)
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x10,value 
+    self.WriteQueue()
     if DEBUG: print ("Change bias 1", value)
   def WriteBias(self, value0, value1):
-    if self.hermes_code_version >= 60:
+    if self.hermes_code_version >= 60: 
       i2caddr,value0 = 0xac,(value0%256)
     else:
       i2caddr,value0 = 0xa8,(255-(value0%256))
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x20,value0
-    self.WriteQueue(1)
+    self.WriteQueue()
     ## Wait >10ms as that is the longest EEPROM write cycle time
     time.sleep(0.015)
     value1 = (value1%256) if self.hermes_code_version >= 60 else (255-(value1%256))
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1
-    self.WriteQueue(1)
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1 
+    self.WriteQueue()
     ## Double write bias to EEPROM
     time.sleep(0.030)
-    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1
-    self.WriteQueue(1)
+    self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x30,value1 
+    self.WriteQueue()    
     time.sleep(0.015)
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,0x20,value0
-    self.WriteQueue(1)
+    self.WriteQueue()
     if DEBUG: print ("Write bias", value0, value1)
-  def WriteQueue(self,qlen):
-    ## Make sure last write(s) went through
-    dt = 0.005 ## 5 ms initial delay
-    while QS.get_hermeslite_writepointer() > 0:
-      time.sleep(dt)
-      dt *= 2
-      if dt > 0.300:
-        print("ERROR: Hermes-Lite write queue timeout, queue 0x%x 0x%x 0x%x 0x%x 0x%x" % tuple(self.pc2hermeslitewritequeue[0:5]))
-        return
-    if qlen <= 0:	# Do not add to queue, just finish last write
-      return
-    ## Send next write(s)
+  def _wait_queue(self):
+    # Wait for the write to finish
+    for i in range(50):
+      wp = QS.get_hermeslite_writepointer()
+      if wp == 0:
+        return True
+      time.sleep(0.010)
+    else:
+      print("ERROR: Hermes-Lite write queue timeout, queue 0x%X 0x%X 0x%X 0x%X 0x%X" % tuple(self.old_writequeue))
+      QS.set_hermeslite_writepointer(0)
+    return False
+  def WriteQueue(self, wait=False):
+    self._wait_queue()
+    # Send next write
+    self.old_writequeue = self.pc2hermeslitewritequeue[:]
     QS.pc_to_hermeslite_writequeue(self.pc2hermeslitewritequeue)
-    QS.set_hermeslite_writepointer(qlen)
-    if DEBUG:
-      if dt > 0.005: print("Final dt in Hermes-Lite write queue was",dt)
+    QS.set_hermeslite_writepointer(1)
+    if DEBUG: print("Hermes-Lite write queue request,        queue 0x%X 0x%X 0x%X 0x%X 0x%X" % tuple(self.pc2hermeslitewritequeue))
+    if wait:
+      # Wait for the write to complete
+      return self._wait_queue()
+    return True
   ## In HL2 firmware identifying as version >=40, AD9866 access is available
   ## See AD9866 datasheet for details, some examples:
   ## self.writeAD9866(0x08,0xff) ## Set LPF target frequency
@@ -889,7 +900,7 @@ class Hardware(BaseHardware):
     addr = addr & 0x01f
     data = data & 0x0ff
     self.pc2hermeslitewritequeue[0:5] = 0x7b,0x06,addr,0x00,data
-    self.WriteQueue(1)
+    self.WriteQueue()
     if DEBUG: print ("Write AD9866 addr={0:06x} data={1:06x}".format(addr,data))
   def MakePowerCalibration(self):
     # Use spline interpolation to convert the ADC power sensor value to power in watts
@@ -950,7 +961,7 @@ class Hardware(BaseHardware):
     ## Bit 8 is set to indicate stop to HL2
     ## i2caddr = 0x80 | (0xd4 >> 1) ## ea
     self.pc2hermeslitewritequeue[0:5] = 0x7c,0x06,0xea,addr,data
-    self.WriteQueue(1)
+    self.WriteQueue()
   def EnableCL2_sync76p8MHz(self):
     self.WriteVersa5(0x62,0x3b) ## Clock2 CMOS1 output, 3.3V
     self.WriteVersa5(0x2c,0x01) ## Enable aux output on clock 1
@@ -987,27 +998,27 @@ class Hardware(BaseHardware):
     ## hw.WriteEEPROM(13,66)
     ## To enable the fixed IP and alternate MAC, and favor DHCP
     ## hw.WriteEEPROM(6, 0x80 | 0x40 | 0x20)
-    ## See https://github.com/softerhardware/Hermes-Lite2/wiki/Protocol
-    if self.hermes_code_version >= 60:
+    ## See https://github.com/softerhardware/Hermes-Lite2/wiki/Protocol  
+    if self.hermes_code_version >= 60: 
       i2caddr,value = 0xac,(value%256)
     else:
       i2caddr,value = 0xa8,(255-(value%256))
     addr = (addr << 4)%256
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x06,i2caddr,addr,value
-    self.WriteQueue(1)
+    self.WriteQueue()
     if DEBUG: print ("Write EEPROM", addr, value)
   def ReadEEPROM(self, addr):
     ## To read the bias settings for bias0 and bias1
     ## hw.ReadEEPROM(2)
     ## hw.ReadEEPROM(3)
-    if self.hermes_code_version >= 60:
+    if self.hermes_code_version >= 60: 
       i2caddr = 0xac
     else:
       i2caddr = 0xa8
     faddr = ((addr << 4)%256) | 0xc
     QS.clear_hermeslite_response()
     self.pc2hermeslitewritequeue[0:5] = 0x7d,0x07,i2caddr,faddr,0
-    self.WriteQueue(1)
+    self.WriteQueue()
     for j in range(50):
       time.sleep(0.001)
       resp = QS.get_hermeslite_response()
@@ -1033,47 +1044,28 @@ class Hardware(BaseHardware):
       return v0
   def WriteI2C(self, bus, i2caddr, control, value):
     # bus is 0x7c or 0x7d
-    self.WriteQueue(0)		# Finish any writes
     self.pc2hermeslitewritequeue[0:5] = bus, 0x06, i2caddr, control, value
     QS.clear_hermeslite_response()
-    self.WriteQueue(1)
-    if bus & 0x40:	# response was requested
-      for j in range(50):
-        time.sleep(0.001)
-        resp = QS.get_hermeslite_response()
-        if resp[0] != 0:
-          #print ("0x%X 0x%X 0x%X 0x%X 0x%X" % tuple(resp))
-          if bus & 0x3F == (resp[0] >> 1) & 0x3F:
-            if DEBUG_I2C > 1 or DEBUG:
-              print ("Write I2C bus OK 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
-          else:
-            if DEBUG_I2C or DEBUG:
-              print ("Write I2C bus ERROR 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
-          break
-      else:
-        if DEBUG_I2C or DEBUG:
-          print ("Write I2C bus TIMEOUT 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
-    else:
+    if self.WriteQueue(wait=True):
       if DEBUG_I2C > 1 or DEBUG: print ("Write I2C bus 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
+    else:
+      if DEBUG_I2C or DEBUG:
+        print ("Write I2C bus ERROR 0x%X, i2caddr 0x%X, control 0x%X, value 0x%X" % (bus, i2caddr, control, value))
   def ReadI2C(self, bus, i2caddr, control):
     # bus is 0x7c or 0x7d
-    self.WriteQueue(0)		# Finish any writes
+    # Beware of byte order!
     self.pc2hermeslitewritequeue[0:5] = bus, 0x07, i2caddr, control, 0
     QS.clear_hermeslite_response()
-    self.WriteQueue(1)
-    for j in range(50):
-      time.sleep(0.001)
+    if self.WriteQueue(wait=True):
       resp = QS.get_hermeslite_response()
-      if resp[0] != 0:
-        break
+      resp[0] = (resp[0] >> 1) & 0x3F	# 6-bit bus in C0
+      if DEBUG_I2C or DEBUG:
+        print ("Read  I2C bus 0x%X, 0x%X, 0x%X, 0x%X, 0x%X " % tuple(resp))
+      return resp
     else:
       if DEBUG_I2C or DEBUG:
         print("ReadI2C timed out and did not return a value")
       return None
-    resp[0] = (resp[0] >> 1) & 0x3F	# 6-bit bus in C0
-    if DEBUG_I2C or DEBUG:
-      print ("Read  I2C bus 0x%X, 0x%X, 0x%X, 0x%X, 0x%X " % tuple(resp))
-    return resp
   def ProgramGateware(self, event):	# Program the Gateware (FPGA firmware) over Ethernet
     title = "Program the Gateware"
     main_frame = self.application.main_frame

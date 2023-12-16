@@ -251,13 +251,13 @@ class FilterBoxV2:	# Control my 2016 high/low pass filter box
                4, 4, 3, 3, 3,	# 6 thru 10
                3, 3, 3, 3, 2,	# 11 thru 15
                2, 2, 2, 1, 1,	# 16 thru 20
-               1, 0, 0, 0, 0)	# 21 thru 25; otherwise the filter is 1
+               1, 0, 0, 0, 0)	# 21 thru 25; otherwise the filter is 0
   # High pass filters are numbered 0 thru 2 with cutoff 12.5 MHz, 4.2 MHz, short
   hpfnum = (2, 2, 2, 2, 2, 1,	# frequency 0 thru 5 MHz
                1, 1, 1, 1, 1,	# 6 thru 10
                1, 1, 0, 0, 0,	# 11 thru 15
                0, 0, 0, 0, 0,	# 16 thru 20
-               0, 0, 0, 0, 0)	# 21 thru 25; otherwise the filter is 1
+               0, 0, 0, 0, 0)	# 21 thru 25; otherwise the filter is 0
   def __init__(self, app, conf):
     self.application = app	# Application instance (to provide attributes)
     self.conf = conf		# Config file module
@@ -411,7 +411,7 @@ class AntennaTuner:     # Control my homebrew antenna tuner and my KI8BV dipole
     self.set_HighZ = 0
     self.antnum = 0				# Antenna number 0 or 1
     self.dipole2 = AntennaControl(app, conf)	# Control the KI8BV dipole
-    if conf.use_rx_udp == 10:		# Hermes UDP protocol for Hermes-Lite2
+    if False and conf.use_rx_udp == 10:		# Hermes UDP protocol for Hermes-Lite2
       path = 'TunerLCZ_HL2.txt'
     else:
       path = 'TunerLCZ.txt'
@@ -463,13 +463,21 @@ class AntennaTuner:     # Control my homebrew antenna tuner and my KI8BV dipole
       if i2 - i1 <= 1:
         break
     # The correct setting is between i1 and i2.
-    if tx_freq == self.TunerLCZ[i2][0]:
-      index = i2
-    else:
+    # Choose the index that is closest in frequency.
+    delta1 = tx_freq - self.TunerLCZ[i1][0]
+    delta2 = self.TunerLCZ[i2][0] - tx_freq
+    if i1 == 0:				# below the first frequency
       index = i1
-    #print ("FindLCZ", tx_freq, i1, i2, self.TunerLCZ[index])
+    elif i2 == len(self.TunerLCZ) - 1:	# above the last frequency
+      index = i2
+    elif delta2 < delta1:	# i2 is closer
+      index = i2
+    else:			# i1 is closer
+      index = i1
+    if DEBUG: print ("AntennaTuner FindLCZ", tx_freq, i1, i2, len(self.TunerLCZ), self.TunerLCZ[index])
     return self.TunerLCZ[index]
   def SetTxFreq(self, tx_freq, no_tune=False):
+    #if DEBUG: print("AntennaTuner SetTxFreq", tx_freq)
     self.tx_freq = tx_freq
     if tx_freq is None:
       return
@@ -535,9 +543,13 @@ class StationControlGUI(wx.Frame):    # Display a stand-alone control window for
       self.filename = 'C:/pub/TunerLCZ.tmp'
     else:
       self.filename = '/home/jim/pub/TunerLCZ.tmp'
-    fp = open(self.filename, "r")
-    lines = fp.readlines()
-    fp.close()
+    try:
+      fp = open(self.filename, "r")
+    except FileNotFoundError:
+      lines = ()
+    else:
+      lines = fp.readlines()
+      fp.close()
     self.TunerLCZ = [(0, 0, 0, 0), (999111000, 0, 0, 0)]	# Add dummy first and last entry.
     for line in lines:
       freq, antL, antC, hilo = line.split()
@@ -614,9 +626,19 @@ class StationControlGUI(wx.Frame):    # Display a stand-alone control window for
     self.freq_entry.SetFont(font)
     self.Bind(wx.EVT_TEXT_ENTER, self.OnFreqEntry, self.freq_entry)
     szr.Add(self.freq_entry)
+    szr.AddSpacer(10)
+    b = wx.lib.buttons.GenButton(self, -1, "Search Freq")
+    b.SetUseFocusIndicator(False)
+    b.SetBezelWidth(4)
+    b.SetFont(font)
+    self.Bind(wx.EVT_BUTTON, self.OnButtonSearch, b)
+    szr.Add(b)
     sizer.Add(szr, pos=(row, 0), span=(1, 3))
-    self.SetSizer(sizer)
-    self.Fit()
+    if frame is None:
+      self.SetSizerAndFit(sizer)
+    else:
+      self.SetSizer(sizer)
+      self.Fit()
     w, h = self.GetSize().Get()
     self.SetSize((w + 20, h + 50))
     self.Bind(wx.EVT_CLOSE, self.OnBtnClose)
@@ -625,6 +647,7 @@ class StationControlGUI(wx.Frame):    # Display a stand-alone control window for
       self.Bind(wx.EVT_TIMER, self.HeartBeat)
       self.timer.Start(100)
   def SetTxFreq(self, tx_freq):
+    #print("StationControlGUI SetTxFreq", tx_freq)
     self.tx_freq = tx_freq
     index, tup = self.FindIndexTup(tx_freq)
     self.sliderL.SetValue(tup[1])
@@ -654,11 +677,15 @@ class StationControlGUI(wx.Frame):    # Display a stand-alone control window for
     # Choose the index that is closest in frequency.
     delta1 = tx_freq - self.TunerLCZ[i1][0]
     delta2 = self.TunerLCZ[i2][0] - tx_freq
-    if delta2 < delta1:
-      index = i2
-    else:
+    if i1 == 0:				# below the first frequency
       index = i1
-    #print ("FindIndexTup", self.TunerLCZ[i1][0], tx_freq, self.TunerLCZ[i2][0])
+    elif i2 == len(self.TunerLCZ) - 1:	# above the last frequency
+      index = i2
+    elif delta2 < delta1:	# i2 is closer
+      index = i2
+    else:			# i1 is closer
+      index = i1
+    if DEBUG: print ("StatuinControlGUI FindLCZ", tx_freq, i1, i2, len(self.TunerLCZ), index, self.TunerLCZ[index])
     return index, self.TunerLCZ[index]
   def OnBtnClose(self, event):
     self.hware.anttuner.close()
@@ -717,7 +744,13 @@ class StationControlGUI(wx.Frame):    # Display a stand-alone control window for
     freq = self.freq_entry.GetValue()
     freq = float(freq) * 1E6
     freq = int(freq + 0.1)
-    self.SetTxFreq(freq)
+    self.tx_freq = freq
+  def OnButtonSearch(self, event):
+    freq = self.freq_entry.GetValue()
+    freq = float(freq) * 1E6
+    freq = int(freq + 0.1)
+    self.tx_freq = freq
+    self.SetTxFreq(self.tx_freq)
   def OnButtonSave(self, event):
     freq = self.freq_entry.GetValue()
     freq = float(freq) * 1E6

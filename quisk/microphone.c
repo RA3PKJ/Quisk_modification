@@ -896,8 +896,8 @@ void quisk_hermes_tx_send(int tx_socket, int * tx_records)
 	unsigned char * pt_buf;
 	static unsigned int seq = 0;
 	static unsigned char C0_index = 0;
-	unsigned int hlwp = 0;
 	complex double cw_samples[63 * 2];
+	static double writequeue_time0 = 0;
 
 	//printf("hermes_tx_send start 1: hermes_num_samples %d\n", hermes_num_samples);
 	if (tx_records == NULL) {
@@ -983,23 +983,26 @@ void quisk_hermes_tx_send(int tx_socket, int * tx_records)
 	sendbuf[521] = 0x7F;
 	sendbuf[522] = 0x7F;
 
-	// Changes for HermesLite v2 thanks to Steve, KF7O
-	// Add an initial delay in sending ACK request so two successive requests are spaced.
-	if ((quisk_hermeslite_writepointer > 0) && (quisk_hermeslite_writeattempts % 8 == 7)) {
-
+	// Changes for HermesLite v2 thanks to Steve, KF7O	
+    // Add a delay between ACK requests so two successive requests are spaced.
+	if (writequeue_time0 == 0)
+		writequeue_time0 = QuiskTimeSec() + 0.050;	// initial delay
+	if (quisk_hermeslite_writepointer == 1 && QuiskTimeSec() - writequeue_time0 > 0.020) {
+		writequeue_time0 = QuiskTimeSec();
 		// Only send periodic hermeslite writes in second part of frame
-		hlwp = 5*(quisk_hermeslite_writepointer-1);
-		sendbuf[523] = quisk_hermeslite_writequeue[hlwp++] << 1 | hermes_mox_bit;
-		sendbuf[524] = quisk_hermeslite_writequeue[hlwp++];
-		sendbuf[525] = quisk_hermeslite_writequeue[hlwp++];
-		sendbuf[526] = quisk_hermeslite_writequeue[hlwp++];
-		sendbuf[527] = quisk_hermeslite_writequeue[hlwp++];
-
+		sendbuf[523] = quisk_hermeslite_writequeue[0] << 1 | hermes_mox_bit;
+		sendbuf[524] = quisk_hermeslite_writequeue[1];
+		sendbuf[525] = quisk_hermeslite_writequeue[2];
+		sendbuf[526] = quisk_hermeslite_writequeue[3];
+		sendbuf[527] = quisk_hermeslite_writequeue[4];
+	
 		if ((sendbuf[523] & 0x80) == 0) {
 			// No acknowledge requested so fire and forget
-			quisk_hermeslite_writepointer--;
-			quisk_hermeslite_writeattempts = 0;	
+			quisk_hermeslite_writepointer = 0;
 		}
+		else {
+			quisk_hermeslite_writepointer = 2;
+		}		
 	} else {
 		offset = C0_index * 4;		// offset into quisk_pc_to_hermes is C0[7:1] * 4
 		sendbuf[523] = C0_index << 1 | hermes_mox_bit;		// C0
@@ -1018,15 +1021,6 @@ void quisk_hermes_tx_send(int tx_socket, int * tx_records)
                 }
 		if (++C0_index > 16)
 			C0_index = 0;
-	}
-	if (quisk_hermeslite_writepointer > 0) quisk_hermeslite_writeattempts++;
-
-	// Abort after 53/8 ~= 5 retries
-	if ((quisk_hermeslite_writepointer > 0) && (quisk_hermeslite_writeattempts > 53)) {
-		QuiskPrintf("ERROR: Maximum Hermes-Lite write attempts without ACK\n");
-		// Cancel entire write sequence
-		quisk_hermeslite_writepointer = 0;
-		quisk_hermeslite_writeattempts = 0;
 	}
 
 	pt_buf = sendbuf + 528;

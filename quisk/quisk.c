@@ -148,6 +148,8 @@ static int is_PTT_down;					// state 0/1 of PTT button
 static int sample_bytes=3;				// number of bytes in each I or Q sample
 static int waterfall_scroll_mode = 1;		// draw the first lines multiple times
 static int quisk_use_sidetone;		// is there a sidetone volume control?
+static int hl2_txbuf_errors;		// errors in the Hermes-Lite2 Tx buffer
+static int hl2_txbuf_state;		// state machine for errors in the Hermes-Lite2 Tx buffer
 
 static complex double PySampleBuf[SAMP_BUFFER_SIZE];	// buffer for samples returned from Python
 static int PySampleCount;				// count of samples in buffer
@@ -203,9 +205,8 @@ play_state_t quisk_play_state;
 
 static int is_little_endian;		// Test byte order; is it little-endian?
 unsigned char quisk_pc_to_hermes[17 * 4];			// data to send from PC to Hermes hardware
-unsigned char quisk_hermeslite_writequeue[4 * 5]; // One-time writes to Hermes-Lite
+unsigned char quisk_hermeslite_writequeue[5]; // One-time writes to Hermes-Lite
 unsigned int quisk_hermeslite_writepointer = 0;
-unsigned int quisk_hermeslite_writeattempts = 0;
 static unsigned char quisk_hermes_to_pc[5 * 4];		// data received from the Hermes hardware
 static unsigned char quisk_hermeslite_response[5]; // response from Hermes-Lite commands
 unsigned int quisk_hermes_code_version = -1;		// code version returned by the Hermes hardware
@@ -3080,7 +3081,9 @@ static PyObject * get_params(PyObject * self, PyObject * args)
 	if (strcmp(name, "rx_udp_started") == 0)
 		return PyInt_FromLong(quisk_rx_udp_started);
 	if (strcmp(name, "serial_ptt") == 0)
-		return PyInt_FromLong(quisk_serial_ptt);	
+		return PyInt_FromLong(quisk_serial_ptt);
+ 	if (strcmp(name, "hl2_txbuf_errors") == 0)
+		return PyInt_FromLong(hl2_txbuf_errors);	
 	Py_INCREF (Py_None);
 	return Py_None;
 }
@@ -3527,7 +3530,6 @@ static int read_rx_udp10(complex double * samp)	// Read samples from UDP using t
 	ssize_t bytes;
 	unsigned char buf[1500];
 	unsigned int seq;
-	unsigned int hlwp = 0;
 	unsigned int power;
 	static unsigned int seq0;
 	static int tx_records;
@@ -3654,17 +3656,17 @@ static int read_rx_udp10(complex double * samp)	// Read samples from UDP using t
 					quisk_hermeslite_response[2] = buf[start+2];
 					quisk_hermeslite_response[3] = buf[start+3];
 					quisk_hermeslite_response[4] = buf[start+4];
-					// Look for match
-					hlwp = 5*(quisk_hermeslite_writepointer-1);
+					// Look for match				
 					if (dindex == 0x7f) {
-						QuiskPrintf("ERROR: Hermes-Lite did not process ACK command\n");
-					} else if (dindex != (quisk_hermeslite_writequeue[hlwp])) {
+						QuiskPrintf("ERROR: Hermes-Lite did not process ACK command. Send again.\n");
+						quisk_hermeslite_writepointer = 1;
+					} else if (dindex != (quisk_hermeslite_writequeue[0])) {
 						QuiskPrintf("ERROR: Nonmatching Hermes-Lite ACK response 0x%X seen\n",dindex);
 					} else {
-						//QuiskPrintf("Response %d received\n",dindex);
-						quisk_hermeslite_writepointer--;
-						quisk_hermeslite_writeattempts = 0;
-					} 
+						//QuiskPrintf("Response received                       queue 0x%X 0x%X 0x%X 0x%X 0x%X\n", quisk_hermeslite_writequeue[0],
+						//quisk_hermeslite_writequeue[1], quisk_hermeslite_writequeue[2], quisk_hermeslite_writequeue[3], quisk_hermeslite_writequeue[4]);
+						quisk_hermeslite_writepointer = 0;
+					} 					
 				} else {
 					QuiskPrintf("ERROR: ACK response for 0x%X but no request outstanding\n",dindex);
 				}
@@ -3684,7 +3686,45 @@ static int read_rx_udp10(complex double * samp)	// Read samples from UDP using t
 				if ((quisk_hermes_to_pc[0] & 0x01) != 0)	// C1
 					quisk_sound_state.overrange++;
 				hardware_ptt = buf[start] & 0x01;	// C0 bit zero is PTT
-				quisk_hardware_cwkey = (buf[start] & 0x04) >> 2;	// C0 bit two is CW key state
+				quisk_hardware_cwkey = (buf[start] & 0x04) >> 2;	// C0 bit two is CW key state			
+                switch (hl2_txbuf_state) {
+				case 0:			// hermes_mox_bit is zero.
+				default:
+					if (hermes_mox_bit) {
+						hl2_txbuf_state = 1;
+						//QuiskPrintf ("Change hermes_mox_bit %d\n", hermes_mox_bit);
+					}
+					break;
+				case 1:			// hermes_mox_bit changed to 1
+					if (hermes_mox_bit == 0) {
+						//QuiskPrintf ("Change hermes_mox_bit %d\n", hermes_mox_bit);
+						hl2_txbuf_state = 0;
+					}
+					else if (quisk_hermes_to_pc[2] & 0x7F) {	// check for samples in the HL2 Tx buffer
+						hl2_txbuf_state = 2;
+					}
+					break;
+				case 2:			// initial samples are in the buffer
+					if (hermes_mox_bit == 0) {
+						//QuiskPrintf ("Change hermes_mox_bit %d\n", hermes_mox_bit);
+						hl2_txbuf_state = 0;
+					}
+					else if (quisk_hermes_to_pc[2] == 0x80 || quisk_hermes_to_pc[2] == 0xFF) {	// check for errors
+						hl2_txbuf_errors++;
+						//QuiskPrintf("FAULT quisk_hermes_to_pc[2] 0x%X\n", quisk_hermes_to_pc[2]);
+						hl2_txbuf_state = 3;
+					}
+					break;
+				case 3:			// the error bit was set; wait for it to clear
+					if (hermes_mox_bit == 0) {
+						//QuiskPrintf ("Change hermes_mox_bit %d\n", hermes_mox_bit);
+						hl2_txbuf_state = 0;
+					}
+					else if ((quisk_hermes_to_pc[2] & 0x80) == 0) {
+						hl2_txbuf_state = 2;
+					}
+					break;
+				}		
 				if (quisk_hardware_cwkey != old_hardware_cwkey) {
 //QuiskPrintTime("Udp10 change key", 0);
 					old_hardware_cwkey = quisk_hardware_cwkey;
@@ -4227,12 +4267,12 @@ static PyObject * pc_to_hermeslite_writequeue(PyObject * self, PyObject * args)
 	if ( ! PyByteArray_Check(byteArray)) {
 		PyErr_SetString (QuiskError, "Object is not a bytearray.");
 		return NULL;
-	}
-	if (PyByteArray_Size(byteArray) != 4 * 5) {
-		PyErr_SetString (QuiskError, "Bytearray size must be 4 * 5.");
+	}	
+	if (PyByteArray_Size(byteArray) != 5) {
+		PyErr_SetString (QuiskError, "Bytearray size must be 5.");
 		return NULL;
 	}
-	memmove(quisk_hermeslite_writequeue, PyByteArray_AsString(byteArray), 4 * 5);
+	memmove(quisk_hermeslite_writequeue, PyByteArray_AsString(byteArray), 5);
 	Py_INCREF (Py_None);
 	return Py_None;
 }

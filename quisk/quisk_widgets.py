@@ -303,6 +303,8 @@ class SliderBoxH:
       if application.remote_control_head:
         application.Hardware.RemoteCtlSend(f'{self.idName};{self.GetValue()}\n')
       self.handler(None)
+  def SetFocus(self):
+    self.slider.SetFocus()
 
 class SliderBoxHH(SliderBoxH, wx.BoxSizer):
   """A horizontal control with a slider and text with a value.  The text must have a %d if display is True."""
@@ -811,16 +813,19 @@ class QFilterButtonWindow(wx.Frame):
     x, y = wrap.GetPosition().Get()
     x, y = wrap.GetParent().ClientToScreen(wx.Point(x, y))
     w, h = wrap.GetSize()
-    height = h * 10
+    height = h * 12
     size = (w, height)
     if sys.platform == 'win32':
-      pos = (x, y - height)
+      pos = (x, y - height - h)
       t = 'Filter'
     else:
       pos = (x, y - height - h)
       t = ''
     wx.Frame.__init__(self, wrap.GetParent(), -1, t, pos, size,
       wx.FRAME_TOOL_WINDOW|wx.FRAME_FLOAT_ON_PARENT|wx.CLOSE_BOX|wx.CAPTION|wx.SYSTEM_MENU)
+    self.SetSizeHints(w, height, w, height)
+    hbox = wx.BoxSizer(wx.VERTICAL)
+    self.SetSizer(hbox)
     self.SetBackgroundColour(conf.color_freq)
     self.Bind(wx.EVT_CLOSE, self.OnClose)
     try:
@@ -828,19 +833,18 @@ class QFilterButtonWindow(wx.Frame):
     except ValueError:
       index = 0
       self.wrap.button.slider_value = self.valuelist[0]
-    self.slider = wx.Slider(self, -1, index, 0, 100, (0, 0), (w//2, height), wx.SL_VERTICAL|wx.SL_INVERSE)
+    self.slider = wx.Slider(self, -1, index, 0, 100, style=wx.SL_VERTICAL|wx.SL_INVERSE)
+    hbox.Add(self.slider, flag=wx.CENTER, proportion=1)
     self.slider.Bind(wx.EVT_SCROLL, self.OnSlider)
     self.SetTitle("%d" % self.valuelist[index])
     self.Show()
     self.slider.SetFocus()
+    self.Fit()
   def OnSlider(self, event):
     index = self.slider.GetValue()
     value = self.valuelist[index]
     self.SetTitle("%d" % value)
     self.wrap.ChangeSlider(value)
-    #self.wrap.SetLabel(str(value))
-    #self.wrap.SetValue(True, True)
-    #application.filterAdjBw1 = value
   def OnClose(self, event):
     self.wrap.adjust = None
     self.Destroy()
@@ -852,25 +856,29 @@ class QSliderButtonWindow(wx.Frame):
     x, y = button.GetPosition().Get()
     x, y = button.GetParent().ClientToScreen(wx.Point(x, y))
     w, h = button.GetSize()
-    height = h * 10
+    height = h * 12
     size = (w, height)
     if sys.platform == 'win32':
-      pos = (x, y - height)
+      pos = (x, y - height - h)
     else:
       pos = (x, y - height - h)
     wx.Frame.__init__(self, button.GetParent(), -1, '', pos, size,
       wx.FRAME_TOOL_WINDOW|wx.FRAME_FLOAT_ON_PARENT|wx.CLOSE_BOX|wx.CAPTION|wx.SYSTEM_MENU)
+    self.SetSizeHints(w, height, w, height)
+    hbox = wx.BoxSizer(wx.VERTICAL)
+    self.SetSizer(hbox)
     self.SetBackgroundColour(conf.color_freq)
     self.Bind(wx.EVT_CLOSE, self.OnClose)
     self.slider = wx.Slider(self, -1, value,
-             self.button.slider_min, self.button.slider_max,
-             (0, 0), (w//2, height), wx.SL_VERTICAL|wx.SL_INVERSE)
+             self.button.slider_min, self.button.slider_max, style=wx.SL_VERTICAL|wx.SL_INVERSE)
+    hbox.Add(self.slider, flag=wx.CENTER, proportion=1)
     self.slider.Bind(wx.EVT_SCROLL, self.OnSlider)
     if self.button.display:
       value = float(value) / self.button.slider_max
       self.SetTitle("%6.3f" % value)
     self.Show()
     self.slider.SetFocus()
+    self.Fit()
   def OnSlider(self, event):
     value = self.slider.GetValue()
     if self.button.display:

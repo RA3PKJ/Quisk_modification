@@ -1,5 +1,8 @@
 # This is the hardware control file for my shack.
 # It is for the Hermes-Lite2 5 watt output which uses only the antenna tuner.
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 
 from hermes.quisk_hardware import Hardware as BaseHw
 from n2adr import station_hardware
@@ -9,10 +12,10 @@ class Hardware(BaseHw):
     BaseHw.__init__(self, app, conf)
     self.GUI = None
     self.vfo_frequency = 0		# current vfo frequency
-    self.v2filter = None
     # Other hardware
     self.anttuner = station_hardware.AntennaTuner(app, conf)	# Control the antenna tuner
     self.controlbox = station_hardware.ControlBox(app, conf)	# Control my Station Control Box
+    self.v2filter = station_hardware.FilterBoxV2(app, conf)	# Control V2 filter box
   def open(self):
     if False:
       from n2adr.station_hardware import StationControlGUI
@@ -28,8 +31,10 @@ class Hardware(BaseHw):
     if tx_freq and tx_freq > 0:
       if self.GUI:
         self.GUI.SetTxFreq(tx_freq)
+        self.GUI.freq_entry.ChangeValue("%.3f" % (tx_freq * 1E-6))
       else:
         self.anttuner.SetTxFreq(tx_freq)
+        self.v2filter.SetTxFreq(tx_freq)
   def ChangeFrequency(self, tx_freq, vfo_freq, source='', band='', event=None):
     self.ChangeFilterFrequency(tx_freq)
     return BaseHw.ChangeFrequency(self, tx_freq, vfo_freq, source, band, event)
@@ -39,10 +44,12 @@ class Hardware(BaseHw):
     self.anttuner.ChangeBand(band)
     #self.lpfilter.ChangeBand(band)
     #self.hpfilter.ChangeBand(band)
+    self.v2filter.ChangeBand(band)
     self.CorrectSmeter()
     return ret
   def HeartBeat(self):	# Called at about 10 Hz by the main
     self.anttuner.HeartBeat()
+    self.v2filter.HeartBeat()
     self.controlbox.HeartBeat()
     return BaseHw.HeartBeat(self)
   def OnSpot(self, level):
@@ -50,6 +57,7 @@ class Hardware(BaseHw):
     self.anttuner.OnSpot(level)
     return BaseHw.OnSpot(self, level)
   def OnButtonRfGain(self, event):
+    self.v2filter.OnButtonRfGain(event)
     self.CorrectSmeter()
   def CorrectSmeter(self):	# S-meter correction can change with band or RF gain
     return

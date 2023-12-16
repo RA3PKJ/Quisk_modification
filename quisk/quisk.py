@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.23.9 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.27.9 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1364,6 +1364,7 @@ class ConfigStatus(wx.ScrolledCanvas):
     self.read_error = -1
     self.write_error = -1
     self.underrun_error = -1
+    self.hl2_txbuf_errors = 0
     self.fft_error = -1
     self.latencyCapt = -1
     self.latencyPlay = -1
@@ -1479,6 +1480,8 @@ class ConfigStatus(wx.ScrolledCanvas):
       self.MakeRow2("FFT number of errors", self.fft_error, msg)
     else:
       self.MakeRow2("FFT number of errors", self.fft_error)
+    if conf.use_rx_udp == 10:		# Hermes UDP protocol
+      self.MakeRow2("Hermes-Lite2 Tx buffer errors", self.hl2_txbuf_errors)
     self.mem_y += self.dy
     if not self.tabstops2:
       return
@@ -1523,6 +1526,8 @@ class ConfigStatus(wx.ScrolledCanvas):
          self.data_poll_usec
      ) = QS.get_state()
     self.mic_max_display = 20.0 * math.log10((self.mic_max_display + 1) / 32767.0)
+    if conf.use_rx_udp == 10:		# Hermes UDP protocol
+      self.hl2_txbuf_errors = QS.get_params("hl2_txbuf_errors")
     self.RefreshRect(self.mem_rect)
 
 class ConfigFavorites(wx.grid.Grid):
@@ -4437,10 +4442,11 @@ class App(wx.App):
       else:
         path = "/usr/bin/wsjtx"
     cfg = self.local_conf.globals.get('config_wsjtx', '')
+    rig = self.local_conf.globals.get('rig_name_wsjtx', 'quisk')
     if cfg:
-      prog = [path, "--rig-name", "quisk", "--config", cfg]
+      prog = [path, "--rig-name", rig, "--config", cfg]
     else:
-      prog = [path, "--rig-name", "quisk"]
+      prog = [path, "--rig-name", rig]
     if method is None:
       method = self.local_conf.globals.get("start_wsjtx", "Never")
     if method == "Never":
@@ -7213,7 +7219,7 @@ class App(wx.App):
       if self.tx_indicator:
         self.tx_indicator = False
         self.pttButton.Tx.TurnOn(False)
-    if True:	# Manage the PTT button using serial port, VOX, hot keys and WAV file play
+    if True:	# Manage the PTT button using serial port, VOX, hot keys, WAV file play, PTT button, MIDI, CAT
       ptt_button_down = self.pttButton.GetValue()
       ptt = None
       if conf.quisk_serial_cts[0:4] == "PTT " or conf.quisk_serial_dsr[0:4] == "PTT ":

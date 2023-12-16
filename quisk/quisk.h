@@ -290,9 +290,8 @@ extern int quiskImdLevel;				// level for rxMode IMD
 extern int quiskTxHoldState;			// state machine for Tx wait for repeater frequency shift
 extern double quisk_ctcss_freq;			// frequency in Hertz
 extern unsigned char quisk_pc_to_hermes[17 * 4];		// Data to send from the PC to the Hermes hardware
-extern unsigned char quisk_hermeslite_writequeue[4 * 5];	// One-time writes to Hermes-Lite
-extern unsigned int quisk_hermeslite_writepointer;		// write pointer into write queue, nonzero value triggers writes, 
-extern unsigned int quisk_hermeslite_writeattempts;		// counter for write retries
+extern unsigned char quisk_hermeslite_writequeue[5];		// One-time writes to Hermes-Lite
+extern unsigned int quisk_hermeslite_writepointer;		// 0==No request; 1=Send writequeue; 2==Wait for ACK; 3==0x3F error from HL2
 extern unsigned int quisk_hermes_code_version;			// Hermes code version from Hermes to PC
 extern unsigned int quisk_hermes_board_id;			// Hermes board ID from Hermes to PC
 extern int hermes_mox_bit;					// Hermes mox bit from the PC to Hermes

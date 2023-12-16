@@ -37,6 +37,7 @@ class Hardware(BaseHw):
     if tx_freq and tx_freq > 0:
       if self.GUI:
         self.GUI.SetTxFreq(tx_freq)
+        self.GUI.freq_entry.ChangeValue("%.3f" % (tx_freq * 1E-6))
       else:
         self.anttuner.SetTxFreq(tx_freq)
         self.v2filter.SetTxFreq(tx_freq)

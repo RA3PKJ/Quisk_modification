@@ -1207,7 +1207,6 @@ class ComboCtrl(wxcombo.ComboCtrl):
     self.value = value
     self.choices = choices[:]
     self.handler = None
-    self.height = parent.quisk_height
     self.dirty = False
     try:
       self.bgColor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
@@ -1220,9 +1219,18 @@ class ComboCtrl(wxcombo.ComboCtrl):
       self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
       self.Bind(wx.EVT_TEXT, self.OnText)
       self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+    try:
+      self.height = parent.quisk_height
+    except:
+      self.chary = self.GetCharHeight()
+      self.height = self.chary * 14 // 10
     self.SetBackgroundColour(self.bgColor)
     self.Refresh()
-    self.ctrl = ListBoxComboPopup(choices, parent.font)
+    try:
+      font = parent.font
+    except:
+      font = self.GetFont()
+    self.ctrl = ListBoxComboPopup(choices, font)
     self.SetPopupControl(self.ctrl)
     self.SetText(value)
     self.SetSizes()
@@ -4008,6 +4016,7 @@ class BandPlanDlg(wx.Dialog, ControlMixin):
     txt = 'Color Bars on the Frequency X-axis Mark the Band Plan'
     wx.Dialog.__init__(self, None, -1, txt, size=(-1, 100))
     ControlMixin.__init__(self, parent)
+    self.Bind(wx.EVT_SHOW, self.OnBug)
     bg_color = parent.GetBackgroundColour()
     self.SetBackgroundColour(bg_color)
     self.parent = parent
@@ -4047,6 +4056,9 @@ class BandPlanDlg(wx.Dialog, ControlMixin):
       self.mode_dict[mode] = color
     self.modes.append("End")
     self.MakeControls()
+  def OnBug(self, event):	# Bug 16088
+    self.gbs.Fit(self)
+    self.Unbind(wx.EVT_SHOW, handler=self.OnBug)
   def MakeControls(self):
     self.num_cols = 7
     #self.MarkCols()
@@ -4249,13 +4261,17 @@ The mode begins at the start frequency and ends at the next frequency.'
 class WsjtxDlg(wx.Dialog, ControlMixin):
   def __init__(self, parent):
     txt = 'Configure WSJT-X'
-    wx.Dialog.__init__(self, None, -1, txt, size=(-1, 100))
+    wx.Dialog.__init__(self, None, -1, txt)
     ControlMixin.__init__(self, parent)
+    self.Bind(wx.EVT_SHOW, self.OnBug)
     bg_color = parent.GetBackgroundColour()
     self.SetBackgroundColour(bg_color)
     self.parent = parent
     self.radio_name = "_Global_"
     self.MakeControls()
+  def OnBug(self, event):	# Bug 16088
+    self.gbs.Fit(self)
+    self.Unbind(wx.EVT_SHOW, handler=self.OnBug)
   def MakeControls(self):
     self.num_cols = 10
     #self.MarkCols()
@@ -4280,11 +4296,12 @@ This is the "--config" option used to specify a configuration when WSJT-X starts
     self.Bind(wx.EVT_TEXT_ENTER, self.OnConfigName, source=edt)
     self.gbs.Add (charx * 3, chary // 2, wx.GBPosition(self.row, 4))	# Middle spacer
     # Rig name option
+    value = local_conf.globals.get('rig_name_wsjtx', 'quisk')
     hlp = '\
 When WSJT-X starts, it uses a rig name to keep different instances separate. \
-This is the "--rig-name" option, and it is set to "quisk".'
-    txt, edt, btn = self.AddTextEditHelp(5, "Rig name option", "quisk", hlp, no_edit=True, border=0)
-    edt.Enable(False)
+This is the "--rig-name" option, and it defaults to "quisk".'
+    txt, edt, btn = self.AddTextEditHelp(5, "Rig name option", value, hlp, no_edit=False, border=0)
+    self.Bind(wx.EVT_TEXT_ENTER, self.OnConfigRigName, source=edt)
     self.NextRow()
     self.NextRow()
     # End of controls
@@ -4294,6 +4311,11 @@ This is the "--rig-name" option, and it is set to "quisk".'
     value = event.GetString()
     value = value.strip()
     local_conf.globals['config_wsjtx'] = value
+    local_conf.settings_changed = True
+  def OnConfigRigName(self, event):
+    value = event.GetString()
+    value = value.strip()
+    local_conf.globals['rig_name_wsjtx'] = value
     local_conf.settings_changed = True
   def OnChangePath(self, event):
     path = self.edit_path.GetValue()
