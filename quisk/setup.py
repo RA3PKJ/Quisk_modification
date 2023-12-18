@@ -7,7 +7,7 @@ import os
 # You must define the version here.  A title string including
 # the version will be written to __init__.py and read by quisk.py.
 
-Version = '4.2.27'
+Version = '4.2.28'
 
 fp = open("__init__.py", "w")	# write title string
 fp.write("#Quisk version %s\n" % Version)
@@ -48,6 +48,12 @@ if sys.platform == "darwin":	# Build for Macintosh
     define_macros.append(("QUISK_HAVE_PULSEAUDIO", None))
   Modules = [Extension ('quisk._quisk', include_dirs=['.', base_dir + '/include'], library_dirs=['.', base_dir + '/lib'],
              libraries=libraries, sources=sources, define_macros=define_macros)]
+elif "freebsd" in sys.platform:	#Build for FreeBSD
+  libraries = ['pulse', 'fftw3', 'm']
+  base_dir = '/usr/local'
+  define_macros = [("QUISK_HAVE_PULSEAUDIO", None)] # Pulseaudio is in FreeBSD base
+  Modules = [Extension ('quisk._quisk', include_dirs=['.', base_dir + '/include'], library_dirs=['.', base_dir + '/lib'],
+             libraries=libraries, sources=sources, define_macros=define_macros)]
 else:		# Linux
   define_macros = [("QUISK_HAVE_ALSA", None), ("QUISK_HAVE_PULSEAUDIO", None)]
   libraries = ['asound', 'pulse', 'fftw3', 'm']
@@ -82,7 +88,6 @@ N1MM+ and software that uses Hamlib.
 	package_data = {'' : ['*.txt', '*.html', '*.so', '*.dll']},
 	entry_points = {'gui_scripts' : ['quisk = quisk.quisk:main', 'quisk_vna = quisk.quisk_vna:main']},
 	ext_modules = Modules,
-	install_requires = ['wxPython', 'pyusb'],
 	provides = ['quisk'],
 	classifiers = [
 		'Development Status :: 6 - Mature',
@@ -93,7 +98,6 @@ N1MM+ and software that uses Hamlib.
 		'Natural Language :: English',
 		'Operating System :: POSIX :: Linux',
 		'Operating System :: Microsoft :: Windows',
-		'Programming Language :: Python :: 2.7',
 		'Programming Language :: Python :: 3',
 		'Programming Language :: C',
 		'Topic :: Communications :: Ham Radio',

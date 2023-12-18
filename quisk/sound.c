@@ -16,6 +16,14 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
+
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#include <sys/param.h>
+#if defined(BSD)
+#include <netinet/in.h>
+#endif
+#endif
+
 #endif
 
 #include "quisk.h"

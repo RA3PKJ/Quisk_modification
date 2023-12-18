@@ -17,6 +17,14 @@
 #include <winsock2.h>
 #include <stdint.h>
 #else
+
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#include <sys/param.h>
+#if defined(BSD)
+#include <netinet/in.h>
+#endif
+#endif
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>

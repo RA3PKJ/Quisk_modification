@@ -81,7 +81,7 @@ h3     {font-size:1.6rem;}
 <div class="contents">
 <h1>
 <a id="Welcome"></a>
-Welcome to QUISK (December 2022)
+Welcome to QUISK (December 2023)
 </h1>
 
 <p>
@@ -130,14 +130,15 @@ button on the lower right.
 </p>
 <h2>News</h2>
 <p>
-Python 2 was obsolete as of January 1, 2020. And the new code by Ben, AC2YD, needs Python 3. It is troublesome to write
-code that runs on both Python 2 and Python 3.  So it is time to stop supporting Python 2 in Quisk. Please upgrade to
-Python 3. If you have both versions, use Python 3 for Quisk.
+The newest versions of Linux and Raspberry Pi OS do not allow installing Quisk in the system Python package directory.
+I am working on a solution for this.
 </p>
 <br>
 <p>
-The latest Python 3.10 now works with Quisk. You can upgrade from 3.8 if you want.
-<b>Quisk requires Python 3.8 or 3.9 or 3.10 or 3.11.</b>
+<b>Python 2 is no longer supported.</b>
+Python 2 was obsolete as of January 1, 2020. And the new code by Ben, AC2YD, needs Python 3. It is troublesome to write
+code that runs on both Python 2 and Python 3.  So it is time to stop supporting Python 2 in Quisk. Please upgrade to
+Python 3. If you have both versions, use Python 3 for Quisk.
 </p>
 <br>
 <h2 id="Credits">Credits </h2>
@@ -187,19 +188,23 @@ Many others contributed to Quisk, and are mentioned in comments in the source co
 
 <h2 id="Installation">Installation</h2>
 <p>
-Quisk is free open source software. It is hosted on the  PyPi repository
+Quisk is free open source software written in Python and C. It is hosted on the  PyPi repository
 <a href="https://pypi.org">https://pypi.org</a>.
 It can be installed using the standard Python setup tools. See specific directions below.
-There are 32-bit and 64-bit versions of Python. Be sure to use the 64-bit version unless your computer is only 32-bit.
-Quisk versions are available for old Pythons, but it is best to upgrade your Python to the latest supported
-64-bit version. If you already have an older 64-bit Python 3 installed it is OK to continue using it.
+</p>
+<br>
+<p>
+If you have Python 3 installed on your computer, just continue to use that version.
+<b>Quisk requires Python 3.8 or 3.9 or 3.10 or 3.11.</b>
+If you want to install a more recent version, uninstall the old version first.
 Running multiple versions of Python is possible but can be confusing and is not necessary.
+A Quisk installation is needed for each version of Python you have.
 </p>
 <br>
 <h3 id="g0.2.2">Windows Initial Installation</h3>
 <p>
-You must first install the most recent supported version of 64-bit Python.
-If you already have 64-bit Python 3 installed, that is OK too.
+Windows does not include Python, so you must first install the most recent version of 64-bit Python 3.
+If you already have 64-bit Python 3 installed, just keep using it.
 <b>Quisk requires Python 3.8 or 3.9 or 3.10 or 3.11.</b>
 There may be newer versions of Python, but until support is added, use the versions listed above.
 Python is available from <a href="http://www.python.org/">http://www.python.org</a>.
@@ -217,29 +222,29 @@ tries to shield users from program details.
 <br>
 <p>
 Next open Windows PowerShell (not PowerShell ISE). This is on the Start button menu on Windows 10; or use the
-search bar. Enter "python --version" and then "pip --version" to make sure that these programs are installed,
+search bar. Enter "python --version" to make sure that Python is installed
 and what version you have. If "python" is not found, it might not be on your Path.
 You will need to keep typing <b>your_install_directory</b>\python instead of "python".
-If you can find Python but not pip, you can run pip with "python -m pip".
 </p>
 <br>
 <p>
 Next upgrade some Python modules to the newest version, then install Quisk. Enter these commands:
 <br>
-pip install --upgrade setuptools
+python -m pip install --upgrade pip
 <br><br>
-pip install --upgrade wxPython
+python -m pip install --upgrade setuptools
 <br><br>
-pip install --upgrade pyserial
+python -m pip install --upgrade wxPython
 <br><br>
-pip install --upgrade quisk
+python -m pip install --upgrade pyserial
+<br><br>
+python -m pip install --upgrade quisk
 <br><br>
 You should then be able to start Quisk with the command "quisk".
 You can also start Quisk with "python -m quisk".
 To create a Quisk shortcut on your desktop, right-click an empty space and select "New" and "Shortcut".
 Use "quisk.exe" as the command and "Quisk" as the name.
 The "quisk.exe" program is in <b>your_install_directory</b>\Scripts.
-Create another shortcut for quisk_vna if you plan to use it.
 If you are curious, Quisk and its Python source files are installed in "<b>your_install_directory</b>\Lib\site-packages\quisk".
 If you change to that directory you can run Quisk with "python quisk.py".
 </p>
@@ -257,19 +262,19 @@ need to type out the whole path.
 You should check for newer versions of the other modules twice a year.
 <br>
 <br>
-pip install --upgrade quisk
+python -m pip install --upgrade quisk
 <br>
 <br>
 You can also install an older version of Quisk. You may need to do that if the most recent version fails for some reason. Use:
 <br>
 <br>
-pip install quisk==4.1.51
+python -m pip install quisk==4.1.51
 <br>
 <br>
 </p>
 <h3>Windows Uninstall Quisk</h3>
 <p>
-pip uninstall quisk
+python -m pip uninstall quisk
 <br>
 <br>
 </p>
@@ -295,32 +300,26 @@ Use the most recent version of python3-wxgtk available.
   <tr>
     <th>Package Description</th>
     <th>Python3 Package</th>
-    <th>Python2 Package</th>
   </tr>
   <tr>
     <td>Discrete fourier transform</td>
-    <td>sudo apt-get install libfftw3-dev</td>
     <td>sudo apt-get install libfftw3-dev</td>
   </tr>
   <tr>
     <td>Alsa sound library</td>
     <td>sudo apt-get install libasound2-dev</td>
-    <td>sudo apt-get install libasound2-dev</td>
   </tr>
   <tr>
     <td>Portaudio sound library</td>
-    <td>sudo apt-get install portaudio19-dev</td>
     <td>sudo apt-get install portaudio19-dev</td>
   </tr>
   <tr>
     <td>Pulseaudio sound library</td>
     <td>sudo apt-get install libpulse-dev</td>
-    <td>sudo apt-get install libpulse-dev</td>
   </tr>
   <tr>
     <td>Python development</td>
     <td>sudo apt-get install python3-dev</td>
-    <td>sudo apt-get install python-dev</td>
   </tr>
   <tr>
     <td>Python library development</td>
@@ -329,22 +328,22 @@ Use the most recent version of python3-wxgtk available.
   <tr>
     <td>wxPython GUI library</td>
     <td>sudo apt-get install python3-wxgtk4.0</td>
-    <td>sudo apt-get install python-wxgtk3.0</td>
   </tr>
   <tr>
     <td>Python USB</td>
     <td>sudo apt-get install python3-usb</td>
-    <td>sudo apt-get install python-usb</td>
+  </tr>
+  <tr>
+    <td>Python serial port</td>
+    <td>sudo apt-get install python3-serial</td>
   </tr>
   <tr>
     <td>Python installation tools</td>
     <td>sudo apt-get install python3-setuptools</td>
-    <td>sudo apt-get install python-setuptools</td>
   </tr>
   <tr>
     <td>Pip package installer</td>
     <td>sudo apt-get install python3-pip</td>
-    <td>sudo apt-get install python-pip</td>
   </tr>
 </table>
 <p>
@@ -359,7 +358,6 @@ will need to reinstall Quisk. This is also true of any other external packages t
 <p>
 You can use the Python program "pip" to install Quisk into the Python package directory. This is the easiest
 method, but it will not install the source files. If you want the source files see below.
-To install Quisk for Python2, use "python2" instead of "python3" below.
 <br>
 <br>
 sudo -H python3 -m pip install --upgrade quisk

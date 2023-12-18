@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.27.9 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.28.9 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1197,7 +1197,7 @@ class HamlibHandlerRig2:	# Test with telnet localhost 4532
       else:
         self.Reply(0)
         v = 1000.0 * math.log10(49.0 * value + 1) / math.log10(50)
-        self.app.sliderVol.SetValue(v)
+        self.app.sliderVol.SetValue(int(v + 0.5))
         self.app.ChangeVolume()
     else:
       self.ErrParam()

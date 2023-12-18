@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: quisk
-Version: 4.2.27
+Version: 4.2.28
 Summary: QUISK is a Software Defined Radio (SDR) transceiver that can control various radio hardware.
 Home-page: http://james.ahlstrom.name/quisk/
 Author: James C. Ahlstrom
@@ -15,7 +15,6 @@ Classifier: License :: OSI Approved :: GNU General Public License (GPL)
 Classifier: Natural Language :: English
 Classifier: Operating System :: POSIX :: Linux
 Classifier: Operating System :: Microsoft :: Windows
-Classifier: Programming Language :: Python :: 2.7
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: C
 Classifier: Topic :: Communications :: Ham Radio

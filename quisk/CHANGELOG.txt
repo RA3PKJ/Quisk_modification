@@ -1,3 +1,8 @@
+Quisk Version 4.2.28  December 2023
+===================================
+This version includes a patch from Jon, AB8WU, to build Quisk on FreeBSD. Thanks Jon!
+I fixed a bug in setting the AF level in Hamlib.
+
 Quisk Version 4.2.27  December 2023
 ===================================
 This release corrects the Hermes-Lite2 antenna tuner logic.  Jim, N1ADJ, has an
