@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.28.9 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.28.10 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1849,7 +1849,8 @@ class GraphDisplay(wx.Window):
 
     # ---------------------------------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
     picture_bmp = application.picture_bmp
-    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
+    #bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42) # удалено, на всю длину монитора 33 RA3PKJ
+    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth, (MyDisplayHeight//100) * 42) # ----- взамен --- на всю длину монитора ---- 33 RA3PKJ
     bmp_ = wx.Bitmap(bmp)
     dc.DrawBitmap(bmp_, 0, 0)
 
@@ -4105,15 +4106,22 @@ class App(wx.App):
         conf.playback_rate = 48000
       else:
         conf.playback_rate = conf.sample_rate
-    # Create the main frame
-    if conf.window_width > 0:	# fixed width of the main frame
-      self.width = conf.window_width
-    else:
-      self.width = self.screen_width * 8 // 10
-    if conf.window_height > 0:	# fixed height of the main frame
-      self.height = conf.window_height
-    else:
-      self.height = self.screen_height * 5 // 10
+
+# создание всего окна (т.е. с кнопками)
+# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_width > 0:	# fixed width of the main frame
+##      self.width = conf.window_width
+##    else:
+##      self.width = self.screen_width * 8 // 10
+    self.width = MyDisplayWidth # --------------------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
+
+# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_height > 0:	# fixed height of the main frame
+##      self.height = conf.window_height
+##    else:
+##      self.height = self.screen_height * 5 // 10
+    self.height = self.screen_height * 5 // 10 # ------------------------ взамен --- на всю длину монитора ----- 33 RA3PKJ
+
     if self.main_frame:
       frame = self.main_frame
       szr = frame.GetSizer()
@@ -4133,35 +4141,53 @@ class App(wx.App):
     #print ('Main frame: size', w, h, 'client', ww, hh)
     # Find the data width from a list of preferred sizes; it is the width of returned graph data.
     # The graph_width is the width of data_width that is displayed.
-    if conf.window_width > 0:
-      wFrame, h = frame.GetClientSize().Get()				# client window width
-      graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
-      self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
-      graph.Destroy()
-      del graph
-      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
-        self.graph_width -= 1
-      width = int(self.graph_width / conf.display_fraction)		# estimated data width
-      for x in fftPreferedSizes:
-        if x >= width:
-          self.data_width = x
-          break
-      else:
-        self.data_width = fftPreferedSizes[-1]
-    else:		# use conf.graph_width to determine the width
-      width = self.screen_width * conf.graph_width		# estimated graph width
-      percent = conf.display_fraction		# display central fraction of total width
-      percent = int(percent * 100.0 + 0.4)
-      width = width * 100 // percent		# estimated data width
-      for x in fftPreferedSizes:
-        if x > width:
-          self.data_width = x
-          break
-      else:
-        self.data_width = fftPreferedSizes[-1]
-      self.graph_width = self.data_width * percent // 100
-      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
-        self.graph_width += 1
+# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_width > 0:
+##      wFrame, h = frame.GetClientSize().Get()				# client window width
+##      graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
+##      self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
+##      graph.Destroy()
+##      del graph
+##      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+##        self.graph_width -= 1
+##      width = int(self.graph_width / conf.display_fraction)		# estimated data width
+##      for x in fftPreferedSizes:
+##        if x >= width:
+##          self.data_width = x
+##          break
+##      else:
+##        self.data_width = fftPreferedSizes[-1]
+# ----------------------------------------------------------------------- взамен ---- на всю длину монитора ----- 33 RA3PKJ
+# создание верхней области (водопад, график)
+    wFrame, h = frame.GetClientSize().Get()				# client window width
+    graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
+    self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
+    graph.Destroy()
+    del graph
+    if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+      self.graph_width -= 1
+    width = int(self.graph_width / conf.display_fraction)		# estimated data width
+    for x in fftPreferedSizes:
+      if x >= width:
+        self.data_width = x
+        break
+    else:
+      self.data_width = fftPreferedSizes[-1]
+# ----------------------------------------------------------------------- удалено ---- на всю длину монитора ----- 33 RA3PKJ
+##    else:		# use conf.graph_width to determine the width
+##      width = self.screen_width * conf.graph_width		# estimated graph width
+##      percent = conf.display_fraction		# display central fraction of total width
+##      percent = int(percent * 100.0 + 0.4)
+##      width = width * 100 // percent		# estimated data width
+##      for x in fftPreferedSizes:
+##        if x > width:
+##          self.data_width = x
+##          break
+##      else:
+##        self.data_width = fftPreferedSizes[-1]
+##      self.graph_width = self.data_width * percent // 100
+##      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+##        self.graph_width += 1
     #print('graph_width', self.graph_width, 'data_width', self.data_width)
     # The FFT size times the average_count controls the graph refresh rate
     factor = float(self.sample_rate) / conf.graph_refresh / self.data_width
@@ -4334,13 +4360,17 @@ class App(wx.App):
     self.widget_row = 0 # --- нижний дополнительный ряд
     self.button_start_col = 8 # --- начало дополнительного нижнего ряда
 
-    minw = width = self.graph.width
+    #minw = width = self.graph.width # ----------- удалено -------------- на всю длину монитора ----- 33 RA3PKJ
     maxw = maxh = -1
     minh = 100
-    if conf.window_width > 0:
-      minw = width = maxw = conf.window_width
-    if conf.window_height > 0:
-      minh = maxh = self.height = conf.window_height
+# ------------------------------------------------ удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_width > 0:
+##      minw = width = maxw = conf.window_width
+    minw = width = maxw = MyDisplayWidth #--------- взамен -------------- на всю длину монитора ----- 33 RA3PKJ
+# ------------------------------------------------ удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_height > 0:
+##      minh = maxh = self.height = conf.window_height
+
     self.main_frame.SetSizeHints(minw, minh, maxw, maxh)
     self.main_frame.SetClientSize(wx.Size(width, self.height))
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
