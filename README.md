@@ -12,6 +12,8 @@ For Windows 32/64 please use 32-bit versions of the:
 - wxPython-4.1.1-cp39-cp39-win32.whl
 - numpy-1.20.3-cp39-cp39-win32.whl
 - pyserial-3.5-py2.py3-none-any.whl
+- Pillow-9.4.0-cp39-cp39-win32
+- six-1.16.0-py2.py3-none-any
 
 Releases for Windows - http://ra3pkj.ru/page34.shtml
 
