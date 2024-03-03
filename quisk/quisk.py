@@ -1847,12 +1847,22 @@ class GraphDisplay(wx.Window):
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
 
-    # ---------------------------------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
+# ------------------------------------------------------------------------------- добавлено --------- картинка на панораме ---------------------- 5 RA3PKJ
     picture_bmp = application.picture_bmp
-    #bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42) # удалено, на всю длину монитора 33 RA3PKJ
-    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth, (MyDisplayHeight//100) * 42) # ----- взамен --- на всю длину монитора ---- 33 RA3PKJ
+    # ------------- коррекция длины картинки ------------------------------------ добавлено --------- на всю длину монитора -------------------- 33 RA3PKJ
+    global MyDisplayWidth
+    if conf.window_width > 0:
+      if conf.window_width > MyDisplayWidth:
+        aa = (conf.window_width * 1000) // MyDisplayWidth
+        MyDisplayWidth = (MyDisplayWidth * aa) // 1000
+      else:
+        aa = (MyDisplayWidth * 1000) // conf.window_width
+        MyDisplayWidth = (MyDisplayWidth * 1000) // aa
+    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth, (MyDisplayHeight//100) * 42)
+
     bmp_ = wx.Bitmap(bmp)
     dc.DrawBitmap(bmp_, 0, 0)
+# -------------------------------------------------------------------------------------------------------------------------------------------------------
 
     self.DrawFilter(dc)
     dc.SetPen(self.horizPen)
@@ -3727,6 +3737,11 @@ class App(wx.App):
     self.bottom_widgets = None
     self.dxCluster = None
     self.main_frame = None
+    self.quisk_height = None # ------------------- добавлено -------- запоминание высоты окна при выходе -------- 34 RA3PKJ
+    # -------------------------------------------- добавлено ------------ запоминание позиции окна -------------- 35 RA3PKJ
+    self.quisk_posX = None # позиция X окна
+    self.quisk_posY = None # позиция Y окна
+
     self.remote_control_head = False
     self.remote_control_slave = False
     self.keys_down = []
@@ -4107,20 +4122,18 @@ class App(wx.App):
       else:
         conf.playback_rate = conf.sample_rate
 
-# создание всего окна (т.е. с кнопками)
-# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
-##    if conf.window_width > 0:	# fixed width of the main frame
-##      self.width = conf.window_width
-##    else:
-##      self.width = self.screen_width * 8 // 10
-    self.width = MyDisplayWidth # --------------------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
-
-# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+# Предварительное создание всего окна (main frame) программы (т.е. с кнопками)
+    if conf.window_width > 0:	# fixed width of the main frame
+      self.width = conf.window_width
+    else: # self.screen_width - разрешение монитора по горизонтали
+      #self.width = self.screen_width * 8 // 10 # -------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+      self.width = self.screen_width # -------------------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
+# ----- отключить ручное управление высотой -------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
 ##    if conf.window_height > 0:	# fixed height of the main frame
 ##      self.height = conf.window_height
 ##    else:
 ##      self.height = self.screen_height * 5 // 10
-    self.height = self.screen_height * 5 // 10 # ------------------------ взамен --- на всю длину монитора ----- 33 RA3PKJ
+    self.height = self.screen_height * 5 // 10 # ---------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
 
     if self.main_frame:
       frame = self.main_frame
@@ -4141,7 +4154,7 @@ class App(wx.App):
     #print ('Main frame: size', w, h, 'client', ww, hh)
     # Find the data width from a list of preferred sizes; it is the width of returned graph data.
     # The graph_width is the width of data_width that is displayed.
-# ---------------------------------------------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+      # ----------------------------------------------------------------------- удалено ---- на всю длину монитора ----- 33 RA3PKJ
 ##    if conf.window_width > 0:
 ##      wFrame, h = frame.GetClientSize().Get()				# client window width
 ##      graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
@@ -4157,23 +4170,6 @@ class App(wx.App):
 ##          break
 ##      else:
 ##        self.data_width = fftPreferedSizes[-1]
-# ----------------------------------------------------------------------- взамен ---- на всю длину монитора ----- 33 RA3PKJ
-# создание верхней области (водопад, график)
-    wFrame, h = frame.GetClientSize().Get()				# client window width
-    graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
-    self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
-    graph.Destroy()
-    del graph
-    if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
-      self.graph_width -= 1
-    width = int(self.graph_width / conf.display_fraction)		# estimated data width
-    for x in fftPreferedSizes:
-      if x >= width:
-        self.data_width = x
-        break
-    else:
-      self.data_width = fftPreferedSizes[-1]
-# ----------------------------------------------------------------------- удалено ---- на всю длину монитора ----- 33 RA3PKJ
 ##    else:		# use conf.graph_width to determine the width
 ##      width = self.screen_width * conf.graph_width		# estimated graph width
 ##      percent = conf.display_fraction		# display central fraction of total width
@@ -4188,6 +4184,26 @@ class App(wx.App):
 ##      self.graph_width = self.data_width * percent // 100
 ##      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
 ##        self.graph_width += 1
+     # ----------------------------------------------------------------------- взамен ---- на всю длину монитора ----- 33 RA3PKJ
+# создание верхней области (водопад, график)
+    if conf.window_width > 0:
+      wFrame = conf.window_width - 15
+    else:
+      wFrame = MyDisplayWidth - 15
+    graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
+    self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
+    graph.Destroy()
+    del graph
+    if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+      self.graph_width -= 1
+    width = int(self.graph_width / conf.display_fraction)		# estimated data width
+    for x in fftPreferedSizes:
+      if x >= width:
+        self.data_width = x
+        break
+    else:
+      self.data_width = fftPreferedSizes[-1]
+
     #print('graph_width', self.graph_width, 'data_width', self.data_width)
     # The FFT size times the average_count controls the graph refresh rate
     factor = float(self.sample_rate) / conf.graph_refresh / self.data_width
@@ -4360,19 +4376,40 @@ class App(wx.App):
     self.widget_row = 0 # --- нижний дополнительный ряд
     self.button_start_col = 8 # --- начало дополнительного нижнего ряда
 
-    #minw = width = self.graph.width # ----------- удалено -------------- на всю длину монитора ----- 33 RA3PKJ
-    maxw = maxh = -1
-    minh = 100
+# окончательное создание всего окна программы (т.е. с кнопками)
+    #--------------------------------------------- удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+    #minw = width = self.graph.width # minw - ограничитель минимальной длины
+    #maxw = maxh = -1                # maxw - ограничитель максимальной длины
+    maxh = -1#ограничитель максимальной высоты не установлен -- взамен -- на всю длину монитора ----- 33 RA3PKJ
+
+    minh = 130 #ограничитель минимальной высоты -- изменено ------------- на всю длину монитора ----- 33 RA3PKJ
+    # длина всего окна программы (т.е. с кнопками)
+    if conf.window_width > 0:
+      minw = width = maxw = conf.window_width
+    # ------------------------------------------- добавлено ------------- на всю длину монитора ----- 33 RA3PKJ
+    else:
+      minw = width = maxw = self.screen_width # self.screen_width - разрешение монитора по горизонтали
 # ------------------------------------------------ удалено -------------- на всю длину монитора ----- 33 RA3PKJ
-##    if conf.window_width > 0:
-##      minw = width = maxw = conf.window_width
-    minw = width = maxw = MyDisplayWidth #--------- взамен -------------- на всю длину монитора ----- 33 RA3PKJ
-# ------------------------------------------------ удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+##    # высота всего окна программы (т.е. с кнопками)
 ##    if conf.window_height > 0:
 ##      minh = maxh = self.height = conf.window_height
+    # ----------------------------------------- добавлено --- запоминание высоты окна при выходе ---- 34 RA3PKJ
+    try:
+      self.height = configure.Settings[4]["QuiskHeight"]
+    except:
+      self.height = 500
 
     self.main_frame.SetSizeHints(minw, minh, maxw, maxh)
     self.main_frame.SetClientSize(wx.Size(width, self.height))
+
+    # ----------------------------------------- добавлено ---------- запоминание позиции окна ------- 35 RA3PKJ
+    try:
+      self.quisk_posX = configure.Settings[4]["QuiskPositionX"]
+      self.quisk_posY = configure.Settings[4]["QuiskPositionY"]
+      self.main_frame.SetPosition(wx.Point(self.quisk_posX, self.quisk_posY))
+    except:
+      self.main_frame.SetPosition(wx.Point(0, 0))
+
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
       Hardware.pre_open()
 
@@ -4778,6 +4815,20 @@ class App(wx.App):
     event.Skip()
     self.OnBtnClose(event)
   def OnBtnClose(self, event=None):
+    # ---------------------------------------------------- добавлено ------- сохранение высоты окна при выходе --- 34 RA3PKJ
+    l, self.quisk_height = self.main_frame.GetClientSize().Get() # получить размеры (длина, высота) всего окна, существующего на момент закрытия программы
+    # сохранение высоты
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["QuiskHeight"] = self.quisk_height  # сохранение высоты окна
+        # ---------------------------------------------------- добавлено ------------- запоминание позиции окна ------ 35 RA3PKJ
+    self.quisk_posX, self.quisk_posY = self.main_frame.GetPosition()
+    configure.Settings[4]["QuiskPositionX"] = self.quisk_posX  # сохранение позиции X окна
+    configure.Settings[4]["QuiskPositionY"] = self.quisk_posY  # сохранение позиции Y окна
+    # ------------------------------------------------------------------------------------ общее для 34 RA3PKJ и 35 RA3PKJ
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
+
     msg = QS.GetQuiskPrintf()
     if msg:
       print(msg, end='')
