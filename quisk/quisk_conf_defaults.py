@@ -1492,6 +1492,8 @@ graph_width = 0.8
 # to ignore this feature, and use graph width.
 window_width = -1
 #window_width = 640
+#window_width = 1680
+#window_width = 1920
 
 ## window_height				Window height pixels, integer
 # The use of startup graph width provides an optimal size for PC screens.  But when running

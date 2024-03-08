@@ -208,7 +208,8 @@ class Configuration:
         target = local_conf.MidiNoteDict[txt_note]
         if len(target) > 3 and target[-3] == " " and target[-2] in "+-" and target[-1] in "0123456789":	# Jog wheel
           key = "0xB0%02X" % int_note
-        elif target in ("Vol", "STo", "Rit", "Ys", "Yz", "Zo", "Tune"):		# Knob
+        #elif target in ("Vol", "STo", "Rit", "Ys", "Yz", "Zo", "Tune"): # ---------------------- удалено --------- реформа крутилок ----- 36 RA3PKJ
+        elif target in ("Volume", "SideTone", "Rit", "Yscale", "Yshift", "Zoom", "Tune"): # ------ взамен --------- реформа крутилок ----- 36 RA3PKJ
           key = "0xB0%02X" % int_note
         else:	# Button. Enter as the Note On message.
           key = "0x90%02X" % int_note
