@@ -258,7 +258,12 @@ class Remot:	# Remote comtrol base class
       if btn:
         #print ("Slave process button", cmd_text, btn.__class__)
         value = int(args[1])
-        btn.SetIndex(value, True)
+        #btn.SetIndex(value, True) # ------------------------------------ удалено --------- реформа кнопок ----- 12 RA3PKJ
+        try: # ----------------------------------------------------------- взамен --------- реформа кнопок ----- 12 RA3PKJ
+          btn.SetIndex(value, True)
+        except:
+          btn.SetIndex(value)
+
         continue
       # controls in midiControls
       if command in self.app.midiControls:

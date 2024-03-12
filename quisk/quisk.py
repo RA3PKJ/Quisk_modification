@@ -5167,7 +5167,7 @@ class App(wx.App):
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
     # --- кнопки File Record/Play
-    b = self.btn_file_record = QuiskCheckbutton(frame, self.OnBtnFileRecord, conf.Xbtn_text_file_rec)
+    b = self.btn_file_record = QuiskCheckbutton(frame, self.OnBtnFileRecord, 'File')
     self.idName2Button[b.idName] = b
     b = self.btnFilePlay = QuiskCheckbutton(frame, self.OnBtnFilePlay, conf.Xbtn_text_file_play)
     self.idName2Button[b.idName] = b
@@ -5179,7 +5179,7 @@ class App(wx.App):
     # --- кнопки Temp Record and Playback
     b = self.btnTmpRecord = QuiskCheckbutton(frame, self.OnBtnTmpRecord, text=conf.Xbtn_text_rec)
     self.idName2Button[b.idName] = b
-    b = self.btnTmpPlay = QuiskCheckbutton(frame, self.OnBtnTmpPlay, text=conf.Xbtn_text_play, use_right=True)
+    b = self.btnTmpPlay = QuiskCheckbutton(frame, self.OnBtnTmpPlay, 'Back', use_right=True)
     self.idName2Button[b.idName] = b
     b.Enable(0)
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
