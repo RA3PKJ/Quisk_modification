@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # This provides access to a remote radio.  See ac2yd/remote_common.py and .pdf files for documentation.
 
 from ac2yd.control_common import ControlCommon
@@ -10,6 +12,7 @@ class Hardware(ControlCommon):
     self.var_rates = ['48', '96', '192', '384']
     self.var_index = 0
     #app.bandscope_clock = conf.rx_udp_clock
+    self.antenna_labels = ('Ant 0', 'Ant 1') # -------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
   def ChangeLNA(self, value):
     pass
   def ChangeAGC(self, value):
@@ -52,3 +55,5 @@ class Hardware(ControlCommon):
     return rate
   def VarDecimRange(self):
     return (48000, 384000)
+  def OnButtonAntenna(self, event): # ---------------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    pass

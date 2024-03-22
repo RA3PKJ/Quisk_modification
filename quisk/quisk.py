@@ -5083,11 +5083,11 @@ class App(wx.App):
     # --- кнопка Step ------------------------------------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_step = szr
-    self.step_btn = b = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    #self.step_btn = b = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    labels_step = ('Step 50', 'Step 100', 'Step 250', 'Step 500', 'Step 1kHz', 'Step 1', 'Step 10', 'Step 25')
+    self.step_btn = b = QuiskCycleCheckbutton(frame, self.OnBtnStep, labels_step, conf.color_cycle_btn)
     self.idName2Button[b.idName] = b
     szr.Add(self.step_btn, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    #self.step_btn.SetLabel("Step")
-    self.step_btn.Refresh()
     try:
       self.freq_step = configure.Settings[4]["FrequencyStep"]
       if self.freq_step == 1:
@@ -5112,6 +5112,7 @@ class App(wx.App):
     except:
       self.freq_step = 50
       self.step_btn.SetLabel("Step 50")
+    self.step_btn.Refresh()
 
     # --- кнопка RIT
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
@@ -6874,29 +6875,21 @@ class App(wx.App):
   def OnBtnStep(self, event):
     step_label = self.step_btn.GetLabel()
     if step_label == 'Step 1':
-      self.step_btn.SetLabel("Step 10")
-      self.freq_step = 10
-    elif step_label == 'Step 10':
-      self.step_btn.SetLabel("Step 25")
-      self.freq_step = 25
-    elif step_label == 'Step 25':
-      self.step_btn.SetLabel("Step 50")
-      self.freq_step = 50
-    elif step_label == 'Step 50':
-      self.step_btn.SetLabel("Step 100")
-      self.freq_step = 100
-    elif step_label == 'Step 100':
-      self.step_btn.SetLabel("Step 250")
-      self.freq_step = 250
-    elif step_label == 'Step 250':
-      self.step_btn.SetLabel("Step 500")
-      self.freq_step = 500
-    elif step_label == 'Step 500':
-      self.step_btn.SetLabel("Step 1kHz")
-      self.freq_step = 1000
-    elif step_label == 'Step 1kHz':
-      self.step_btn.SetLabel("Step 1")
       self.freq_step = 1
+    elif step_label == 'Step 10':
+      self.freq_step = 10
+    elif step_label == 'Step 25':
+      self.freq_step = 25
+    elif step_label == 'Step 50':
+      self.freq_step = 50
+    elif step_label == 'Step 100':
+      self.freq_step = 100
+    elif step_label == 'Step 250':
+      self.freq_step = 250
+    elif step_label == 'Step 500':
+      self.freq_step = 500
+    elif step_label == 'Step 1kHz':
+      self.freq_step = 1000
     else:
       self.step_btn.SetLabel("Step 50")
       self.freq_step = 50

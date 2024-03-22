@@ -394,11 +394,12 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
     value = app.midiControls[idName][0].button.slider_value
     self.RemoteCtlSend("%s;%d\n" % (idName, value))
     # Various buttons
-    for idName in ("Mute", "NR2", "AGC", "Sqlch", "NB 1", "Notch", "Test 1", "Tune", "FDX", "PTT", "VOX"): # ----- изменено ---- реформа кнопок ---- 12 RA3PKJ
+    #for idName in ("Mute", "NR2", "AGC", "Sqlch", "NB 1", "Notch", "Test 1", "Spot", "FDX", "PTT", "VOX"): # --- удалено --- реформа кнопок и удалённого управления --- 12 RA3PKJ, 37 RA3PKJ
+    for idName in ("Mute", "NR2", "AGC", "Sqlch", "NB 1", "Notch", "Test 1", "Tune", "FDX", "PTT", "VOX"): # ----- взамен --- реформа кнопок и удалённого управления --- 12 RA3PKJ, 37 RA3PKJ
       self.RemoteCtlSend("%s;%d\n" % (idName, app.idName2Button[idName].GetIndex()))
     # Menus
-    #for menu in (app.NB_menu, app.split_menu, app.freedv_menu, app.smeter_menu): # ------------------------------- удалено ---- реформа кнопок ---- 12 RA3PKJ
-    for menu in (app.NB_menu, app.freedv_menu): # ------------------------------------------------------------------ взамен ---- реформа кнопок ---- 12 RA3PKJ
+    #for menu in (app.NB_menu, app.split_menu, app.freedv_menu, app.smeter_menu): # ----------------------------- удалено --- реформа кнопок и удалённого управления --- 12 RA3PKJ, 37 RA3PKJ
+    for menu in (app.NB_menu, app.freedv_menu): # ---------------------------------------------------------------- взамен --- реформа кнопок и удалённого управления --- 12 RA3PKJ, 37 RA3PKJ
       if menu:
         for nid in menu.id2data:
           menu_item = menu.FindItemById(nid)
