@@ -2,10 +2,7 @@
 
 The GNU General Public License (GPL), Version 2, June 1991
 
-Quisk modification for Windows and Linux
-
-Now the source code of Quisk 4.2.19 (by Jim N2ADR) is used for modification.  
-I am creating a 32-bit Quisk for Windows 32/64.
+Quisk modification for Windows and Linux. I am creating a 32-bit Quisk for Windows 32/64.
 
 For Windows 32/64 please use 32-bit versions of the:
 - python-3.9.5.exe
