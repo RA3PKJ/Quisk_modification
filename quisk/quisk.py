@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.28.11 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.28.12 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -5454,11 +5454,11 @@ class App(wx.App):
     # --- кнопка SSB Offset-------------------------------------- добавлено ------- SSB Offset ------ 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
-    self.ssb_offset = b = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
+    #self.ssb_offset = b = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
+    labels_ssb_offset = ('SSB Low=200Hz', 'SSB Low=250Hz', 'SSB Low=300Hz', 'SSB Low=0Hz', 'SSB Low=50Hz', 'SSB Low=100Hz', 'SSB Low=150Hz')
+    self.ssb_offset = b = QuiskCycleCheckbutton(frame, self.OnBtnOffset, labels_ssb_offset, conf.color_cycle_btn)
     self.idName2Button[b.idName] = b
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.ssb_offset.SetLabel("SSB Low")
-    self.ssb_offset.Refresh()
     self.ssb_offset.Enable(False)
     if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
       self.ssb_offset.Enable(True)
@@ -5479,11 +5479,12 @@ class App(wx.App):
       elif self.offset == 0:
         self.ssb_offset.SetLabel("SSB Low=0Hz")
       else:
-        self.offset = 300
-        self.ssb_offset.SetLabel("SSB Low=300Hz")
+        self.offset = 200
+        self.ssb_offset.SetLabel("SSB Low=200Hz")
     except:
-      self.offset = 300
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
+      self.offset = 200
+      self.ssb_offset.SetLabel("SSB Low=200Hz")
+    self.ssb_offset.Refresh()
 
     # --- кнопка Picture --------------------------- добавлено ---------- картинка на панораме ------- 5 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -6903,30 +6904,22 @@ class App(wx.App):
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
     if ssb_offset_label == 'SSB Low=300Hz':
-      self.ssb_offset.SetLabel("SSB Low=250Hz")
-      self.offset = 250
+      self.offset = 300
     elif ssb_offset_label == 'SSB Low=250Hz':
+      self.offset = 250
+    elif ssb_offset_label == 'SSB Low=200Hz':
+      self.offset = 200
+    elif ssb_offset_label == 'SSB Low=150Hz':
+      self.offset = 150
+    elif ssb_offset_label == 'SSB Low=100Hz':
+      self.offset = 100
+    elif ssb_offset_label == 'SSB Low=50Hz':
+      self.offset = 50
+    elif ssb_offset_label == 'SSB Low=0Hz':
+      self.offset = 0
+    else:
       self.ssb_offset.SetLabel("SSB Low=200Hz")
       self.offset = 200
-    elif ssb_offset_label == 'SSB Low=200Hz':
-      self.ssb_offset.SetLabel("SSB Low=150Hz")
-      self.offset = 150
-    elif ssb_offset_label == 'SSB Low=150Hz':
-      self.ssb_offset.SetLabel("SSB Low=100Hz")
-      self.offset = 100
-    elif ssb_offset_label == 'SSB Low=100Hz':
-      self.ssb_offset.SetLabel("SSB Low=50Hz")
-      self.offset = 50
-    elif ssb_offset_label == 'SSB Low=50Hz':
-      self.ssb_offset.SetLabel("SSB Low=0Hz")
-      self.offset = 0
-    elif ssb_offset_label == 'SSB Low=0Hz':
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
-      self.offset = 300
-    else:
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
-      self.offset = 300
-
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
     self.settings_changed = True
