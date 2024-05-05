@@ -2,15 +2,9 @@
 
 The GNU General Public License (GPL), Version 2, June 1991
 
-Quisk modification for Windows and Linux. I am creating a 32-bit Quisk for Windows 32/64.
+Quisk modification for Windows and Linux. I am creating a 64-bit Quisk for Windows.
 
-For Windows 32/64 please use 32-bit versions of the:
-- python-3.9.5.exe
-- wxPython-4.1.1-cp39-cp39-win32.whl
-- numpy-1.20.3-cp39-cp39-win32.whl
-- pyserial-3.5-py2.py3-none-any.whl
-- Pillow-9.4.0-cp39-cp39-win32
-- six-1.16.0-py2.py3-none-any
+For Windows please use python-3.11.9 64bit
 
 Releases for Windows - http://ra3pkj.ru/page34.shtml
 
