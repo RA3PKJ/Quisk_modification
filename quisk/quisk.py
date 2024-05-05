@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.28.12 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.32.13 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1878,6 +1878,12 @@ class GraphDisplay(wx.Window):
       dc.SetTextForeground(conf.color_graph_msg_fg)
       dc.SetBackgroundMode(wx.SOLID)
       dc.DrawText(self.display_text, 0, 0)
+    if application.tx_inhibit:
+      dc.SetFont(self.font)
+      dc.SetTextBackground(conf.color_graph_msg_bg)
+      dc.SetTextForeground("red")
+      dc.SetBackgroundMode(wx.SOLID)
+      dc.DrawText(" *** Tx Inhibit ***", 0, self.chary * 15 // 10)
     # --------------------- добавлено ------------------------------------------------------------------------ S-метр на панораме --------------- 7 RA3PKJ
     if self.display_text == "":
     # красный указатель S-метра на панораме
@@ -3854,6 +3860,8 @@ class App(wx.App):
     self.midi_message = []
     self.idName2Button = {}
     self.midi_handler = None
+    self.tx_inhibit = 0
+    self.old_tx_inhibit = 0
     if conf.use_rx_udp == 10:		# Hermes UDP protocol
       self.bandscope_clock = conf.rx_udp_clock
     else:
@@ -5407,16 +5415,32 @@ class App(wx.App):
       self.freedv_menu = QuiskMenu("freedv_menu")
       msg = conf.freedv_tx_msg
       QS.freedv_set_options(mode=conf.freedv_modes[0][1], tx_msg=msg, DEBUG=0, squelch=1)
+      self.freedv_menu.AppendCheckItem("Monitor", self.OnFreedvMonitor)
+      self.freedv_menu.AppendSeparator()
       for mode, index in conf.freedv_modes:
         item = self.freedv_menu.AppendRadioItem(mode, self.OnFreedvMenu, mode == self.freedv_mode)
         self.freedv_menu_items[index] = item
         if mode == self.freedv_mode:	# Restore mode
           QS.freedv_set_options(mode=index)
+        if mode in ("Mode 2020", "Mode 2400A", "Mode 2400B"):
+          item.Enable(False)
+
+      # ------------------------------------------------ удалено ----------------- удаление маленького экрана ----- 16 RA3PKJ
+##      if conf.button_layout == 'Large screen':
+##        b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
+##        b.idName = "FDV"
+##        b.char_shortcut = 'F'
+##        self.btnFreeDV = WrapMenu(b, self.freedv_menu)
+##        self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+##      else:
+##        self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
+      # ------------------------------------------------ взамен ----------------- удаление маленького экрана ----- 16 RA3PKJ
       b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
       b.idName = "FDV"
       b.char_shortcut = 'F'
       self.btnFreeDV = WrapMenu(b, self.freedv_menu)
       self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+
       try:
         ok = QS.freedv_open()
       except:
@@ -5899,7 +5923,10 @@ class App(wx.App):
     elif mode in ('DGT-IQ', 'DGT-FM'):
       center = 0
     elif mode in ('FDV-U', 'FDV-L'):
-      center = max(1500, bandwidth // 2)
+      if bandwidth <= 3000:
+        center = 1500
+      else:
+        center = bandwidth // 2
     elif mode in ('IMD',):
       center = 300 + bandwidth // 2
     else:
@@ -5956,9 +5983,20 @@ class App(wx.App):
     self.multi_rx_screen.waterfall.pane2.filter_center = center
     if self.screen is self.filter_screen:
       self.screen.NewFilter()
+  def OnFreedvMonitor(self, event):
+    for item in self.freedv_menu.GetMenuItems():
+      if item.GetKind() == wx.ITEM_CHECK:
+        if item.IsChecked():
+          QS.set_params(freedv_monitor=1)
+        else:
+          QS.set_params(freedv_monitor=0)
+        break
   def OnFreedvMenu(self, event):
     text = ''
     for item in self.freedv_menu.GetMenuItems():
+      kind = item.GetKind()
+      if kind != wx.ITEM_RADIO:
+        continue
       if item.IsChecked():
         text = item.GetItemLabel()
         break
@@ -5982,6 +6020,29 @@ class App(wx.App):
     else:
       self.freedv_menu_items[mode].Check(1)
       print ("FreeDV change mode failed.")
+    self.OnChangeFilter()
+  def OnChangeFilter(self):
+    # Used by OnFreedvMenu because the FreeDV mode may change the filter sample rate
+    bw = int(self.filterButns.GetLabel())
+    # We can not use QS.get_filter_srate() because the FreeDV mode is not changed yet.
+    if self.freedv_mode in ("Mode 2400A", "Mode 2400B"):
+      frate = 48000;
+    else:
+      frate = 8000;
+    bw = min(bw, frate // 2)
+    self.filter_bandwidth = bw
+    center = self.GetFilterCenter(self.mode, bw)
+    filtI, filtQ = self.MakeFilterCoef(frate, None, bw, center)
+    lower_edge = center - bw // 2
+    QS.set_filters(filtI, filtQ, bw, lower_edge, 0)
+    self.multi_rx_screen.graph.filter_bandwidth = bw
+    self.multi_rx_screen.graph.filter_center = center
+    self.multi_rx_screen.waterfall.pane1.filter_bandwidth = bw
+    self.multi_rx_screen.waterfall.pane1.filter_center = center
+    self.multi_rx_screen.waterfall.pane2.filter_bandwidth = bw
+    self.multi_rx_screen.waterfall.pane2.filter_center = center
+    if self.screen is self.filter_screen:
+      self.screen.NewFilter()
   def OnBtnHelp(self, event):
     if event.GetEventObject().GetValue():
       self.OnBtnScreen(None, 'Help')
@@ -7342,7 +7403,7 @@ class App(wx.App):
         Hardware.RepeaterOffset(0)
         QS.set_ctcss(0)
         QS.tx_hold_state(1)
-    if QS.is_key_down():	# Tx indicator
+    if QS.is_key_down() and not self.tx_inhibit:	# Tx indicator
       if not self.tx_indicator:
         self.tx_indicator = True
         self.pttButton.Tx.TurnOn(True)
@@ -7403,6 +7464,8 @@ class App(wx.App):
             self.hot_key_ptt_active = False
         self.hot_key_ptt_was_down = self.hot_key_ptt_is_down
         self.hot_key_ptt_pressed = False
+      if self.tx_inhibit:
+        ptt = False
       if ptt is True and not ptt_button_down:
         self.SetPTT(True)
       elif ptt is False and ptt_button_down:
@@ -7488,6 +7551,14 @@ class App(wx.App):
     if self.timer - self.heart_time0 > 0.10:	# call hardware to perform background tasks:
       self.heart_time0 = self.timer
       Hardware.HeartBeat()
+      if conf.hermes_lite2_enable:
+        self.tx_inhibit = QS.get_params('quisk_tx_inhibit')
+      else:
+        self.tx_inhibit = 0
+      if self.tx_inhibit != self.old_tx_inhibit:
+        self.old_tx_inhibit = self.tx_inhibit
+        self.graph.display.Refresh()
+        self.waterfall.pane1.display.Refresh()
       msg = QS.GetQuiskPrintf()
       if msg:
         print(msg, end='')
