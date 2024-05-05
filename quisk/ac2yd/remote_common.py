@@ -247,19 +247,27 @@ class Remot:	# Remote comtrol base class
         self.remote_ctl_heartbeat_ts = time.time()
         continue
       # Ignore the On/Off button, Help buttons, Small window pop buttons
-      if command in ("On", "..", "bandBtnGroup", "screenBtnGroup", "modeButns", "Scope", "Config", "RX Filter", "Help"):
+      #if command in ("On", "..", "bandBtnGroup", "screenBtnGroup", "modeButns", "Scope", "Config", "RX Filter", "Help"): # ------------ удалено -- реформа удалённого управления -- 37 RA3PKJ
+      if command in ("On", "..", "bandBtnGroup", "screenBtnGroup", "modeButns", "Scope", "Config", "Hardware", "RX Filter", "Help", "Picture", "Palette"): # взамен реформа удалённого управления 37 RA3PKJ
         continue
       if DEBUG: print("Remote receive:", cmd_text)
       # Look for radio buttons
       if self.ProcessRadioBtn(command, self.cmd_text):
         continue
+
       # buttons in idName2Button
       btn = self.app.idName2Button.get(args[0], None)
       if btn:
         #print ("Slave process button", cmd_text, btn.__class__)
         value = int(args[1])
-        btn.SetIndex(value, True)
+        #btn.SetIndex(value, True) # ------------------------------------ удалено --------- реформа удалённого управления ----- 37 RA3PKJ
+        #continue
+        try: # ----------------------------------------------------------- взамен --------- реформа удалённого управления ----- 37 RA3PKJ
+          btn.SetIndex(value, True)
+        except:
+          btn.SetIndex(value)
         continue
+
       # controls in midiControls
       if command in self.app.midiControls:
         ctrl, func = self.app.midiControls[command]

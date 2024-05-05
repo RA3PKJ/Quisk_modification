@@ -208,7 +208,8 @@ class Configuration:
         target = local_conf.MidiNoteDict[txt_note]
         if len(target) > 3 and target[-3] == " " and target[-2] in "+-" and target[-1] in "0123456789":	# Jog wheel
           key = "0xB0%02X" % int_note
-        elif target in ("Vol", "STo", "Rit", "Ys", "Yz", "Zo", "Tune"):		# Knob
+        #elif target in ("Vol", "STo", "Rit", "Ys", "Yz", "Zo", "Tune"): # ---------------------- удалено --------- реформа крутилок ----- 36 RA3PKJ
+        elif target in ("Volume", "SideTone", "Rit", "Yscale", "Yshift", "Zoom", "Tune"): # ------ взамен --------- реформа крутилок ----- 36 RA3PKJ
           key = "0xB0%02X" % int_note
         else:	# Button. Enter as the Note On message.
           key = "0x90%02X" % int_note
@@ -1522,7 +1523,7 @@ class MidiKnob(QuiskControl):
     self.menu = wx.Menu()
     for name in application.midiControls:
       ctrl, func = application.midiControls[name]
-      if not ctrl or not func:
+      if name != "Tune" and (not ctrl or not func):
         continue
       item = self.menu.Append(-1, name)
       self.Bind(wx.EVT_MENU, self.OnMenu, item)
@@ -1557,7 +1558,7 @@ class MidiJogWheel(QuiskControl):
     controls = wx.Menu()
     for name in application.midiControls:
       ctrl, func = application.midiControls[name]
-      if not ctrl or not func:
+      if name != "Tune" and (not ctrl or not func):
         continue
       item = controls.Append(-1, name)
       self.Bind(wx.EVT_MENU, self.OnMenu, item)
@@ -2043,7 +2044,7 @@ class ControlMixin:
       if self.radio_name == Settings[1]:	# changed for current radio
         if name in ('hot_key_ptt_toggle', 'hot_key_ptt_if_hidden', 'keyupDelay', 'cwTone', 'pulse_audio_verbose_output',
                     'start_cw_delay', 'start_ssb_delay', 'maximum_tx_secs', 'quisk_serial_cts', 'quisk_serial_dsr',
-                    'hot_key_ptt1', 'hot_key_ptt2', 'midi_ptt_toggle'):
+                    'hot_key_ptt1', 'hot_key_ptt2', 'midi_ptt_toggle', 'TxRxSilenceMsec', 'hermes_lite2_enable'):
           setattr(conf, name, x)
           application.ImmediateChange(name)
         elif name[0:4] in ('lin_', 'win_'):
@@ -3446,14 +3447,20 @@ class RadioSound(BaseWindow):		# The Sound page in the second-level notebook for
     ('', '', '', '', 'digital_rx8_name'),
     ('', '', '', '', 'digital_rx9_name'),
     )
+  hRx0 = "This is almost the same as the radio sound, but it is sent to a digital mode program on a different sound device."\
+" It is analog audio and it is only sent if one of the DGT- modes is selected."\
+" The volume is set by the digital output level instead of the volume control so you can mute the speaker if desired."\
+" It can receive a greater bandwidth than the 3000 Hz limit of SSB."
+  hTx0 = "This is used instead of the microphone when one of the DGT- modes is selected."\
+" The normal speech clipping and filtering is not used for DGT- modes."
   label_help = (	# Same order as sound_names
     (1, "Radio Sound Output",   "This is the radio sound going to the headphones or speakers."),
     (0, "Microphone Input",     "This is the monophonic microphone source.  Set the channel if the source is stereo."),
     (0, "I/Q Rx Sample Input",  "This is the sample source if it comes from a sound device, such as a SoftRock."),
     (1, "I/Q Tx Sample Output", "This is the transmit sample audio sent to a SoftRock."),
     (1, "Raw Digital Output",   "This sends the received I/Q data to another program as stereo."),
-    (0, "Digital Tx0 Input",    "This is the transmit audio coming from a digital mode program."),
-    (1, "Digital Rx0 Output",   "This is the main receiver Rx0 audio going to a digital mode program."),
+    (0, "Digital Tx0 Input",    hTx0),
+    (1, "Digital Rx0 Output",   hRx0),
     (1, "Digital Rx1 Output",   "This is the sub-receiver 1 audio going to a digital mode program."),
     (1, "Digital Rx2 Output",   "This is the sub-receiver 2 audio going to a digital mode program."),
     (1, "Digital Rx3 Output",   "This is the sub-receiver 3 audio going to a digital mode program."),

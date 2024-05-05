@@ -5,6 +5,7 @@
 #include <complex.h>	// Use native C99 complex type for fftw3
 #include <fftw3.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 #ifdef MS_WINDOWS
 #include <winsock2.h>
@@ -107,7 +108,7 @@ static PyObject * pyApp;		// Application instance
 static int fft_size;			// size of fft, e.g. 1024
 int data_width;				// number of points to return as graph data; fft_size * n
 static int graph_width;			// width of the graph in pixels
-rx_mode_type rxMode;			// 0 to 13: CWL, CWU, LSB, USB, AM, FM, EXT, DGT-U, DGT-L, DGT-IQ, IMD, FDV-U, FDV-L, DGT-FM
+rx_mode_type rxMode;			// 0 to 13: CWL, CWU, LSB, USB, AM, FM, EXT, DGT_U, DGT_L, DGT_IQ, IMD, FDV_U, FDV_L, DGT_FM
 int quisk_noise_blanker;		// noise blanker level, 0 for off
 int quiskTxHoldState;			// hold Tx until the repeater frequency shift is complete
 int quisk_is_vna;			// zero for normal program, one for the VNA program
@@ -150,9 +151,11 @@ static int waterfall_scroll_mode = 1;		// draw the first lines multiple times
 static int quisk_use_sidetone;		// is there a sidetone volume control?
 static int hl2_txbuf_errors;		// errors in the Hermes-Lite2 Tx buffer
 static int hl2_txbuf_state;		// state machine for errors in the Hermes-Lite2 Tx buffer
+static int freedv_monitor;		// pass the Freedv audio to the speakers instead of to the demodulator
 
 static complex double PySampleBuf[SAMP_BUFFER_SIZE];	// buffer for samples returned from Python
 static int PySampleCount;				// count of samples in buffer
+static bool quisk_tx_inhibit;
 
 static int multirx_data_width;			// width of graph data to return
 static int multirx_fft_width;			// size of FFT samples
@@ -179,6 +182,7 @@ int quisk_sidetoneFreq;			// frequency in hertz for the sidetone
 int quisk_start_cw_delay = 15;		// milliseconds to delay output on CW key down
 int quisk_start_ssb_delay = 100;	// milliseconds to discard output on SSB etc. key down
 static int maximum_tx_secs;		// Failsafe timeout for Tx in seconds
+static int TxRxSilenceMsec = 50;	// Play silence in msec on Tx to Rx
 static int key_is_down = 0;		// internal key state up or down
 
 static double agcReleaseGain=80;		// AGC maximum gain
@@ -1843,6 +1847,7 @@ static int quisk_process_decimate(complex double * cSamples, int nSamples, int b
 static int quisk_process_demodulate(complex double * cSamples, double * dsamples, int nSamples, int bank, int nFilter, rx_mode_type rx_mode)
 {	// Changes here will require changes to get_filter_rate();
 	int i;
+	bool isLSB;
 	complex double cx;
 	double d, di, dd;
 	static struct AgcState Agc1 = {0.3, 16000, 0}, Agc2 = {0.3, 16000, 0};
@@ -1917,7 +1922,11 @@ static int quisk_process_demodulate(complex double * cSamples, double * dsamples
 			}
 		}
 		if(bank == 0)
-			dAutoNotch(dsamples, nSamples, rit_freq, quisk_filter_srate);
+			dAutoNotch(dsamples, nSamples, rit_freq, quisk_filter_srate);			
+		if (ssb_squelch_enabled) {
+			ssb_squelch(dsamples, nSamples, quisk_filter_srate, MeasureSquelch + bank);
+			d_delay(dsamples, nSamples, bank, SQUELCH_FFT_SIZE);
+		}
 		nSamples = quisk_dInterpolate(dsamples, nSamples, &Storage[bank].filtAudio12p2, 2);
 		nSamples = quisk_dInterp2HB45(dsamples, nSamples, &Storage[bank].HalfBand6);
 		nSamples = quisk_dInterp2HB45(dsamples, nSamples, &Storage[bank].HalfBand7);
@@ -1936,7 +1945,11 @@ static int quisk_process_demodulate(complex double * cSamples, double * dsamples
 			}
 		}
 		if(bank == 0)
-			dAutoNotch(dsamples, nSamples, rit_freq, quisk_filter_srate);
+			dAutoNotch(dsamples, nSamples, rit_freq, quisk_filter_srate);			
+		if (ssb_squelch_enabled) {
+			ssb_squelch(dsamples, nSamples, quisk_filter_srate, MeasureSquelch + bank);
+			d_delay(dsamples, nSamples, bank, SQUELCH_FFT_SIZE);
+		}		
 		nSamples = quisk_dInterpolate(dsamples, nSamples, &Storage[bank].filtAudio12p2, 2);
 		nSamples = quisk_dInterp2HB45(dsamples, nSamples, &Storage[bank].HalfBand6);
 		nSamples = quisk_dInterp2HB45(dsamples, nSamples, &Storage[bank].HalfBand7);
@@ -2138,40 +2151,100 @@ static int quisk_process_demodulate(complex double * cSamples, double * dsamples
 		}
 		break;
 	case FDV_U:	// digital voice
-	case FDV_L:	// Extra modes added by Dave Roberts, G8KBB, June 2020.
+	case FDV_L:	// Extra modes added by Dave Roberts, G8KBB, June 2020. Modified by N2ADR 2024.
 		quisk_check_freedv_mode();
-		// added conditional for 2400A/B mmodes
-		// current coding assumes modem sample rate is 8000 16000 or 48000
-		if( n_modem_sample_rate <= 16000 )
+		// current coding assumes input rate n_modem_sample_rate is 8000 or 48000.
+		// decimate:
+		switch (n_modem_sample_rate) {
+		case 8000:
+			quisk_filter_srate = quisk_decim_srate / 6;		
 			nSamples = quisk_cDecimate(cSamples, nSamples, &Storage[bank].filtDecim48to16, 3);
-		if (bank == 0)
-			process_agc(&Agc1, cSamples, nSamples, 1);
-		else
-			process_agc(&Agc2, cSamples, nSamples, 1);
+			nSamples = quisk_cDecimate(cSamples, nSamples, &Storage[bank].filtDecim16to8, 2);
+			break;
+		case 48000:
+			quisk_filter_srate = quisk_decim_srate;
+			break;
+		default:
+			quisk_filter_srate = quisk_decim_srate / 6;
+			QuiskPrintf("Bad FreeDV modem rate in quisk_process_demodulate\n");
+			break;
+		}
+		// filter and demodulate to mono audio:
+		isLSB = (rx_mode == FDV_L);
+		complex double cBuf[nSamples];
+		for (i = 0; i < nSamples; i++) {
+			cx = cRxFilterOut(cSamples[i], bank, nFilter);
+			if (isLSB)
+				dd = creal(cx) + cimag(cx);
+			else
+				dd = creal(cx) - cimag(cx);
+			if(bank == 0) {
+				measure_audio_sum += dd * dd;
+				measure_audio_count += 1;
+			}
+			cBuf[i] = dd;
+		}
 		// Perhaps decimate by an additional fraction
 		if (quisk_decim_srate != 48000) {
 			dd = quisk_decim_srate / 48000.0;
-			nSamples = cFracDecim(cSamples, nSamples, dd);
+			nSamples = cFracDecim(cBuf, nSamples, dd);
 			quisk_decim_srate = 48000;
 		}
-		quisk_filter_srate = n_speech_sample_rate;
-		// added conditional for 2400A/B mmodes
-		if( n_modem_sample_rate == 8000 )
-			nSamples = quisk_cDecimate(cSamples, nSamples, &Storage[bank].filtDecim16to8, 2);
+		if (bank == 0)
+			process_agc(&Agc1, cBuf, nSamples, 0);
+		else
+			process_agc(&Agc2, cBuf, nSamples, 0);	
 		// pass data decimated down to n_modem_sample_rate
-		// return data is as n_speech_sample_rate
-		if (pt_quisk_freedv_rx)
-			nSamples = (* pt_quisk_freedv_rx)(cSamples, dsamples, nSamples, bank);
-		if(bank == 0) {
-			for (i = 0; i < nSamples; i++) {
-				measure_audio_sum += dsamples[i] * dsamples[i];
-				measure_audio_count += 1;
-			}
+		// return data is at n_speech_sample_rate	
+#if 0
+		static double dmax_in = 0;
+		for (i = 0; i < nSamples; i++) {
+			dd = fabs(creal(cBuf[i])) / CLIP16;
+			if (dd > dmax_in)
+				dmax_in = dd;
 		}
-		// current coding assumes speech sample rate is only 8000 or 16000 - needs tweak for others
-		nSamples = quisk_dInterpolate(dsamples, nSamples, &Storage[bank].filtAudio24p3, 3);
-		if( n_speech_sample_rate == 8000 )
+		if (bank == 0 && measure_audio_count >= quisk_filter_srate * measure_audio_time) {
+			//printf("Max sample in %.0lf\n", dmax_in);
+			dmax_in = 0;
+		}
+#endif
+		if (nSamples > n_max_modem_samples) {
+			printf ("FreeDV: nSamples %d exceeds max_modem_samples %d\n", nSamples, n_max_modem_samples);
+			nSamples = n_max_modem_samples;
+		}
+		short sBuf[nSamples];
+		for (i = 0; i < nSamples; i++)
+			sBuf[i] = (short)(creal(cBuf[i]) / CLIP16);
+		if (freedv_monitor) {
+			for (i = 0; i < nSamples; i++)
+				dsamples[i] = (float)sBuf[i] * CLIP16;
+		}
+		else {
+			if (pt_quisk_freedv_rx)
+				nSamples = (* pt_quisk_freedv_rx)(sBuf, dsamples, nSamples, bank);
+		}
+#if 0
+		static double dmax_out = 0;
+		for (i = 0; i < nSamples; i++) {
+			dd = fabs(dsamples[i]) / CLIP16;
+			if (dd > dmax_out)
+				dmax_out = dd;
+		}
+		if (bank == 0 && measure_audio_count >= quisk_filter_srate * measure_audio_time) {
+			//printf("      Max sample out %.0lf\n", dmax_out);
+			dmax_out = 0;
+		}
+#endif
+		// current coding assumes output rate n_speech_sample_rate is 8000 or 16000
+		switch (n_speech_sample_rate) {
+		case 8000:
+			nSamples = quisk_dInterpolate(dsamples, nSamples, &Storage[bank].filtAudio24p3, 3);
 			nSamples = quisk_dInterp2HB45(dsamples, nSamples, &Storage[bank].HalfBand7);
+			break;
+		case 16000:
+			nSamples = quisk_dInterpolate(dsamples, nSamples, &Storage[bank].filtAudio24p3, 3);
+			break;
+		}
 		break;
 	}
 	if (bank == 0 && measure_audio_count >= quisk_filter_srate * measure_audio_time) {
@@ -2395,7 +2468,7 @@ int quisk_process_samples(complex double * cSamples, int nSamples)
 				quisk_sound_state.sample_rate;
 		nout = (int)dOutCounter;			// number of samples to output
 		dOutCounter -= nout;
-		playSilence = (int)(quisk_sound_state.playback_rate * 50e-3);	// Play silence after sidetone ends, number of samples
+		playSilence = (int)(quisk_sound_state.playback_rate * 1E-3 * TxRxSilenceMsec);	// Play silence after sidetone ends, number of samples
 		keyupEnvelope = 0;
 		if (quisk_active_sidetone == 2 && QUISK_CWKEY_DOWN) {	// Play sidetone instead of radio for CW
 			if (! sidetoneIsOn) {			// turn on sidetone
@@ -2669,7 +2742,7 @@ int quisk_process_samples(complex double * cSamples, int nSamples)
 				multirx_cSamples[0][i] = dsamples2[i] + I * dsamples2[i];
 			process_agc(&Agc3, multirx_cSamples[0], n, 0);
 		}
-		play_sound_interface(quiskPlaybackDevices[QUISK_INDEX_SUB_RX1], n, multirx_cSamples[0], 1, 1.0);
+		play_sound_interface(quiskPlaybackDevices[QUISK_INDEX_SUB_RX1], n, multirx_cSamples[0], 1, digital_output_level);
 	}
 
 	// Perhaps decimate by an additional fraction
@@ -2877,7 +2950,7 @@ static PyObject * get_filter_rate(PyObject * self, PyObject * args)
 		break;
 	case FDV_U:	 // digital voice
 	case FDV_L:
-		filter_srate = n_speech_sample_rate;
+		filter_srate = n_modem_sample_rate;
 		break;
 	}
 	//QuiskPrintf("Filter rate %d\n", filter_srate);
@@ -3083,7 +3156,9 @@ static PyObject * get_params(PyObject * self, PyObject * args)
 	if (strcmp(name, "serial_ptt") == 0)
 		return PyInt_FromLong(quisk_serial_ptt);
  	if (strcmp(name, "hl2_txbuf_errors") == 0)
-		return PyInt_FromLong(hl2_txbuf_errors);	
+		return PyInt_FromLong(hl2_txbuf_errors);     
+ 	if (strcmp(name, "quisk_tx_inhibit") == 0)
+		return PyInt_FromLong((long)quisk_tx_inhibit);
 	Py_INCREF (Py_None);
 	return Py_None;
 }
@@ -3113,13 +3188,15 @@ static PyObject * read_fftw_wisdom(PyObject * self, PyObject * args)
 static PyObject * set_params(PyObject * self, PyObject * args, PyObject * keywds)
 {  /* Call with keyword arguments ONLY; change local parameters */
 	static char * kwlist[] = {"quisk_is_vna", "rx_bytes", "rx_endian", "read_error", "clip", 
-	"bscope_bytes", "bscope_endian", "bscope_size", "bandscopeScale", "hermes_pause", NULL} ;
+	"bscope_bytes", "bscope_endian", "bscope_size", "bandscopeScale", "hermes_pause", 
+	"freedv_monitor", NULL} ;
 	int i, nbytes, read_error, clip, bscope_size, hermes_pause;
 
 	nbytes = read_error = clip = bscope_size = hermes_pause = -1;
-	if (!PyArg_ParseTupleAndKeywords (args, keywds, "|iiiiiiiidi", kwlist,
+	if (!PyArg_ParseTupleAndKeywords (args, keywds, "|iiiiiiiidii", kwlist,
 	&quisk_is_vna, &nbytes, &py_sample_rx_endian, &read_error, &clip,
-	&py_bscope_bytes, &py_bscope_endian, &bscope_size, &bandscopeScale, &hermes_pause))
+	&py_bscope_bytes, &py_bscope_endian, &bscope_size, &bandscopeScale, &hermes_pause,
+	&freedv_monitor))
 		return NULL;
 	if (nbytes != -1) {
 		py_sample_rx_bytes = nbytes;
@@ -3685,6 +3762,7 @@ static int read_rx_udp10(complex double * samp)	// Read samples from UDP using t
 				//code_version = quisk_hermes_to_pc[3];
 				if ((quisk_hermes_to_pc[0] & 0x01) != 0)	// C1
 					quisk_sound_state.overrange++;
+				quisk_tx_inhibit = (quisk_hermes_to_pc[0] & 0x02) == 0;	// should limit to Hermes Lite2 only
 				hardware_ptt = buf[start] & 0x01;	// C0 bit zero is PTT
 				quisk_hardware_cwkey = (buf[start] & 0x04) >> 2;	// C0 bit two is CW key state			
                 switch (hl2_txbuf_state) {
@@ -4628,6 +4706,9 @@ static PyObject * ImmediateChange(PyObject * self, PyObject * args)	// called fr
 	}
 	else if ( ! strcmp(name, "maximum_tx_secs")) {
 		maximum_tx_secs = QuiskGetConfigInt(name, 0);
+	}	
+	else if ( ! strcmp(name, "TxRxSilenceMsec")) {
+		TxRxSilenceMsec = QuiskGetConfigInt(name, 50);
 	}
 	Py_INCREF (Py_None);
 	return Py_None;
@@ -5813,7 +5894,8 @@ static PyObject * record_app(PyObject * self, PyObject * args)
 	quisk_use_sidetone = QuiskGetConfigInt("use_sidetone", 0);
 	quisk_start_cw_delay = QuiskGetConfigInt("start_cw_delay", 15);
 	quisk_start_ssb_delay = QuiskGetConfigInt("start_ssb_delay", 100);
-	maximum_tx_secs = QuiskGetConfigInt("maximum_tx_secs", 0);
+	maximum_tx_secs = QuiskGetConfigInt("maximum_tx_secs", 0);	
+	TxRxSilenceMsec = QuiskGetConfigInt("TxRxSilenceMsec", 50);	
 	quisk_sound_state.sample_rate = rate;
 	fft_sample_rate = rate;
 	is_little_endian = 1;	// Test machine byte order

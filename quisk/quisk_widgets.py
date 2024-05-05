@@ -1128,7 +1128,7 @@ class QuiskCycleCheckbutton(QuiskCheckbutton):
       color = conf.color_cycle_btn
     QuiskCheckbutton.__init__(self, parent, command, labels[0], color)
     self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-    self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick)
+    #self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDclick) # ----------------- удалено ------- двойной клик мыши -------- реформа кнопок ------- 12 RA3PKJ
   def SetLabel(self, label, do_cmd=False):
     self.index = self.labels.index(label)
     QuiskCheckbutton.SetLabel(self, label)
@@ -1563,6 +1563,8 @@ class QuiskMenu(wx.Menu):
     item.Check(is_checked)
     self.InitData(item, handler)
     return item
+  def AppendSeparator(self):
+    wx.Menu.AppendSeparator(self)
   def IsItemChecked(self, item_text):
     nid = self.item_text2id[item_text]
     menu_item = self.FindItemById(nid)

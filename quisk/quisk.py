@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.28.9 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.32.13 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1847,11 +1847,22 @@ class GraphDisplay(wx.Window):
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
 
-    # ---------------------------------------------------------------------------- добавлено -------- картинка на панораме ---------------------- 5 RA3PKJ
+# ------------------------------------------------------------------------------- добавлено --------- картинка на панораме ---------------------- 5 RA3PKJ
     picture_bmp = application.picture_bmp
-    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale((MyDisplayWidth//100) * 86, (MyDisplayHeight//100) * 42)
+    # ------------- коррекция длины картинки ------------------------------------ добавлено --------- на всю длину монитора -------------------- 33 RA3PKJ
+    global MyDisplayWidth
+    if conf.window_width > 0:
+      if conf.window_width > MyDisplayWidth:
+        aa = (conf.window_width * 1000) // MyDisplayWidth
+        MyDisplayWidth = (MyDisplayWidth * aa) // 1000
+      else:
+        aa = (MyDisplayWidth * 1000) // conf.window_width
+        MyDisplayWidth = (MyDisplayWidth * 1000) // aa
+    bmp = wx.Image(picture_bmp, wx.BITMAP_TYPE_JPEG).Scale(MyDisplayWidth, (MyDisplayHeight//100) * 42)
+
     bmp_ = wx.Bitmap(bmp)
     dc.DrawBitmap(bmp_, 0, 0)
+# -------------------------------------------------------------------------------------------------------------------------------------------------------
 
     self.DrawFilter(dc)
     dc.SetPen(self.horizPen)
@@ -1867,6 +1878,12 @@ class GraphDisplay(wx.Window):
       dc.SetTextForeground(conf.color_graph_msg_fg)
       dc.SetBackgroundMode(wx.SOLID)
       dc.DrawText(self.display_text, 0, 0)
+    if application.tx_inhibit:
+      dc.SetFont(self.font)
+      dc.SetTextBackground(conf.color_graph_msg_bg)
+      dc.SetTextForeground("red")
+      dc.SetBackgroundMode(wx.SOLID)
+      dc.DrawText(" *** Tx Inhibit ***", 0, self.chary * 15 // 10)
     # --------------------- добавлено ------------------------------------------------------------------------ S-метр на панораме --------------- 7 RA3PKJ
     if self.display_text == "":
     # красный указатель S-метра на панораме
@@ -3726,6 +3743,11 @@ class App(wx.App):
     self.bottom_widgets = None
     self.dxCluster = None
     self.main_frame = None
+    self.quisk_height = None # ------------------- добавлено -------- запоминание высоты окна при выходе -------- 34 RA3PKJ
+    # -------------------------------------------- добавлено ------------ запоминание позиции окна -------------- 35 RA3PKJ
+    self.quisk_posX = None # позиция X окна
+    self.quisk_posY = None # позиция Y окна
+
     self.remote_control_head = False
     self.remote_control_slave = False
     self.keys_down = []
@@ -3838,6 +3860,8 @@ class App(wx.App):
     self.midi_message = []
     self.idName2Button = {}
     self.midi_handler = None
+    self.tx_inhibit = 0
+    self.old_tx_inhibit = 0
     if conf.use_rx_udp == 10:		# Hermes UDP protocol
       self.bandscope_clock = conf.rx_udp_clock
     else:
@@ -4105,15 +4129,20 @@ class App(wx.App):
         conf.playback_rate = 48000
       else:
         conf.playback_rate = conf.sample_rate
-    # Create the main frame
+
+# Предварительное создание всего окна (main frame) программы (т.е. с кнопками)
     if conf.window_width > 0:	# fixed width of the main frame
       self.width = conf.window_width
-    else:
-      self.width = self.screen_width * 8 // 10
-    if conf.window_height > 0:	# fixed height of the main frame
-      self.height = conf.window_height
-    else:
-      self.height = self.screen_height * 5 // 10
+    else: # self.screen_width - разрешение монитора по горизонтали
+      #self.width = self.screen_width * 8 // 10 # -------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+      self.width = self.screen_width # -------------------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
+# ----- отключить ручное управление высотой -------------------------------- удалено --- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_height > 0:	# fixed height of the main frame
+##      self.height = conf.window_height
+##    else:
+##      self.height = self.screen_height * 5 // 10
+    self.height = self.screen_height * 5 // 10 # ---------------------------- взамен --- на всю длину монитора ----- 33 RA3PKJ
+
     if self.main_frame:
       frame = self.main_frame
       szr = frame.GetSizer()
@@ -4133,35 +4162,56 @@ class App(wx.App):
     #print ('Main frame: size', w, h, 'client', ww, hh)
     # Find the data width from a list of preferred sizes; it is the width of returned graph data.
     # The graph_width is the width of data_width that is displayed.
+      # ----------------------------------------------------------------------- удалено ---- на всю длину монитора ----- 33 RA3PKJ
+##    if conf.window_width > 0:
+##      wFrame, h = frame.GetClientSize().Get()				# client window width
+##      graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
+##      self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
+##      graph.Destroy()
+##      del graph
+##      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+##        self.graph_width -= 1
+##      width = int(self.graph_width / conf.display_fraction)		# estimated data width
+##      for x in fftPreferedSizes:
+##        if x >= width:
+##          self.data_width = x
+##          break
+##      else:
+##        self.data_width = fftPreferedSizes[-1]
+##    else:		# use conf.graph_width to determine the width
+##      width = self.screen_width * conf.graph_width		# estimated graph width
+##      percent = conf.display_fraction		# display central fraction of total width
+##      percent = int(percent * 100.0 + 0.4)
+##      width = width * 100 // percent		# estimated data width
+##      for x in fftPreferedSizes:
+##        if x > width:
+##          self.data_width = x
+##          break
+##      else:
+##        self.data_width = fftPreferedSizes[-1]
+##      self.graph_width = self.data_width * percent // 100
+##      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+##        self.graph_width += 1
+     # ----------------------------------------------------------------------- взамен ---- на всю длину монитора ----- 33 RA3PKJ
+# создание верхней области (водопад, график)
     if conf.window_width > 0:
-      wFrame, h = frame.GetClientSize().Get()				# client window width
-      graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
-      self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
-      graph.Destroy()
-      del graph
-      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
-        self.graph_width -= 1
-      width = int(self.graph_width / conf.display_fraction)		# estimated data width
-      for x in fftPreferedSizes:
-        if x >= width:
-          self.data_width = x
-          break
-      else:
-        self.data_width = fftPreferedSizes[-1]
-    else:		# use conf.graph_width to determine the width
-      width = self.screen_width * conf.graph_width		# estimated graph width
-      percent = conf.display_fraction		# display central fraction of total width
-      percent = int(percent * 100.0 + 0.4)
-      width = width * 100 // percent		# estimated data width
-      for x in fftPreferedSizes:
-        if x > width:
-          self.data_width = x
-          break
-      else:
-        self.data_width = fftPreferedSizes[-1]
-      self.graph_width = self.data_width * percent // 100
-      if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
-        self.graph_width += 1
+      wFrame = conf.window_width - 15
+    else:
+      wFrame = MyDisplayWidth - 15
+    graph = GraphScreen(frame, self.width//2, self.width//2, None)	# make a GraphScreen to calculate borders
+    self.graph_width = wFrame - (graph.width - graph.graph_width)		# less graph borders equals actual graph_width
+    graph.Destroy()
+    del graph
+    if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
+      self.graph_width -= 1
+    width = int(self.graph_width / conf.display_fraction)		# estimated data width
+    for x in fftPreferedSizes:
+      if x >= width:
+        self.data_width = x
+        break
+    else:
+      self.data_width = fftPreferedSizes[-1]
+
     #print('graph_width', self.graph_width, 'data_width', self.data_width)
     # The FFT size times the average_count controls the graph refresh rate
     factor = float(self.sample_rate) / conf.graph_refresh / self.data_width
@@ -4334,15 +4384,40 @@ class App(wx.App):
     self.widget_row = 0 # --- нижний дополнительный ряд
     self.button_start_col = 8 # --- начало дополнительного нижнего ряда
 
-    minw = width = self.graph.width
-    maxw = maxh = -1
-    minh = 100
+# окончательное создание всего окна программы (т.е. с кнопками)
+    #--------------------------------------------- удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+    #minw = width = self.graph.width # minw - ограничитель минимальной длины
+    #maxw = maxh = -1                # maxw - ограничитель максимальной длины
+    maxh = -1#ограничитель максимальной высоты не установлен -- взамен -- на всю длину монитора ----- 33 RA3PKJ
+
+    minh = 130 #ограничитель минимальной высоты -- изменено ------------- на всю длину монитора ----- 33 RA3PKJ
+    # длина всего окна программы (т.е. с кнопками)
     if conf.window_width > 0:
       minw = width = maxw = conf.window_width
-    if conf.window_height > 0:
-      minh = maxh = self.height = conf.window_height
+    # ------------------------------------------- добавлено ------------- на всю длину монитора ----- 33 RA3PKJ
+    else:
+      minw = width = maxw = self.screen_width # self.screen_width - разрешение монитора по горизонтали
+# ------------------------------------------------ удалено -------------- на всю длину монитора ----- 33 RA3PKJ
+##    # высота всего окна программы (т.е. с кнопками)
+##    if conf.window_height > 0:
+##      minh = maxh = self.height = conf.window_height
+    # ----------------------------------------- добавлено --- запоминание высоты окна при выходе ---- 34 RA3PKJ
+    try:
+      self.height = configure.Settings[4]["QuiskHeight"]
+    except:
+      self.height = 500
+
     self.main_frame.SetSizeHints(minw, minh, maxw, maxh)
     self.main_frame.SetClientSize(wx.Size(width, self.height))
+
+    # ----------------------------------------- добавлено ---------- запоминание позиции окна ------- 35 RA3PKJ
+    try:
+      self.quisk_posX = configure.Settings[4]["QuiskPositionX"]
+      self.quisk_posY = configure.Settings[4]["QuiskPositionY"]
+      self.main_frame.SetPosition(wx.Point(self.quisk_posX, self.quisk_posY))
+    except:
+      self.main_frame.SetPosition(wx.Point(0, 0))
+
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
       Hardware.pre_open()
 
@@ -4415,13 +4490,26 @@ class App(wx.App):
     if hasattr(Hardware, 'post_open'):	# post_open() is called after open() and after sound is started
       Hardware.post_open()
     self.StartWsjtx()
+
+    #---------------------------------------- удалено ------------- реформа крутилок ------------- 36 RA3PKJ
+##    self.midiControls["Tune"]	= (None,		None)
+##    self.midiControls["Vol"]	= (self.sliderVol,	self.ChangeVolume)
+##    self.midiControls["STo"]	= (self.sliderSto,	self.ChangeSidetone)
+##    self.midiControls["Rit"]	= (self.ritScale,	self.OnRitScale)
+##    self.midiControls["Ys"]	= (self.sliderYs,	self.ChangeYscale)
+##    self.midiControls["Yz"]	= (self.sliderYz,	self.ChangeYzero)
+##    self.midiControls["Zo"]	= (self.sliderZo,	self.OnChangeZoom)
+    #----------------------------------------- взамен ------------- реформа крутилок ------------- 36 RA3PKJ
+    # нельзя заменить Rit на RIT, где-то возникает ошибка - по удалённому управлению не происходит движение крутилки на сервере (при этом сообщение о ошибке не появляется)
     self.midiControls["Tune"]	= (None,		None)
-    self.midiControls["Vol"]	= (self.sliderVol,	self.ChangeVolume)
-    self.midiControls["STo"]	= (self.sliderSto,	self.ChangeSidetone)
+    self.midiControls["Volume"]	= (self.sliderVol,	self.ChangeVolume)
+    self.midiControls["SideTone"]	= (self.sliderSto,	self.ChangeSidetone)
     self.midiControls["Rit"]	= (self.ritScale,	self.OnRitScale)
-    self.midiControls["Ys"]	= (self.sliderYs,	self.ChangeYscale)
-    self.midiControls["Yz"]	= (self.sliderYz,	self.ChangeYzero)
-    self.midiControls["Zo"]	= (self.sliderZo,	self.OnChangeZoom)
+    self.midiControls["Yscale"]	= (self.sliderYs,	self.ChangeYscale)
+    self.midiControls["Yshift"]	= (self.sliderYz,	self.ChangeYzero)
+    self.midiControls["Zoom"]	= (self.sliderZo,	self.OnChangeZoom)
+
+
     bw = self.bottom_widgets
     if hasattr(bw, "sliderLNA"):
       self.midiControls["RfLna"]	= (bw.sliderLNA,	bw.OnLNA)
@@ -4748,6 +4836,20 @@ class App(wx.App):
     event.Skip()
     self.OnBtnClose(event)
   def OnBtnClose(self, event=None):
+    # ---------------------------------------------------- добавлено ------- сохранение высоты окна при выходе --- 34 RA3PKJ
+    l, self.quisk_height = self.main_frame.GetClientSize().Get() # получить размеры (длина, высота) всего окна, существующего на момент закрытия программы
+    # сохранение высоты
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["QuiskHeight"] = self.quisk_height  # сохранение высоты окна
+        # ---------------------------------------------------- добавлено ------------- запоминание позиции окна ------ 35 RA3PKJ
+    self.quisk_posX, self.quisk_posY = self.main_frame.GetPosition()
+    configure.Settings[4]["QuiskPositionX"] = self.quisk_posX  # сохранение позиции X окна
+    configure.Settings[4]["QuiskPositionY"] = self.quisk_posY  # сохранение позиции Y окна
+    # ------------------------------------------------------------------------------------ общее для 34 RA3PKJ и 35 RA3PKJ
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
+
     msg = QS.GetQuiskPrintf()
     if msg:
       print(msg, end='')
@@ -4921,9 +5023,9 @@ class App(wx.App):
     shortcuts = []
 
     # --- кнопка On/Off
-    b_onoff = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77C077')
+    b_onoff = b = QuiskCheckbutton(frame, self.OnBtnOnOff, "On", color='#77C077')
     b_onoff.SetValue(True, do_cmd=False)
-    self.idName2Button[b_onoff.idName] = b_onoff
+    self.idName2Button[b.idName] = b
 
     # --- дисплей
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 14 // 10)
@@ -4942,8 +5044,8 @@ class App(wx.App):
     # --- кнопка A<>B
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_vfoAB = szr
-    self.vfoABButton = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
-    self.idName2Button[self.vfoABButton.idName] = self.vfoABButton
+    self.vfoABButton = b = QuiskCheckbutton(frame, self.OnBtnVFOAB, "A<>B")
+    self.idName2Button[b.idName] = b
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
     self.vfoABButton.Refresh()
@@ -4971,8 +5073,8 @@ class App(wx.App):
     # --- кнопка Split
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
     b_newsplit = szr #дать своё имя образцу кнопки
-    self.newsplitButton = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
-    self.idName2Button[self.newsplitButton.idName] = self.newsplitButton
+    self.newsplitButton = b = QuiskCheckbutton(frame, self.OnBtnNewSplit, "Split") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
+    self.idName2Button[b.idName] = b
     szr.Add(self.newsplitButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.newsplitButton.SetLabel("Split")
     self.newsplitButton.Refresh()
@@ -4980,8 +5082,8 @@ class App(wx.App):
     # --- кнопка Lock
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
-    self.lockVFOButton = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
-    self.idName2Button[self.lockVFOButton.idName] = self.lockVFOButton
+    self.lockVFOButton = b = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
+    self.idName2Button[b.idName] = b
     szr.Add(self.lockVFOButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.lockVFOButton.SetLabel("LockTX")
     self.lockVFOButton.Refresh()
@@ -4989,10 +5091,11 @@ class App(wx.App):
     # --- кнопка Step ------------------------------------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_step = szr
-    self.step_btn = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    #self.step_btn = b = QuiskPushbutton(frame, self.OnBtnStep, "Step")
+    labels_step = ('Step 50', 'Step 100', 'Step 250', 'Step 500', 'Step 1kHz', 'Step 1', 'Step 10', 'Step 25')
+    self.step_btn = b = QuiskCycleCheckbutton(frame, self.OnBtnStep, labels_step, conf.color_cycle_btn)
+    self.idName2Button[b.idName] = b
     szr.Add(self.step_btn, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.step_btn.SetLabel("Step")
-    self.step_btn.Refresh()
     try:
       self.freq_step = configure.Settings[4]["FrequencyStep"]
       if self.freq_step == 1:
@@ -5017,12 +5120,13 @@ class App(wx.App):
     except:
       self.freq_step = 50
       self.step_btn.SetLabel("Step 50")
+    self.step_btn.Refresh()
 
     # --- кнопка RIT
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_rit = szr
-    self.ritButton = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
-    self.idName2Button[self.ritButton.idName] = self.ritButton
+    self.ritButton = b = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
+    self.idName2Button[b.idName] = b
     szr.Add(self.ritButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.ritButton.SetLabel("RIT %d" % self.ritFreq)
     self.ritButton.Refresh()
@@ -5038,7 +5142,8 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL) # --- создание кнопки
     b_addrx = szr
     btn_addrx = QuiskPushbutton(frame, self.multi_rx_screen.OnAddReceiver, "Add Rx")
-    btn_addrx = WrapMenu(btn_addrx, self.multi_rx_menu)
+    btn_addrx = b = WrapMenu(btn_addrx, self.multi_rx_menu)
+    self.idName2Button[b.idName] = b
     if not hasattr(Hardware, 'MultiRxCount'):
       btn_addrx.Enable(False)
     szr.Add(btn_addrx, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
@@ -5048,12 +5153,15 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_membtn = szr
     b = QuiskPushbutton(frame, self.OnBtnMemSave, conf.Xbtn_text_mem_add)
+    self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     b = self.memNextButton = QuiskPushbutton(frame, self.OnBtnMemNext, conf.Xbtn_text_mem_next)
+    self.idName2Button[b.idName] = b
     b.Enable(False)
     self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightClickMemory, b)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, border=1)
     b = self.memDeleteButton = QuiskPushbutton(frame, self.OnBtnMemDelete, conf.Xbtn_text_mem_del)
+    self.idName2Button[b.idName] = b
     b.Enable(False)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
@@ -5061,12 +5169,14 @@ class App(wx.App):
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_fav = szr
     b = self.StationNewButton = QuiskPushbutton(frame, self.OnBtnFavoritesNew, conf.Xbtn_text_fav_add)
+    self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     b = self.StationNewButton = QuiskPushbutton(frame, self.OnBtnFavoritesShow, conf.Xbtn_text_fav_recall)
+    self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
     # --- кнопки File Record/Play
-    b = self.btn_file_record = QuiskCheckbutton(frame, self.OnBtnFileRecord, conf.Xbtn_text_file_rec)
+    b = self.btn_file_record = QuiskCheckbutton(frame, self.OnBtnFileRecord, 'File')
     self.idName2Button[b.idName] = b
     b = self.btnFilePlay = QuiskCheckbutton(frame, self.OnBtnFilePlay, conf.Xbtn_text_file_play)
     self.idName2Button[b.idName] = b
@@ -5077,24 +5187,51 @@ class App(wx.App):
 
     # --- кнопки Temp Record and Playback
     b = self.btnTmpRecord = QuiskCheckbutton(frame, self.OnBtnTmpRecord, text=conf.Xbtn_text_rec)
-    b = self.btnTmpPlay = QuiskCheckbutton(frame, self.OnBtnTmpPlay, text=conf.Xbtn_text_play, use_right=True)
+    self.idName2Button[b.idName] = b
+    b = self.btnTmpPlay = QuiskCheckbutton(frame, self.OnBtnTmpPlay, 'Back', use_right=True)
+    self.idName2Button[b.idName] = b
     b.Enable(0)
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_tmprec = szr
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
+# --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
+    # --- создание слайдеров
+    self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
+    self.ChangeVolume()		# set initial volume level
+    self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
+    self.ChangeSidetone()
+    self.sliderYs = SliderBoxHH(frame, 'Yscale', self.y_scale, 0, 160, self.ChangeYscale, display=False, scale=1)
+    self.sliderYz = SliderBoxHH(frame, 'Yshift', self.y_zoom, 0, 160, self.ChangeYzero, display=False, scale=1)
+    self.sliderZo = SliderBoxHH(frame, 'Zoom', self.zoom_control, 0, 1000, self.OnChangeZoom, display=False, scale=1)
+    self.sliderZo.SetValue(0)
+    self.ritScale = SliderBoxHH(frame, 'Rit', self.ritFreq, -2000, 2000, self.OnRitScale, display=False, scale=1)
+# --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
+    # ------- не пошло в жизнь, а именно числовые значения, обозначение RIT и b.idName
     # --- создание слайдеров
     # --- display=True это показывать значение %d
-    self.sliderVol = SliderBoxHH(frame, 'Volume %d', self.volumeAudio, 0, 1000, self.ChangeVolume, display=True, scale=1)
-    self.sliderSto = SliderBoxHH(frame, 'SideTone %d', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=True, scale=1)
-    self.sliderYs = SliderBoxHH(frame, 'Yscale %d', self.y_scale, 0, 160, self.ChangeYscale, display=True, scale=1)
-    self.sliderYz = SliderBoxHH(frame, 'Yshift %d', self.y_zoom, 0, 160, self.ChangeYzero, display=True, scale=1)
-    self.sliderZo = SliderBoxHH(frame, 'Zoom %d', self.zoom_control, 0, 1000, self.OnChangeZoom, display=True, scale=1)
-    self.ritScale = SliderBoxHH(frame, 'RIT %d', self.ritFreq, -2000, 2000, self.OnRitScale, display=True, scale=1)
-    self.ChangeVolume()		# set initial volume level
-    self.ChangeSidetone()
-    self.sliderZo.SetValue(0)
+##    self.sliderVol = b = SliderBoxHH(frame, 'Volume %d', self.volumeAudio, 0, 1000, self.ChangeVolume, display=True, scale=1)
+##    b.idName = 'Volume'
+##    self.idName2Button[b.idName] = b
+##    self.ChangeVolume()		# set initial volume level
+##    self.sliderSto = b = SliderBoxHH(frame, 'SideTone %d', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=True, scale=1)
+##    b.idName = 'SideTone'
+##    self.idName2Button[b.idName] = b
+##    self.ChangeSidetone()
+##    self.sliderYs = b = SliderBoxHH(frame, 'Yscale %d', self.y_scale, 0, 160, self.ChangeYscale, display=True, scale=1)
+##    b.idName = 'Yscale'
+##    self.idName2Button[b.idName] = b
+##    self.sliderYz = b = SliderBoxHH(frame, 'Yshift %d', self.y_zoom, 0, 160, self.ChangeYzero, display=True, scale=1)
+##    b.idName = 'Yshift'
+##    self.idName2Button[b.idName] = b
+##    self.sliderZo = b = SliderBoxHH(frame, 'Zoom %d', self.zoom_control, 0, 1000, self.OnChangeZoom, display=True, scale=1)
+##    b.idName = 'Zoom'
+##    self.idName2Button[b.idName] = b
+##    self.sliderZo.SetValue(0)
+##    self.ritScale = b = SliderBoxHH(frame, 'RIT %d', self.ritFreq, -2000, 2000, self.OnRitScale, display=True, scale=1)
+##    b.idName = 'RIT'
+##    self.idName2Button[b.idName] = b
 
     # --- кнопки диапазонов
     for label in conf.bandLabels:
@@ -5107,19 +5244,21 @@ class App(wx.App):
 
     # --- кнопка Mute
     b = b_mute = QuiskCheckbutton(frame, self.OnBtnMute, text='Mute')
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'u'
     self.MakeAccel(b) # --- связать горячую клавишу с кнопкой
 
     # --- кнопка RX2
-    b = QuiskCheckbutton(frame, self.OnBtnSplit, "RX2")
+    self.splitButton = b_rx2 = b = QuiskCheckbutton(frame, self.OnBtnSplit, "RX2")
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'l'
     self.MakeAccel(b)
-    self.splitButton = b_rx2 = b
     if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
       self.splitButton.Enable(False)
 
     # --- кнопка NR2
     b = b_nr2 = QuiskCheckbutton(frame, self.OnBtnNR2, text='NR2')
+    self.idName2Button[b.idName] = b
     if not self.wdsp.version:
       b.Enable(False)
 
@@ -5128,6 +5267,7 @@ class App(wx.App):
     agc.char_shortcut = 'G'
     self.MakeAccel(agc)
     b = b_agc = self.SliderAGC = WrapSlider(agc, self.OnBtnAGC, display=True)
+    self.idName2Button[agc.idName] = b
     self.midiControls["AGCSlider"] = (b, None)
     b.SetDual(True)
     b.SetSlider(value_off=self.levelOffAGC, value_on=self.levelAGC)
@@ -5135,10 +5275,12 @@ class App(wx.App):
 
     # --- кнопка Sqlch
     b = self.BtnSquelch = QuiskCheckbutton(frame, self.OnBtnSquelch, text='Sqlch')
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'q'
     self.MakeAccel(b)
-    self.sliderSquelch = b_sqlch = WrapSlider(b, self.OnBtnSquelch, display=True)
+    self.sliderSquelch = b_sqlch = b = WrapSlider(b, self.OnBtnSquelch, display=True)
     self.midiControls["SqlchSlider"] = (self.sliderSquelch, None)
+    self.idName2Button[b.idName] = b
 
     # --- кнопка NB(Noise Blanker)
     self.NB_menu = QuiskMenu("NB_menu")
@@ -5150,10 +5292,12 @@ class App(wx.App):
     self.btnNB = QuiskCheckbutton(frame, self.OnBtnNB, text='NB 1')
     self.btnNB.char_shortcut = 'B'
     self.MakeAccel(self.btnNB)
-    b_nb = WrapMenu(self.btnNB, self.NB_menu)
+    b_nb = b = WrapMenu(self.btnNB, self.NB_menu)
+    self.idName2Button[b.idName] = b
 
     # --- кнопка Notch
-    b = b_notch = QuiskCheckbutton(frame, self.OnBtnAutoNotch, text='Notch')
+    b_notch = b = QuiskCheckbutton(frame, self.OnBtnAutoNotch, text='Notch')
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'h'
     self.MakeAccel(b)
 
@@ -5164,10 +5308,11 @@ class App(wx.App):
       gain_labels = ()
     self.BtnRfGain = None
     if gain_labels:
-      b_gain = self.BtnRfGain = QuiskCycleCheckbutton(frame, Hardware.OnButtonRfGain, gain_labels)
+      b_gain = b = self.BtnRfGain = QuiskCycleCheckbutton(frame, Hardware.OnButtonRfGain, gain_labels)
     else:
       b = b_gain = QuiskCheckbutton(frame, None, text='RfGain')
       b.Enable(False)
+    self.idName2Button[b.idName] = b
 
     # --- кнопка Ant
     try:
@@ -5175,10 +5320,11 @@ class App(wx.App):
     except:
       ant_labels = ()
     if ant_labels:
-      b_ant = QuiskCycleCheckbutton(frame, Hardware.OnButtonAntenna, ant_labels)
+      b_ant = b = QuiskCycleCheckbutton(frame, Hardware.OnButtonAntenna, ant_labels)
     else:
-      b = b_ant = QuiskCheckbutton(frame, None, text='Ant')
+      b_ant = b = QuiskCheckbutton(frame, None, text='Ant')
       b.Enable(False)
+    self.idName2Button[b.idName] = b
 
 # ---- не нужно
 ##    # --- кнопка Color
@@ -5189,7 +5335,8 @@ class App(wx.App):
 ##      b.Enable(False)
 
     # --- кнопка Test1
-    b_test1 = self.test1Button = QuiskCheckbutton(frame, self.OnBtnTest1, 'Test 1', color=conf.color_test)
+    b_test1 = b = self.test1Button = QuiskCheckbutton(frame, self.OnBtnTest1, 'Test 1', color=conf.color_test)
+    self.idName2Button[b.idName] = b
 
     # --- кнопки скринов
     if self.rate_audio_fft:
@@ -5206,6 +5353,7 @@ class App(wx.App):
     # --- кнопка Tune
     bt = self.spotButton = QuiskCheckbutton(frame, self.OnBtnSpot, 'Tune', color=conf.color_test) # ---- изменено --- надписи на кнопках --- 20 RA3PKJ
     b = b_tune = WrapSlider(bt, self.OnBtnSpot, slider_value=self.levelSpot, display=True)
+    self.idName2Button[b.idName] = b
     self.midiControls["SpotSlider"] = (b, None)
     if hasattr(Hardware, 'OnSpot'):
       bt.char_shortcut = 'o'
@@ -5215,17 +5363,20 @@ class App(wx.App):
 
     # --- кнопка FDX
     b = b_fdx = QuiskCheckbutton(frame, self.OnBtnFDX, 'FDX', color=conf.color_test)
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'X'
     self.MakeAccel(b)
 
     # --- кнопка PTT
-    bt = QuiskCheckbutton(frame, self.OnButtonPTT, 'PTT', color='red')
+    bt = b = QuiskCheckbutton(frame, self.OnButtonPTT, 'PTT', color='red')
+    self.idName2Button[b.idName] = b
     self.pttButton = bt
     b = b_ptt = WrapIndicator(bt, "Tx", "white", 'red')
     self.pttButton.Tx = b
 
     # --- кнопка VOX
     b = b_vox = QuiskCheckbutton(frame, self.OnButtonVOX, 'VOX')
+    self.idName2Button[b.idName] = b
     b.char_shortcut = 'V'
     self.MakeAccel(b)
 
@@ -5264,16 +5415,32 @@ class App(wx.App):
       self.freedv_menu = QuiskMenu("freedv_menu")
       msg = conf.freedv_tx_msg
       QS.freedv_set_options(mode=conf.freedv_modes[0][1], tx_msg=msg, DEBUG=0, squelch=1)
+      self.freedv_menu.AppendCheckItem("Monitor", self.OnFreedvMonitor)
+      self.freedv_menu.AppendSeparator()
       for mode, index in conf.freedv_modes:
         item = self.freedv_menu.AppendRadioItem(mode, self.OnFreedvMenu, mode == self.freedv_mode)
         self.freedv_menu_items[index] = item
         if mode == self.freedv_mode:	# Restore mode
           QS.freedv_set_options(mode=index)
+        if mode in ("Mode 2020", "Mode 2400A", "Mode 2400B"):
+          item.Enable(False)
+
+      # ------------------------------------------------ удалено ----------------- удаление маленького экрана ----- 16 RA3PKJ
+##      if conf.button_layout == 'Large screen':
+##        b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
+##        b.idName = "FDV"
+##        b.char_shortcut = 'F'
+##        self.btnFreeDV = WrapMenu(b, self.freedv_menu)
+##        self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+##      else:
+##        self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
+      # ------------------------------------------------ взамен ----------------- удаление маленького экрана ----- 16 RA3PKJ
       b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
       b.idName = "FDV"
       b.char_shortcut = 'F'
       self.btnFreeDV = WrapMenu(b, self.freedv_menu)
       self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+
       try:
         ok = QS.freedv_open()
       except:
@@ -5311,10 +5478,11 @@ class App(wx.App):
     # --- кнопка SSB Offset-------------------------------------- добавлено ------- SSB Offset ------ 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
-    self.ssb_offset = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
+    #self.ssb_offset = b = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
+    labels_ssb_offset = ('SSB Low=200Hz', 'SSB Low=250Hz', 'SSB Low=300Hz', 'SSB Low=0Hz', 'SSB Low=50Hz', 'SSB Low=100Hz', 'SSB Low=150Hz')
+    self.ssb_offset = b = QuiskCycleCheckbutton(frame, self.OnBtnOffset, labels_ssb_offset, conf.color_cycle_btn)
+    self.idName2Button[b.idName] = b
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.ssb_offset.SetLabel("SSB Low")
-    self.ssb_offset.Refresh()
     self.ssb_offset.Enable(False)
     if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
       self.ssb_offset.Enable(True)
@@ -5335,16 +5503,18 @@ class App(wx.App):
       elif self.offset == 0:
         self.ssb_offset.SetLabel("SSB Low=0Hz")
       else:
-        self.offset = 300
-        self.ssb_offset.SetLabel("SSB Low=300Hz")
+        self.offset = 200
+        self.ssb_offset.SetLabel("SSB Low=200Hz")
     except:
-      self.offset = 300
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
+      self.offset = 200
+      self.ssb_offset.SetLabel("SSB Low=200Hz")
+    self.ssb_offset.Refresh()
 
     # --- кнопка Picture --------------------------- добавлено ---------- картинка на панораме ------- 5 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_picture = szr
-    self.picture = QuiskPushbutton(frame, self.OnBtnPicture, "Picture")
+    self.picture = b = QuiskPushbutton(frame, self.OnBtnPicture, "Picture")
+    self.idName2Button[b.idName] = b
     szr.Add(self.picture, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.picture.SetLabel("Picture")
     self.picture.Refresh()
@@ -5369,7 +5539,8 @@ class App(wx.App):
     # --- кнопка Palette
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_Palette = szr
-    self.PaletteButton = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
+    self.PaletteButton = b = QuiskPushbutton(frame, self.OnBtnWaterFallPalette, "Palette")
+    self.idName2Button[b.idName] = b
     szr.Add(self.PaletteButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.PaletteButton.SetLabel("Palette")
     self.PaletteButton.Refresh()
@@ -5752,7 +5923,10 @@ class App(wx.App):
     elif mode in ('DGT-IQ', 'DGT-FM'):
       center = 0
     elif mode in ('FDV-U', 'FDV-L'):
-      center = max(1500, bandwidth // 2)
+      if bandwidth <= 3000:
+        center = 1500
+      else:
+        center = bandwidth // 2
     elif mode in ('IMD',):
       center = 300 + bandwidth // 2
     else:
@@ -5809,9 +5983,20 @@ class App(wx.App):
     self.multi_rx_screen.waterfall.pane2.filter_center = center
     if self.screen is self.filter_screen:
       self.screen.NewFilter()
+  def OnFreedvMonitor(self, event):
+    for item in self.freedv_menu.GetMenuItems():
+      if item.GetKind() == wx.ITEM_CHECK:
+        if item.IsChecked():
+          QS.set_params(freedv_monitor=1)
+        else:
+          QS.set_params(freedv_monitor=0)
+        break
   def OnFreedvMenu(self, event):
     text = ''
     for item in self.freedv_menu.GetMenuItems():
+      kind = item.GetKind()
+      if kind != wx.ITEM_RADIO:
+        continue
       if item.IsChecked():
         text = item.GetItemLabel()
         break
@@ -5835,6 +6020,29 @@ class App(wx.App):
     else:
       self.freedv_menu_items[mode].Check(1)
       print ("FreeDV change mode failed.")
+    self.OnChangeFilter()
+  def OnChangeFilter(self):
+    # Used by OnFreedvMenu because the FreeDV mode may change the filter sample rate
+    bw = int(self.filterButns.GetLabel())
+    # We can not use QS.get_filter_srate() because the FreeDV mode is not changed yet.
+    if self.freedv_mode in ("Mode 2400A", "Mode 2400B"):
+      frate = 48000;
+    else:
+      frate = 8000;
+    bw = min(bw, frate // 2)
+    self.filter_bandwidth = bw
+    center = self.GetFilterCenter(self.mode, bw)
+    filtI, filtQ = self.MakeFilterCoef(frate, None, bw, center)
+    lower_edge = center - bw // 2
+    QS.set_filters(filtI, filtQ, bw, lower_edge, 0)
+    self.multi_rx_screen.graph.filter_bandwidth = bw
+    self.multi_rx_screen.graph.filter_center = center
+    self.multi_rx_screen.waterfall.pane1.filter_bandwidth = bw
+    self.multi_rx_screen.waterfall.pane1.filter_center = center
+    self.multi_rx_screen.waterfall.pane2.filter_bandwidth = bw
+    self.multi_rx_screen.waterfall.pane2.filter_center = center
+    if self.screen is self.filter_screen:
+      self.screen.NewFilter()
   def OnBtnHelp(self, event):
     if event.GetEventObject().GetValue():
       self.OnBtnScreen(None, 'Help')
@@ -6729,29 +6937,21 @@ class App(wx.App):
   def OnBtnStep(self, event):
     step_label = self.step_btn.GetLabel()
     if step_label == 'Step 1':
-      self.step_btn.SetLabel("Step 10")
-      self.freq_step = 10
-    elif step_label == 'Step 10':
-      self.step_btn.SetLabel("Step 25")
-      self.freq_step = 25
-    elif step_label == 'Step 25':
-      self.step_btn.SetLabel("Step 50")
-      self.freq_step = 50
-    elif step_label == 'Step 50':
-      self.step_btn.SetLabel("Step 100")
-      self.freq_step = 100
-    elif step_label == 'Step 100':
-      self.step_btn.SetLabel("Step 250")
-      self.freq_step = 250
-    elif step_label == 'Step 250':
-      self.step_btn.SetLabel("Step 500")
-      self.freq_step = 500
-    elif step_label == 'Step 500':
-      self.step_btn.SetLabel("Step 1kHz")
-      self.freq_step = 1000
-    elif step_label == 'Step 1kHz':
-      self.step_btn.SetLabel("Step 1")
       self.freq_step = 1
+    elif step_label == 'Step 10':
+      self.freq_step = 10
+    elif step_label == 'Step 25':
+      self.freq_step = 25
+    elif step_label == 'Step 50':
+      self.freq_step = 50
+    elif step_label == 'Step 100':
+      self.freq_step = 100
+    elif step_label == 'Step 250':
+      self.freq_step = 250
+    elif step_label == 'Step 500':
+      self.freq_step = 500
+    elif step_label == 'Step 1kHz':
+      self.freq_step = 1000
     else:
       self.step_btn.SetLabel("Step 50")
       self.freq_step = 50
@@ -6765,30 +6965,22 @@ class App(wx.App):
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
     if ssb_offset_label == 'SSB Low=300Hz':
-      self.ssb_offset.SetLabel("SSB Low=250Hz")
-      self.offset = 250
+      self.offset = 300
     elif ssb_offset_label == 'SSB Low=250Hz':
+      self.offset = 250
+    elif ssb_offset_label == 'SSB Low=200Hz':
+      self.offset = 200
+    elif ssb_offset_label == 'SSB Low=150Hz':
+      self.offset = 150
+    elif ssb_offset_label == 'SSB Low=100Hz':
+      self.offset = 100
+    elif ssb_offset_label == 'SSB Low=50Hz':
+      self.offset = 50
+    elif ssb_offset_label == 'SSB Low=0Hz':
+      self.offset = 0
+    else:
       self.ssb_offset.SetLabel("SSB Low=200Hz")
       self.offset = 200
-    elif ssb_offset_label == 'SSB Low=200Hz':
-      self.ssb_offset.SetLabel("SSB Low=150Hz")
-      self.offset = 150
-    elif ssb_offset_label == 'SSB Low=150Hz':
-      self.ssb_offset.SetLabel("SSB Low=100Hz")
-      self.offset = 100
-    elif ssb_offset_label == 'SSB Low=100Hz':
-      self.ssb_offset.SetLabel("SSB Low=50Hz")
-      self.offset = 50
-    elif ssb_offset_label == 'SSB Low=50Hz':
-      self.ssb_offset.SetLabel("SSB Low=0Hz")
-      self.offset = 0
-    elif ssb_offset_label == 'SSB Low=0Hz':
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
-      self.offset = 300
-    else:
-      self.ssb_offset.SetLabel("SSB Low=300Hz")
-      self.offset = 300
-
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
     self.settings_changed = True
@@ -7211,7 +7403,7 @@ class App(wx.App):
         Hardware.RepeaterOffset(0)
         QS.set_ctcss(0)
         QS.tx_hold_state(1)
-    if QS.is_key_down():	# Tx indicator
+    if QS.is_key_down() and not self.tx_inhibit:	# Tx indicator
       if not self.tx_indicator:
         self.tx_indicator = True
         self.pttButton.Tx.TurnOn(True)
@@ -7272,6 +7464,8 @@ class App(wx.App):
             self.hot_key_ptt_active = False
         self.hot_key_ptt_was_down = self.hot_key_ptt_is_down
         self.hot_key_ptt_pressed = False
+      if self.tx_inhibit:
+        ptt = False
       if ptt is True and not ptt_button_down:
         self.SetPTT(True)
       elif ptt is False and ptt_button_down:
@@ -7357,6 +7551,14 @@ class App(wx.App):
     if self.timer - self.heart_time0 > 0.10:	# call hardware to perform background tasks:
       self.heart_time0 = self.timer
       Hardware.HeartBeat()
+      if conf.hermes_lite2_enable:
+        self.tx_inhibit = QS.get_params('quisk_tx_inhibit')
+      else:
+        self.tx_inhibit = 0
+      if self.tx_inhibit != self.old_tx_inhibit:
+        self.old_tx_inhibit = self.tx_inhibit
+        self.graph.display.Refresh()
+        self.waterfall.pane1.display.Refresh()
       msg = QS.GetQuiskPrintf()
       if msg:
         print(msg, end='')

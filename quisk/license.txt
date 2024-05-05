@@ -1,4 +1,4 @@
-This software is Copyright (C) 2007-2020 by James C. Ahlstrom, and is
+This software is Copyright (C) 2007-2024 by James C. Ahlstrom, and is
 licensed for use under the GNU General Public License (GPL).
 See http://www.opensource.org.
 Note that there is NO WARRANTY AT ALL.  USE AT YOUR OWN RISK!!

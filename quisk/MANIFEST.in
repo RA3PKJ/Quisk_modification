@@ -1,4 +1,4 @@
-include  *.c  *.h  *.py  *.pyw  *.txt  *.html  *.dll  *.pyd  makefile quisk MANIFEST.in
+include  *.c  *.h  *.py  *.txt  *.html  *.dll  *.pyd  makefile MANIFEST.in
 graft    ac2yd
 graft    afedrinet
 graft    freedvpkg

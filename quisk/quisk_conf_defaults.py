@@ -421,6 +421,8 @@ hermes_PTT_hang_time = 4
 ## hermes_antenna_tuner			Antenna tuner, text choice
 # This option only applies to the Hermes Lite 2. Set this to None if you don't have a tuner.
 # Set this to "Tune" to control the Icom AH-4 compatible ATU attached to the Hermes Lite 2 end plate.
+# Note that this option only applies to the HL2 end plate, not the IO board.
+#В A tuner attached to the IO board is controlled from a button on the last line of the screen.
 # Then when the Spot button is pressed with a positive power, a tune request is sent to the ATU.
 # If the Spot button is pressed with a zero power level, the tuner is set to bypass mode.
 # Changes are immediate (no need to restart).
@@ -472,6 +474,13 @@ hermes_bias_adjust = False
 hermes_iob_rxin = 'J10 available'
 #hermes_iob_rxin = 'HL2 Rx to J9'
 #hermes_iob_rxin = 'Use J9 and J10'
+
+## hermes_lite2_enable			Hermes Lite2 protocol, boolean
+# This turns on some of the protocol extensions for the Hermes Lite2 that are not part
+# of the official Hermes Protocol 1. Currently this only enables Tx Inhibit (CN8).
+# Changes are immediate (no need to restart).
+hermes_lite2_enable = True
+#hermes_lite2_enable = False
 
 
 # These are known power meter calibration tables. This table is not present in the JSON settings file.
@@ -1492,6 +1501,8 @@ graph_width = 0.8
 # to ignore this feature, and use graph width.
 window_width = -1
 #window_width = 640
+#window_width = 1680
+#window_width = 1920
 
 ## window_height				Window height pixels, integer
 # The use of startup graph width provides an optimal size for PC screens.  But when running
@@ -1648,6 +1659,15 @@ start_ssb_delay = 100
 # Changes are immediate (no need to restart).
 maximum_tx_secs = 0
 
+## TxRxSilenceMsec			Tx-Rx silence msec, integer
+# When changing from transmit to receive a radio may receive either noise or the end of the transmission.
+# This may be returned as received audio, and can be heard as a loud pop.
+# This parameter plays silence for the specified number of milliseconds when changing from transmit to receive.
+# Make it long enough to zero out the pop, but not too much longer.
+# It is ignored when in full duplex mode.
+# Changes are immediate (no need to restart).
+TxRxSilenceMsec = 50
+
 ## keyupDelay			Keyup delay msecs, integer
 # This is the key hang time for semi-breakin CW. It is the time in milliseconds
 # from the last CW key release until changing to receive.
@@ -1761,7 +1781,7 @@ freedv_tx_msg = ''
 # This is the list of FreeDV modes and their index number.  The starting mode is the first listed.
 freedv_modes = (('Mode 1600', 0),
 		('Mode 2400A', 3), ('Mode 2400B', 4), ('Mode 800XA', 5),
-		('Mode 700C', 6), ('Mode 700D', 7), ('Mode 2020', 8), ('Mode 700E', 13))
+		('Mode 700C', 6), ('Mode 700D', 7), ('Mode 700E', 13), ('Mode 2020', 8))
 
 # These are the filter bandwidths for each mode.  Quisk has built-in optimized filters
 # for these values, but you can change them if you want.
@@ -1772,7 +1792,7 @@ FilterBwFM	= (8000, 10000, 12000, 16000, 18000, 20000)
 FilterBwIMD	= FilterBwSSB
 FilterBwDGT	= (200, 400, 1500, 3200, 4800, 10000)
 FilterBwEXT	= (8000, 10000, 12000, 15000, 17000, 20000)
-FilterBwFDV	= (1500, 2000, 3000, '', '', '')
+FilterBwFDV	= (1500, 2000, 3000, '6000', '', '')
 
 # If your hardware file defines the method OnButtonPTT(self, event), then Quisk will
 # display a PTT button you can press.  The method must switch your hardware to

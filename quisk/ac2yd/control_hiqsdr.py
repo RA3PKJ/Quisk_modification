@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # This provides access to a remote radio.  See ac3yd/remote_common.py and .pdf files for documentation.
 
 from ac2yd.control_common import ControlCommon
@@ -12,6 +14,8 @@ class Hardware(ControlCommon):
       self.decimations.append(dec * 64)
     self.decimations.append(80)
     self.decimations.append(64)
+    self.rf_gain_labels = ('RF 0 dB', 'RF +10', 'RF -10', 'RF -20', 'RF -30') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    self.antenna_labels = ('Ant 1', 'Ant 2') # ------------------------------------ добавлено --- реформа удалённого управления --- 37 RA3PKJ
   def RadioInit(self):	# Send initial parameters not covered by CommonInit()
     pass
   def VarDecimGetChoices(self):		# return text labels for the control
@@ -38,3 +42,7 @@ class Hardware(ControlCommon):
     return int(float(self.rx_udp_clock) / dec + 0.5)
   def VarDecimRange(self):
     return (48000, 960000)
+  def OnButtonRfGain(self, event): # ----------------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    pass
+  def OnButtonAntenna(self, event): # ---------------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    pass
