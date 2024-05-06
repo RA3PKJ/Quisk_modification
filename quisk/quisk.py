@@ -1878,12 +1878,7 @@ class GraphDisplay(wx.Window):
       dc.SetTextForeground(conf.color_graph_msg_fg)
       dc.SetBackgroundMode(wx.SOLID)
       dc.DrawText(self.display_text, 0, 0)
-    if application.tx_inhibit:
-      dc.SetFont(self.font)
-      dc.SetTextBackground(conf.color_graph_msg_bg)
-      dc.SetTextForeground("red")
-      dc.SetBackgroundMode(wx.SOLID)
-      dc.DrawText(" *** Tx Inhibit ***", 0, self.chary * 15 // 10)
+
     # --------------------- добавлено ------------------------------------------------------------------------ S-метр на панораме --------------- 7 RA3PKJ
     if self.display_text == "":
     # красный указатель S-метра на панораме
@@ -1938,6 +1933,14 @@ class GraphDisplay(wx.Window):
         pass
       else:
         dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+
+    if application.tx_inhibit:
+      dc.SetFont(self.font)
+      dc.SetTextBackground(conf.color_graph_msg_bg)
+      dc.SetTextForeground("red")
+      dc.SetBackgroundMode(wx.SOLID)
+      #dc.DrawText(" *** Tx Inhibit ***", 0, self.chary * 15 // 10) # --------- удалено -------- коррекция положения надписи "Tx Inhibit" ------- 38 RA3PKJ
+      dc.DrawText(" *** Tx Inhibit ***", 0, self.chary * 4) # ----------------- взамен ---- self.chary * 4 - опустить надпись на четыре высоты шрифта
 
   def DrawFilter(self, dc):
     dc.SetPen(wx.TRANSPARENT_PEN)
