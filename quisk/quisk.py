@@ -4077,7 +4077,7 @@ class App(wx.App):
     self.split_locktx = False   # Flag Tx frequency is fixed
     #self.split_lockrx = False	# Split mode Rx frequency is fixed. # ------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
     self.split_rxtx_play = 2    # Play 1=both, high on Right; 2=both, high on Left; 3=only Rx; 4=only Tx
-    self.split_offset = 0	# current frequency difference when using Split
+    #self.split_offset = 0	# current frequency difference when using Split # ---- удалено -------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
     self.savedState = {}
     self.tx_indicator = False
     self.tmp_playing = False
