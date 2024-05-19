@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.32.13 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.33.14 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -669,6 +669,16 @@ class HamlibHandlerSerial:
       self.app.pttButton.SetValue(0, True)
     else:
       self.Error(cmd, data)
+  def ZZSM(self, cmd, data, length):	# return the S-meter value in dB * 2; 0 to 260
+    if length == 0:			# 0 to 260 is -140 to -10 dB; S9 == -73 dB == 134; dB = ZZSM / 2 - 140
+      i = round((self.app.hamlib_strength + 67) * 2)
+      if i < 0:
+        i = 0
+      elif i > 260:
+        i = 260
+      self.Write('%s%03d;' % (cmd, i))
+    else:
+      self.Error(cmd, data)
   def ZZSP(self, cmd, data, length):	# the split status
     if length == 0:
       if self.app.split_rxtx:
@@ -1162,7 +1172,7 @@ class HamlibHandlerRig2:	# Test with telnet localhost 4532
   def GetLevel(self):
     name = self.GetParamName()
     if name == '?':	# send back supported parameters
-      self.Reply2('AGC AF', 0)
+      self.Reply2('AGC AF STRENGTH', 0)
     elif name == 'AGC':
       if self.app.BtnAGC.GetValue():
         self.Reply2(4, 0)
@@ -1171,6 +1181,9 @@ class HamlibHandlerRig2:	# Test with telnet localhost 4532
     elif name == 'AF':
       x = self.app.audio_volume	# audio_volume is 0 to 1.000
       self.Reply2("%.5f" % x, 0)
+    elif name == 'STRENGTH':
+      i = round(self.app.hamlib_strength)
+      self.Reply2(i, 0)
     else:
       self.ErrParam()
   def SetLevel(self):
@@ -1331,8 +1344,8 @@ class ConfigScreen(wx.Panel):
   def FinishPages(self): # --- добавить пункты меню на кнопке Config
     if self.finish_pages:
       self.finish_pages = False
-      #application.local_conf.AddPages(self.notebook, self.width) # ------------------- удалено------------- кнопка Hardware ------ 15 RA3PKJ
-      application.local_conf.AddPagesConfig(self.notebook, self.width) # --------------- взамен------------- кнопка Hardware ------ 15 RA3PKJ
+      #application.local_conf.AddPages(self.notebook, self.width) # --------- удалено------------- кнопка Hardware ------ 15 RA3PKJ
+      application.local_conf.AddPagesConfig(self.notebook, self.width) # ----- взамен------------- кнопка Hardware ------ 15 RA3PKJ
   def ChangeYscale(self, y_scale):
     pass
   def ChangeYzero(self, y_zero):
@@ -3928,6 +3941,7 @@ class App(wx.App):
     #self.smeter_usage = "smeter" # ----------------------------------------- удалено ---------- вынос из малого окошка ------- 8 RA3PKJ
     self.measure_audio_str = '' # --- значение напряжения аудио ------------ добавлено --------- вынос из малого окошка ------- 8 RA3PKJ
 
+    self.hamlib_strength = 0.0;
     self.timer = time.time()		# A seconds clock
     self.heart_time0 = self.timer	# timer to call HeartBeat at intervals
     self.save_time0 = self.timer
@@ -4430,7 +4444,7 @@ class App(wx.App):
     elif conf.quisk_widgets:
       self.bottom_widgets = conf.quisk_widgets.BottomWidgets(self, Hardware, conf, frame, gbs, vertBox)
 
-# ----------------------------------------------- удалено ---------- дополнительный нижний ряд ------ 19 RA3PKJ
+# --------------------------------------------------------------------- удалено ---------- дополнительный нижний ряд ------ 19 RA3PKJ
 ##    if self.bottom_widgets:		# Extend the sliders to the bottom of the screen
 ##      try:
 ##        i = self.bottom_widgets.num_rows_added		# No way to get total rows until ver 2.9 !!
@@ -5826,6 +5840,11 @@ class App(wx.App):
     else:			# S-meter decays at this time constant
       self.smeter_sunits -= (self.smeter_sunits - x) * (self.timer - self.smeter_sunits_time0)
     self.smeter_sunits_time0 = self.timer
+
+    s = self.smeter_sunits / 6.0	# change to S units; 6db per S unit
+    self.hamlib_strength = (s - 9.0) * 6.0	# convert to dB; 0 dB is S9
+
+
 # ------------------------------------ было у rolin -------- удалено ------------  вынос из малого окошка (s-метр) ------------ 8 RA3PKJ
 ##    if self.smeter_sunits < -127: # the start of S-scale is -127dbm
 ##      s = 0
@@ -6410,7 +6429,7 @@ class App(wx.App):
       if aa == False:
         self.new_split = self.newsplitButton.GetValue() #проверить нажата или отжата кнопка Split после клика
         if self.new_split == False: #кнопка отжата после клика
-          #Rx and Tx reverse
+          # Rx и Tx меняются местами
           rx = self.rxFreq
           self.rxFreq = self.txFreq
           self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
@@ -6421,21 +6440,13 @@ class App(wx.App):
         self.split_rxtx = self.new_split # --- использовать те же методы, что и для кнопки RX2
 
         if self.new_split: #кнопка нажата после клика
-          # --- чтобы первоначально шторки не попадали друг на друга
-          if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
-            self.rxFreq = self.txFreq + 4000
+          if self.mode in ("CWL", "CWU"):
+            self.rxFreq = self.txFreq + 1000 # Rx и Tx ниже поменяются местами
           else:
-            self.rxFreq = self.oldRxFreq
-
-          # --- if rxFreq outside of sample_rate, then move rxFreq on-screen into sample_rate
-          d = self.sample_rate * 49 // 100
-          if self.rxFreq < -d:
-            self.rxFreq = -d
-          elif self.rxFreq > d:
-            self.rxFreq = d
+            self.rxFreq = self.txFreq + 5000 # Rx и Tx ниже поменяются местам
 
           QS.set_split_rxtx(0)
-          #Rx and Tx reverse
+          # Rx и Tx меняются местами
           tx = self.rxFreq
           self.rxFreq = self.txFreq
           self.ChangeHwFrequency(tx, self.VFO, 'FreqEntry')
