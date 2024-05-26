@@ -631,7 +631,7 @@ class Configuration:
         self._ParserConf(filename)
       except:
         traceback.print_exc()
-  def _ParserConf(self, filename):
+  def _ParserConf(self, filename): # --------------------------------------------------------------------- чтение quisk_conf_defaults.py
     re_AeqB = re.compile("^#?(\w+)\s*=\s*([^#]+)#*(.*)")		# item values "a = b"
     section = None
     data_name = None

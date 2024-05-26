@@ -50,6 +50,91 @@ quisk_widgets = None
 
 
 
+################ Receivers SDR-4000, Devices controlled by USB that capture samples from a sound card, and (for Tx) play samples to a sound card
+## hardware_file_name		Hardware file path, rfile
+# This is the file that contains the control logic for each radio.
+#hardware_file_name = 'sdr4000pkg/quisk_hardware.py'
+
+## widgets_file_name			Widget file path, rfile
+# This optional file adds additional controls for the radio.
+#widgets_file_name = ''
+
+use_sdriq = 0						# Get ADC samples from SDR-IQ is not used
+use_rx_udp = 0						# Get ADC samples from UDP is not used
+use_soapy = 0						# Get ADC samples from SoapySDR is not used
+sample_rate = 96000					# name_of_sound_capt hardware sample rate in Hertz
+if sys.platform == "win32":
+  name_of_sound_capt = "Microphone"
+  name_of_sound_play = "Speaker"
+elif sys.platform == "darwin":
+  name_of_sound_capt = "pulse"
+  name_of_sound_play = "pulse"
+else:
+  name_of_sound_capt = "hw:0"		# Name of soundcard capture hardware device.
+  name_of_sound_play = "hw:0"
+channel_i = 0						# Soundcard index of in-phase channel:  0, 1, 2, ...
+channel_q = 1						# Soundcard index of quadrature channel:  0, 1, 2, ...
+
+## usb_vendor_id			Vendor ID for USB control, integer
+# USB devices have a vendor ID and a product ID.
+usb_vendor_id = 0x0483
+
+## usb_product_id			Product ID for USB control, integer
+# USB devices have a vendor ID and a product ID.
+usb_product_id = 0x5750
+
+# I2C-address of the Si570 in the softrock;  Thanks to Joachim Schneider, DB6QS
+## si570_i2c_address		I2C address, integer
+# I2C-address of the Si570 in the softrock.
+si570_i2c_address = 0x55
+#si570_i2c_address = 0x70
+
+# Thanks to Ethan Blanton, KB8OJH, for this patch for the Si570 (many SoftRock's):
+## si570_direct_control		Use Si570 direct control, boolean
+# If you are using a DG8SAQ interface to set a Si570 clock directly, set
+# this to True.  Complex controllers which have their own internal
+# crystal calibration do not require this.
+si570_direct_control = False
+#si570_direct_control = True
+
+## si570_xtal_freq			Si570 crystal frequency, integer
+# This is the Si570 startup frequency in Hz.  114.285MHz is the typical
+# value from the data sheet; you can use 'usbsoftrock calibrate' to find
+# the value for your device.
+si570_xtal_freq = 114285000
+
+## repeater_delay			Repeater delay secs, number
+# The fixed delay for changing the repeater Rx/Tx frequency in seconds.
+repeater_delay = 0.25
+
+## rx_max_amplitude_correct		Max ampl correct, number
+# If you get your I/Q samples from a sound card, you will need to correct the
+# amplitude and phase for inaccuracies in the analog hardware.  The correction is
+# entered using the controls from the "Rx Phase" button on the config screen.
+# You must enter a positive number.  This controls the range of the control.
+rx_max_amplitude_correct = 0.2
+
+## rx_max_phase_correct			Max phase correct, number
+# If you get your I/Q samples from a sound card, you will need to correct the
+# amplitude and phase for inaccuracies in the analog hardware.  The correction is
+# entered using the controls from the "Rx Phase" button on the config screen.
+# You must enter a positive number.  This controls the range of the control in degrees.
+rx_max_phase_correct = 10.0
+
+## tx_level		Tx Level, dict
+# This is the level of the Tx audio sent to SoftRock hardware after all processing as a percentage
+# number from 0 to 100.
+# The level should be below 100 to allow headroom for amplitude and phase adjustments.
+# Changes are immediate (no need to restart).
+tx_level = {}
+
+## digital_tx_level			Digital Tx power %, integer
+# Digital modes reduce power by the percentage on the config screen.
+# This is the maximum value of the slider.
+digital_tx_level = 100
+
+
+
 ################ Receivers SoftRock USB, Devices controlled by USB that capture samples from a sound card, and (for Tx) play samples to a sound card
 ## hardware_file_name		Hardware file path, rfile
 # This is the file that contains the control logic for each radio.
