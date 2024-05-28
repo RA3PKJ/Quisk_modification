@@ -53,8 +53,10 @@ SI570_MAX_DCO = 5.67e9
 # from 11.
 SI570_HSDIV_VALUES = [11, 9, 7, 6, 5, 4]
 
-IN =  usb.util.build_request_type(usb.util.CTRL_IN,  usb.util.CTRL_TYPE_VENDOR, usb.util.CTRL_RECIPIENT_DEVICE)
-OUT = usb.util.build_request_type(usb.util.CTRL_OUT, usb.util.CTRL_TYPE_VENDOR, usb.util.CTRL_RECIPIENT_DEVICE)
+
+IN = usb.util.build_request_type(usb.util.CTRL_IN, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
+OUT = usb.util.build_request_type(usb.util.CTRL_OUT, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
+
 
 UBYTE2 = struct.Struct('<H')
 UBYTE4 = struct.Struct('<L')	# Thanks to Sivan Toledo
@@ -74,59 +76,31 @@ class Hardware(BaseHardware):
     self.repeater_time0 = 0			# time of repeater change in frequency
     self.ptt_button = 0
     self.si570_i2c_address = conf.si570_i2c_address
+
   def open(self):			# Called once to open the Hardware
     global usb
     # find our device
     usb_dev = usb.core.find(idVendor=self.conf.usb_vendor_id, idProduct=self.conf.usb_product_id)
     if usb_dev is None:
-      text = 'USB device not found VendorID 0x%X ProductID 0x%X' % (
-          self.conf.usb_vendor_id, self.conf.usb_product_id)
+      text = 'SDR-4000 not found'
     else:
-      try:		# This exception occurs for the Peabody SDR.  Thanks to ON7VQ for figuring out the problem,
-        usb_dev.set_configuration()        # and to David, AE9RB, for the fix.
+      self.usb_dev = usb_dev		# success
+      text = 'Capture from SDR-4000 on USB'
+      try:
+        usb_dev.set_configuration()
       except:
         pass #if DEBUG: traceback.print_exc()
-      try:
-        ret = usb_dev.ctrl_transfer(IN, 0x00, 0x0E00, 0, 2)
-      except:
-        if DEBUG: traceback.print_exc()
-        text = "No permission to access the SDR-4000 USB interface"
-        usb_dev = None
-        try:	# Second try. Thanks to Ben Cahill.
-          if DEBUG: print("Second try to open USB with libusb0 backend.")
-          import usb.backend.libusb0
-          backend = usb.backend.libusb0.get_backend()
-          usb_dev = usb.core.find(idVendor=self.conf.usb_vendor_id, idProduct=self.conf.usb_product_id, backend=backend)
-          try:
-            usb_dev.set_configuration()
-          except:
-            if DEBUG: traceback.print_exc()
-          try:
-            ret = usb_dev.ctrl_transfer(IN, 0x00, 0x0E00, 0, 2)
-          except:
-            if DEBUG: traceback.print_exc()
-            usb_dev = None
-        except:
-          usb_dev = None
-    if usb_dev is not None:
-        self.usb_dev = usb_dev		# success
-        if len(ret) == 2:
-          ver = "%d.%d" % (ret[1], ret[0])
-        else:
-          ver = 'unknown'
-        sound = self.conf.name_of_sound_capt
-        if len(sound) > 50:
-          sound = sound[0:30] + '|||' + sound[-17:]
-        text = 'Capture from SDR-4000 USB on %s, Firmware %s' % (sound, ver)
-    #self.application.bottom_widgets.info_text.SetLabel(text)
-    if DEBUG and usb_dev:
-      print ('Startup freq', self.GetStartupFreq())
-      print ('Run freq', self.GetFreq())
-      print ('Address 0x%X' % usb_dev.ctrl_transfer(IN, 0x41, 0, 0, 1)[0])
-      sm = usb_dev.ctrl_transfer(IN, 0x3B, 0, 0, 2)
-      sm = UBYTE2.unpack(sm)[0]
-      print ('Smooth tune', sm)
+      cfg = usb_dev.get_active_configuration()
+      hid_intf = usb.util.find_descriptor(cfg, bInterfaceClass = 3)
+      # If the HID interface is found
+      if hid_intf is not None:
+        endpoint = hid_intf[0]
+      # Read data from the device
+      data = usb_dev.read(endpoint.bEndpointAddress, endpoint.wMaxPacketSize)
+      # Process the data as needed
+      print("Received data:", data)
     return text
+
   def close(self):			# Called once to close the Hardware
     pass
   def ChangeFrequency(self, tune, vfo, source='', band='', event=None):
