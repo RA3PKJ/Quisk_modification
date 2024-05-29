@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # Please do not change this hardware control module for Quisk.
 # It provides USB control of SoftRock hardware.
 
@@ -65,6 +67,8 @@ class Hardware(BaseHardware):
   def __init__(self, app, conf):
     BaseHardware.__init__(self, app, conf)
     self.usb_dev = None
+    self.endpoint = None
+    self.tx_control = 0
     self.vfo = None
     self.mode = None
     self.band = None
@@ -80,25 +84,20 @@ class Hardware(BaseHardware):
   def open(self):			# Called once to open the Hardware
     global usb
     # find our device
-    usb_dev = usb.core.find(idVendor=self.conf.usb_vendor_id, idProduct=self.conf.usb_product_id)
-    if usb_dev is None:
+    self.usb_dev = usb.core.find(idVendor=self.conf.usb_vendor_id, idProduct=self.conf.usb_product_id)
+    if self.usb_dev is None:
       text = 'SDR-4000 not found'
     else:
-      self.usb_dev = usb_dev		# success
       text = 'Capture from SDR-4000 on USB'
       try:
-        usb_dev.set_configuration()
+        self.usb_dev.set_configuration()
       except:
         pass #if DEBUG: traceback.print_exc()
-      cfg = usb_dev.get_active_configuration()
+      cfg = self.usb_dev.get_active_configuration()
       hid_intf = usb.util.find_descriptor(cfg, bInterfaceClass = 3)
       # If the HID interface is found
       if hid_intf is not None:
-        endpoint = hid_intf[0]
-      # Read data from the device
-      data = usb_dev.read(endpoint.bEndpointAddress, endpoint.wMaxPacketSize)
-      # Process the data as needed
-      print("Received data:", data)
+        self.endpoint = hid_intf[0]
     return text
 
   def close(self):			# Called once to close the Hardware
@@ -160,8 +159,19 @@ class Hardware(BaseHardware):
     return False
   def OnSpot(self, level):
     pass
-  def HeartBeat(self):	# Called at about 10 Hz by the main
-    pass
+
+  def HeartBeat(self):	# Called at about 10 Hz by the main-----------------------------------------------------------------------
+     # Read data from the device
+     data = self.usb_dev.read(self.endpoint.bEndpointAddress, self.endpoint.wMaxPacketSize)
+     if data[1] & 0x80 == 0: # ---- PTT - вход
+       QS.set_PTT(1)
+     else:
+       QS.set_PTT(0)
+     if data[1] & 0x08 == 0: # ---- Mute - вход
+       QS.set_volume(0)
+     else:
+       QS.set_volume(self.application.audio_volume)
+
   def OnChangeRxTx(self, is_tx):	# Called by Quisk when changing between Rx and Tx. "is_tx" is 0 or 1
     if not self.usb_dev:
       return

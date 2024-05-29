@@ -343,8 +343,6 @@ sndp_active = True
 
 
 
-
-
 ################ Receivers Hermes, The Hermes-Lite Project and possibly other hardware with the Hermes FPGA code.
 ## hardware_file_name		Hardware file path, rfile
 # This is the file that contains the control logic for each radio.
@@ -410,7 +408,6 @@ tx_level = {}
 # Digital modes reduce power by the percentage on the config screen.
 # This is the maximum value of the slider.
 #digital_tx_level = 100
-
 
 ## hermes_code_version		Hermes code version, integer
 # There can be multiple Hermes devices on a network, but Quisk can only use one of these.  If you have multiple
