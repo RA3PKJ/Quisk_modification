@@ -384,8 +384,9 @@ class ControlCommon(BaseHardware):	# This is the Hardware class for the control 
     # AGC and Squelch levels, split offset
     self.RemoteCtlSend("Split;0\n")
     btn = app.BtnAGC
-    self.RemoteCtlSend("AGCSQLCH;%d;%d;%d;%d;%d\n" % (btn.slider_value_off, btn.slider_value_on,
-           app.levelSquelch, app.levelSquelchSSB, app.split_offset))
+    self.RemoteCtlSend("AGCSQLCH;%d;%d;%d;%d\n" % (btn.slider_value_off, btn.slider_value_on,
+           #app.levelSquelch, app.levelSquelchSSB, app.split_offset)) # --- удалено --- чистка кнопки Split и перевод её на RX2 --- 10 RA3PKJ
+           app.levelSquelch, app.levelSquelchSSB)) # ----------------------- взамен --- чистка кнопки Split и перевод её на RX2 --- 10 RA3PKJ
     idName = "SqlchSlider"
     value = app.midiControls[idName][0].button.slider_value
     self.RemoteCtlSend("%s;%d\n" % (idName, value))

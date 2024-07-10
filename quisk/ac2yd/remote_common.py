@@ -309,7 +309,7 @@ class Remot:	# Remote comtrol base class
         ctrl.SetSlider(value_off=int(args[1]), value_on=int(args[2]))
         self.app.levelSquelch = int(args[3])
         self.app.levelSquelchSSB = int(args[4])
-        self.app.split_offset = int(args[5])
+        #self.app.split_offset = int(args[5]) # --- удалено --- чистка кнопки Split и перевод её на RX2 --- 10 RA3PKJ
       # CW Keying
       elif command == 'CW':
         ts = time.time()

@@ -122,7 +122,7 @@ def FreqFormatter(freq):	# Format the string or integer frequency by adding blan
   return txt
 
 class FrequencyDisplay(wx.lib.stattext.GenStaticText):
-  """Create a frequency display widget."""
+  """Create a frequency first display widget."""
   def __init__(self, frame, width, height):
     wx.lib.stattext.GenStaticText.__init__(self, frame, -1, '3',
          style=wx.ALIGN_CENTER|wx.ST_NO_AUTORESIZE)
@@ -138,12 +138,11 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     self.points = points
     border = self.border = (height - self.height) // 2
     self.height_and_border = h + border * 2
-    # ---------------------------------------------------- удалено ------------------- реформа кнопок ----------- 12 RA3PKJ
+    # ---------------------------------------- удалено ------------------- реформа кнопок ----------- 12 RA3PKJ
 ##    self.SetBackgroundColour(conf.color_freq)
 ##    self.SetForegroundColour(conf.color_freq_txt)
-    # ---------------------------------------------------- взамен -------------------- реформа кнопок ----------- 12 RA3PKJ
+    # ---------------------------------------- взамен -------------------- реформа кнопок ----------- 12 RA3PKJ
     self.SetBackgroundColour('#000000')
-    self.SetForegroundColour('#ECB129')
 
     self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)	# Click on a digit changes the frequency
     self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDown)
@@ -151,7 +150,15 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     self.Bind(wx.EVT_MOUSEWHEEL, self.OnWheel)
     self.timer = wx.Timer(self)                     # Holding a digit continuously changes the frequency
     self.Bind(wx.EVT_TIMER, self.OnTimer)
-    self.repeat_time = 0                           # Repeat function is inactive
+    self.repeat_time = 0 # Repeat function is inactive
+
+#----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
+    if sys.platform.lower().startswith('win'):
+      self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+  def OnEnter(self, event):
+    if not application.w_phase:
+      self.SetFocus()    # Set focus so we get mouse wheel events
+
   def Clip(self, clip):
     """Change color to indicate clipping."""
     if clip:
@@ -159,10 +166,18 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     else:
       self.SetBackgroundColour(conf.color_freq)
     self.Refresh()
-  def Display(self, freq):
+# -------------------------------------- удалено ----------------- реформа обоих окошек частоты ------ 9 RA3PKJ
+##  def Display(self, freq):
+##    """Set the frequency to be displayed."""
+##    txt = FreqFormatter(freq)
+##    self.SetLabel('%s Hz' % txt)
+# -------------------------------------- взамен ------------------ реформа обоих окошек частоты ------ 9 RA3PKJ
+  def Display(self, freq, color):
     """Set the frequency to be displayed."""
+    self.SetForegroundColour(color)
     txt = FreqFormatter(freq)
     self.SetLabel('%s Hz' % txt)
+
   def GetIndex(self, event):		# Determine which digit is being changed
     mouse_x, mouse_y = event.GetPosition()
     width, height = self.GetClientSize().Get()
@@ -213,7 +228,125 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
       freq = int(text) - 10 ** self.index
       if freq <= 0 and self.index > 0:
         freq = 10 ** (self.index - 1)
-    #print ('X', x, 'N', n, text, 'freq', freq)
+    #application.ChangeRxTxFrequency(None, freq)# --- удалено --------  реформа обоих окошек частоты ------------- 9 RA3PKJ
+    application.ChangeRxTxFrequency(freq, None)# ----- взамен --------  реформа обоих окошек частоты ------------- 9 RA3PKJ
+  def OnTimer(self, event):
+    if self.repeat_time == 300:     # after first push, turn on repeats
+      self.repeat_time = 150
+    elif self.repeat_time > 20:
+      self.repeat_time -= 5
+    self.ChangeFreq()
+    self.timer.Start(milliseconds=self.repeat_time, oneShot=True)
+  def OnWheel(self, event):
+    index = self.GetIndex(event) # --- разряд в значении частоты
+    if index is not None:
+      self.index = index
+      if event.GetWheelRotation() > 0:
+        self.increase = True
+      else:
+        self.increase = False
+      self.ChangeFreq()
+
+# --------------------------------------------- добавлено ------------- реформа обоих окошек частоты ------------- 9 RA3PKJ
+class FrequencyDisplaySplitRX2(wx.lib.stattext.GenStaticText):
+  """Create a frequency second display widget."""
+  def __init__(self, frame, width, height):
+    wx.lib.stattext.GenStaticText.__init__(self, frame, -1, '3',
+         style=wx.ALIGN_CENTER|wx.ST_NO_AUTORESIZE)
+    border = 4
+    for points in range(30, 6, -1):
+      font = wx.Font(points, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
+      self.SetFont(font)
+      w, h = self.GetTextExtent('333 444 555 Hz')
+      if w < width and h < height - border * 2:
+        break
+    self.SetSizeHints(w, h, w * 5, h)
+    self.height = h
+    self.points = points
+    border = self.border = (height - self.height) // 2
+    self.height_and_border = h + border * 2
+    self.SetBackgroundColour('#000000')
+    #self.SetForegroundColour('#ECB129')
+    self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)    # Click on a digit changes the frequency
+    self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDown)
+    self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+    self.Bind(wx.EVT_MOUSEWHEEL, self.OnWheel)
+    self.timer = wx.Timer(self)                     # Holding a digit continuously changes the frequency
+    self.Bind(wx.EVT_TIMER, self.OnTimer)
+    self.repeat_time = 0 # Repeat function is inactive
+
+#----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
+    if sys.platform.lower().startswith('win'):
+      self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+  def OnEnter(self, event):
+    if not application.w_phase:
+      self.SetFocus()    # Set focus so we get mouse wheel events
+
+  def Clip(self, clip):
+    """Change color to indicate clipping."""
+    if clip:
+      self.SetBackgroundColour('deep pink')
+    else:
+      self.SetBackgroundColour(conf.color_freq)
+    self.Refresh()
+  def Display(self, freq, color):
+    """Set the frequency to be displayed."""
+    txt = FreqFormatter(freq)
+    self.SetForegroundColour(color)
+    self.SetLabel('%s Hz' % txt)
+  def Display_empty(self, txt, color): # ----- функция только для текста
+    self.SetForegroundColour(color)
+    self.SetLabel(txt)
+  def GetIndex(self, event):        # Determine which digit is being changed
+    mouse_x, mouse_y = event.GetPosition()
+    width, height = self.GetClientSize().Get()
+    text = self.GetLabel()
+    tw, th = self.GetTextExtent(text)
+    edge = (width - tw) // 2
+    digit = self.GetTextExtent('0')[0]
+    blank = self.GetTextExtent(' ')[0]
+    if mouse_x < edge - digit:
+      return None
+    x = width - edge - self.GetTextExtent(" Hz")[0] - mouse_x
+    if x < 0:
+      return None
+    #print ('size', width, height, 'mouse', mouse_x, mouse_y, 'digit', digit, 'blank', blank)
+    shift = 0
+    while x > digit * 3:
+      shift += 1
+      x -= digit * 3 + blank
+    if x < 0:
+      return None
+    return x // digit + shift * 3    # index of digit being changed
+  def OnLeftDown(self, event):        # Click on a digit changes the frequency
+    if self.repeat_time:
+      self.timer.Stop()
+      self.repeat_time = 0
+    index = self.GetIndex(event)
+    if index is not None:
+      self.index = index
+      mouse_x, mouse_y = event.GetPosition()
+      width, height = self.GetClientSize().Get()
+      if mouse_y < height // 2:
+        self.increase = True
+      else:
+        self.increase = False
+      self.ChangeFreq()
+      self.repeat_time = 300        # first button push
+      self.timer.Start(milliseconds=300, oneShot=True)
+  def OnLeftUp(self, event):
+    self.timer.Stop()
+    self.repeat_time = 0
+  def ChangeFreq(self):
+    text = self.GetLabel()
+    text = text.replace(' ', '')[:-2]
+    text = text[:len(text)-self.index] + '0' * self.index
+    if self.increase:
+      freq = int(text) + 10 ** self.index
+    else:
+      freq = int(text) - 10 ** self.index
+      if freq <= 0 and self.index > 0:
+        freq = 10 ** (self.index - 1)
     application.ChangeRxTxFrequency(None, freq)
   def OnTimer(self, event):
     if self.repeat_time == 300:     # after first push, turn on repeats
@@ -223,7 +356,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     self.ChangeFreq()
     self.timer.Start(milliseconds=self.repeat_time, oneShot=True)
   def OnWheel(self, event):
-    index = self.GetIndex(event)
+    index = self.GetIndex(event) # --- разряд в значении частоты
     if index is not None:
       self.index = index
       if event.GetWheelRotation() > 0:

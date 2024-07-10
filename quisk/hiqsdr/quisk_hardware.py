@@ -136,6 +136,7 @@ class Hardware(BaseHardware):
     try:
       self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
     except:
+      import wx
       dlg = wx.MessageBox('Please check the network adapter setup and LAN-connection', 'Error',
 			     wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
 
@@ -204,8 +205,8 @@ class Hardware(BaseHardware):
       try:
         self.tx_level = self.conf.tx_level[self.band]
       except KeyError:
-        self.tx_level = self.conf.tx_level.get(None, 127)	# The default
-      if self.mode[0:3] in ('DGT', 'FDV'):			# Digital modes; change power by a percentage
+        self.tx_level = self.conf.tx_level.get(None, 127)    # The default
+      if self.mode[0:3] in ('DGT', 'FDV'):            # Digital modes; change power by a percentage
         reduc = self.application.digital_tx_level
       else:
         reduc = self.application.tx_level

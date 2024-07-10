@@ -4012,6 +4012,7 @@ class App(wx.App):
     self.txAudioPreemphFm = 0
     self.txAudioPreemphFdv = 0
     self.levelSpot = 500			# Spot level control, 0 to 1000
+    self.TxLevel = 100 # ----------------------------------- добавлено ------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
     self.volumeAudio = 300			# audio volume
     self.VFO = 0					# frequency of the VFO
     self.ritFreq = 0				# receive incremental tuning frequency offset
@@ -4047,8 +4048,7 @@ class App(wx.App):
     self.picture_len = 0   # --- длина списка картинок
     self.picture_index = 0 # --- индекс в списке картинок
 
-    # -------------------------------------------------------- добавлено --- вынос из малого окошка --------- 8 RA3PKJ
-    # -------------------------------------------------------- добавлено --- частота и SNR в малое окошко --- 9 RA3PKJ
+    # -------------------------------------------------------- добавлено ---  реформа обоих окошек частоты -- 9 RA3PKJ
     self.snr = 0.0
     self.freedv_flag = False # --- флаг моды freedv
     self.bandscope_flag = False
@@ -4140,13 +4140,17 @@ class App(wx.App):
     x, y, self.screen_width, self.screen_height = wx.Display().GetGeometry()	# Using display index 0
     self.Bind(wx.EVT_IDLE, self.OnIdle)
     self.Bind(wx.EVT_QUERY_END_SESSION, self.OnEndSession)
+
+# ===========================================================================================================================================================================
+# ======================================================= Загрузка текущих настроек из файла quisk_init.json ================================================================
+# ===========================================================================================================================================================================
     # Restore persistent program state
     state = None
     path = os.path.join(self.QuiskFilesDir, 'quisk_init.json')
     if os.path.isfile(path):
       try:
         fp = open(path, "r")
-        state = json.load(fp)
+        state = json.load(fp) # ------------------------- загрузка текущих настроек
         fp.close()
       except:
         traceback.print_exc()
@@ -4159,7 +4163,7 @@ class App(wx.App):
           fp.close()
         except:
           pass #traceback.print_exc()
-    if state:
+    if state: # -----------------------------------------применение текущих настроек
       try:
         for k in state:
           v = state[k]
@@ -4172,6 +4176,11 @@ class App(wx.App):
               setattr(self, k, v)
       except:
         pass #traceback.print_exc()
+# ===========================================================================================================================================================================
+# ===========================================================================================================================================================================
+# ===========================================================================================================================================================================
+
+
     if "Version" not in self.bandAmplPhase:
       self.FixAmplPhase()		# Convert to new format Oct 2020
     if Hardware.VarDecimGetChoices():	# Hardware can change the decimation.
@@ -4561,6 +4570,8 @@ class App(wx.App):
 ##    self.midiControls["Zo"]	= (self.sliderZo,	self.OnChangeZoom)
     #----------------------------------------- взамен ------------- реформа крутилок ------------- 36 RA3PKJ
     # нельзя заменить Rit на RIT, где-то возникает ошибка - по удалённому управлению не происходит движение крутилки на сервере (при этом сообщение о ошибке не появляется)
+    self.midiControls["TxLevel"] = (self.sliderTxLevel, self.OnTxLevel) # --- добавлено ----- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+    self.midiControls["Vox"] = (self.sliderVOX, self.OnLevelVOX) # ---------- добавлено -------- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
     self.midiControls["Tune"]	= (None,		None)
     self.midiControls["Volume"]	= (self.sliderVol,	self.ChangeVolume)
     self.midiControls["SideTone"]	= (self.sliderSto,	self.ChangeSidetone)
@@ -5087,7 +5098,7 @@ class App(wx.App):
     b_onoff.SetValue(True, do_cmd=False)
     self.idName2Button[b.idName] = b
 
-    # --- дисплей
+    # --- первое окно частоты
     b_freqdisp = self.freqDisplay = FrequencyDisplay(frame, 99999, bh * 14 // 10)
 
     # --- окно ввода частоты (Frequency entry)
@@ -5111,7 +5122,7 @@ class App(wx.App):
     self.vfoABButton.Refresh()
 
     # --- второе окно частоты
-    b_smeter = self.smeter = FrequencyDisplay(frame, 99999, bh * 14 // 10)
+    b_smeter = self.smeter = FrequencyDisplaySplitRX2(frame, 99999, bh * 14 // 10)
 
     # --- кнопка Влево (Band down)
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
@@ -5258,6 +5269,12 @@ class App(wx.App):
 
 # --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
     # --- создание слайдеров
+
+    self.sliderTxLevel = SliderBoxHH(frame, 'TxLevel', self.TxLevel, 0, 100, self.OnTxLevel, display=False, scale=1) # --- добавлено --- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
+    # -------------------------------------------------------------------------------------------------------------------- добавлено --- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
+    self.sliderVOX = SliderBoxHH(frame, 'Vox', self.levelVOX, -40, 0, self.OnLevelVOX, display=False, scale=1)
+    self.sliderVOX.SetValue(-40 - self.levelVOX) # --- сделана прямая зависимость
+
     self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
     self.ChangeVolume()		# set initial volume level
     self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
@@ -5268,6 +5285,7 @@ class App(wx.App):
     self.sliderZo.SetValue(0)
     self.ritScale = SliderBoxHH(frame, 'Rit', self.ritFreq, -2000, 2000, self.OnRitScale, display=False, scale=1)
 # --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
+
     # ------- не пошло в жизнь, а именно числовые значения, обозначение RIT и b.idName
     # --- создание слайдеров
     # --- display=True это показывать значение %d
@@ -5650,6 +5668,10 @@ class App(wx.App):
     self.bs2.AddSpacer(9)
     self.bs2.Add(self.sliderVol, wx.EXPAND)
     self.bs2.AddSpacer(10)
+    self.bs2.Add(self.sliderTxLevel, wx.EXPAND) # -------------------------- добавлено ------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
+    self.bs2.AddSpacer(10)
+    self.bs2.Add(self.sliderVOX, wx.EXPAND) # ------------------------------ добавлено --------------- Вынос слайдера VOX в главное окно ----- 42 RA3PKJ
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderSto, wx.EXPAND)
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderYs, wx.EXPAND)
@@ -5767,37 +5789,27 @@ class App(wx.App):
     if vfo is None:
       vfo = self.VFO
     vfo += Hardware.transverter_offset
-# ------------------------- Не надо измерять частоту для второго окошка частоты ---- удалено ------------- вынос из малого окошка --- 8 RA3PKJ
+# ------------------------- Не надо измерять частоту для второго окошка частоты ---- удалено ----------- вынос из малого окошка ----- 8 RA3PKJ
     #t = '%13.2f' % (QS.measure_frequency(-1) + vfo)
     #t = t[0:4] + ' ' + t[4:7] + ' ' + t[7:] + ' Hz'
     #self.smeter.SetLabel(t)
-# ----------------------------------------------------------------- взамен ------------------------- частота и SNR в малое окошко --- 9 RA3PKJ
+# ----------------------------------------------------------------- взамен ------------------------  реформа обоих окошек частоты --- 9 RA3PKJ
+    # Всего лишь индикация частоты (и SNR) в обоих окошках частоты
     if self.mode in ('FDV-U', 'FDV-L'):
+      self.freqDisplay.Display(self.txFreq + self.VFO, '#ECB129') # --- первое окошко частоты
       t = " SNR %3.0f" % self.snr #показать SNR freeDV
-      self.smeter.SetLabel(t)
+      self.smeter.Display_empty(t, '#ECB129') # ----------------------- второе окошко частоты
       self.freedv_flag = True
       return
     else: self.freedv_flag = False
-    self.ab = self.newsplitButton.GetValue() #проверить нажата ли кнопка Split
-    if self.ab == True:#если кнопка Split нажата
-      t = '%13.2f' % (self.txFreq + vfo)
-      t = ' TX' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
-      self.smeter.SetLabel(t)
-      self.freqDisplay.Display(self.rxFreq + self.VFO)
+    if self.newsplitButton.GetValue() or self.splitButton.GetValue(): # проверить нажата ли кнопка RX2 или кнопка Split
+      self.freqDisplay.Display(self.rxFreq + self.VFO, '#00FF00') # --- первое окошко частоты
+      self.smeter.Display(self.txFreq + self.VFO, '#FF5634') # -------- второе окошко частоты
       return
-    self.ab = self.splitButton.GetValue() # проверить нажата ли кнопка RX2
-    if self.ab == True:#если кнопка RX2 нажата
-      t = '%13.2f' % (self.rxFreq + vfo + 0.5)
-      t = 'RX2' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
-      self.smeter.SetLabel(t)
-      self.freqDisplay.Display(self.txFreq + self.VFO)
-      return
-    t = '%13.2f' % (self.rxFreq + vfo + 0.5)
-    t = '  ' + t[0:4] + ' ' + t[4:7] + ' ' + t[7:10]
-    self.smeter.SetLabel(t)
-    self.freqDisplay.Display(self.txFreq + self.VFO)
+    self.freqDisplay.Display(self.txFreq + self.VFO, '#FF5634') # ----- первое окошко частоты
+    self.smeter.Display_empty('-----', '#ECB129') # ------------------- второе окошко частоты
 
-# ------------------------------------------------------------------ удалено ------------- частота и SNR в малое окошко ------------- 9 RA3PKJ
+# ------------------------------------------------------------------ удалено -------------  реформа обоих окошек частоты ------------- 9 RA3PKJ
   #def NewDVmeter(self):
     #if conf.add_freedv_button:
       #snr = QS.freedv_get_snr()
@@ -5808,7 +5820,7 @@ class App(wx.App):
       #snr = 0.0
     #t = "  SNR %3.0f" % snr
     #self.smeter.SetLabel(t)
-# ------------------------------------------------------------------- взамен ------------- частота и SNR в малое окошко ------------- 9 RA3PKJ
+# ------------------------------------------------------------------- взамен -------------  реформа обоих окошек частоты ------------- 9 RA3PKJ
   def NewDVmeter(self):
     if conf.add_freedv_button:
       self.snr = QS.freedv_get_snr()
@@ -6128,7 +6140,7 @@ class App(wx.App):
       self.screen = self.multi_rx_screen
       self.screen.ChangeRxZero(True)
       self.screen.SetTxFreq(self.txFreq, self.rxFreq)
-      self.freqDisplay.Display(self.VFO + self.txFreq)
+      self.freqDisplay.Display(self.VFO + self.txFreq, '#ECB129') # --- добавлен цвет --- реформа обоих окошек частоты ---------- 9 RA3PKJ
       self.screen.PeakHold(name)
       self.station_screen.Show()
     elif name[0:5] == 'WFall':
@@ -6136,7 +6148,7 @@ class App(wx.App):
       self.screen = self.multi_rx_screen
       self.screen.ChangeRxZero(False)
       self.screen.SetTxFreq(self.txFreq, self.rxFreq)
-      self.freqDisplay.Display(self.VFO + self.txFreq)
+      self.freqDisplay.Display(self.VFO + self.txFreq, '#ECB129') # --- добавлен цвет --- реформа обоих окошек частоты ---------- 9 RA3PKJ
       self.screen.PeakHold(name)
       sash = self.screen.GetSashPosition()
       self.station_screen.Show()
@@ -6150,7 +6162,7 @@ class App(wx.App):
     elif name == 'RX Filter':
       self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.filter_screen
-      self.freqDisplay.Display(self.screen.txFreq)
+      self.freqDisplay.Display(self.screen.txFreq, '#ECB129') # ------- добавлен цвет --- реформа обоих окошек частоты ---------- 9 RA3PKJ
       self.screen.NewFilter()
     elif name == 'Bscope':
       self.bandscope_flag = True # -------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
@@ -6159,7 +6171,7 @@ class App(wx.App):
     elif name == 'Audio FFT':
       self.bandscope_flag = False # ------------------------- добавлено ----------------- вынос из малого окошка ---------------- 8 RA3PKJ
       self.screen = self.audio_fft_screen
-      self.freqDisplay.Display(self.screen.txFreq)
+      self.freqDisplay.Display(self.screen.txFreq, '#ECB129') # --- добавлен цвет ------- реформа обоих окошек частоты ---------- 9 RA3PKJ
     # -------------------------------------------------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
     #elif name == 'Help':
       #self.screen = self.help_screen
@@ -6246,10 +6258,19 @@ class App(wx.App):
     self.waterfall.ChangeZoom(zoom, deltaf, zoom_control)
     self.screen.SetTxFreq(self.txFreq, self.rxFreq)
     self.station_screen.Refresh()
-  def OnLevelVOX(self, event):
-    self.levelVOX = event.GetEventObject().GetValue()
+
+# --------------------------------- удалено ------------------------ Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
+##  def OnLevelVOX(self, event):
+##    self.levelVOX = event.GetEventObject().GetValue()
+##    if self.useVOX:
+##      QS.set_tx_audio(vox_level=self.levelVOX)
+# --------------------------------- взамен ------------------------- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
+  def OnLevelVOX(self, event=None):
+    self.levelVOX = self.sliderVOX.GetValue()
+    self.levelVOX = -40 - self.levelVOX # --- перевернуть зависимость
     if self.useVOX:
       QS.set_tx_audio(vox_level=self.levelVOX)
+
   def OnTimeVOX(self, event):
     self.timeVOX = event.GetEventObject().GetValue()
     QS.set_tx_audio(vox_time=self.timeVOX)
@@ -6357,6 +6378,12 @@ class App(wx.App):
       vfo = self.VFO
       self.txFreq = self.VFO = -1		# demand change
       self.ChangeHwFrequency(tune, vfo, 'NewDecim')
+
+  # ------------------------------------------------- добавлено ------------------------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
+  def OnTxLevel(self, event=None):
+    application.tx_level = self.sliderTxLevel.GetValue()
+    application.Hardware.SetTxLevel()
+
   def ChangeVolume(self, event=None):
     # Caution: event can be None
     value = self.sliderVol.GetValue()
@@ -6440,7 +6467,7 @@ class App(wx.App):
 
       # --- чтобы избежать возможного совпадения между частотой Rx и частотой Tx при запуске Quisk
         if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
-          self.rxFreq = self.txFreq + 4000
+          self.rxFreq = self.txFreq - 4000
         else:
           self.rxFreq = self.oldRxFreq
 

@@ -34,15 +34,15 @@ https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-16.0.0-1
 Распаковать архив на диск C:\ . Появится папка C:\Quisk_modification-main 
 В папке должны присутствовать: 
 - папка fftw-3.3.5-dll64 с 64-битной версией fftw (источник - www.fftw.org/install/windows.html).
-- папка python311_64 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-3119/):
-    - \include (взята целиком из исходника Python-3.11.9.tgz, пункт Gzipped source tarball на указанной выше странице). 
+- папка python310_64 с следующими библиотеками (источник - https://www.python.org/downloads/release/python-3109/):
+    - \include (взята целиком из исходника Python-3.10.9.tgz, пункт Gzipped source tarball на указанной выше странице). 
     - \PC (взята целиком аналогично).
-    - \libs (там один файл python311.dll, взятый из python-3.11.9-embed-amd64.zip, пункт Windows embeddable package (64-bit) на указанной выше странице).
+    - \libs (там один файл python310.dll, взятый из python-3.10.9-embed-amd64.zip, пункт Windows embeddable package (64-bit) на указанной выше странице).
 - папка quisk.
 
 7) В папке quisk в свою очередь должны присутствовать:
 - файл сценария сборки build_quiskpyd .
-- папка build, в которой должна быть папка temp.win64-3.11, а в ней папка Release. 
+- папка build, в которой должна быть папка temp.win64-3.10, а в ней папка Release. 
 
 
 ---------------------------------Сборка--------------------------------------

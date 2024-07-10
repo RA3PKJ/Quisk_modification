@@ -222,6 +222,10 @@ class Configuration:
         local_conf.MidiNoteDict[key] = target
         del local_conf.MidiNoteDict[txt_note]
         self.settings_changed = True
+
+# ===========================================================================================================================================================================
+# ============================================= Загрузка основных настроек для выбранного радио из файла quisk_setting.json =================================================
+# ===========================================================================================================================================================================
   def UpdateConf(self):		# Called second to update the configuration for the selected radio
     # Items in the radio_dict are generally strings. Convert these strings to Python integers, floats,
     # etc. and write them to conf.
@@ -243,7 +247,7 @@ class Configuration:
       try:
         fmt = self.format4name[k]
       except:
-        errors = errors + "Ignore obsolete parameter %s\n" % k
+        # errors = errors + "Ignore obsolete parameter %s\n" % k # ------ удалено --------------- Удаление сообщения Ignore... ------ 40 RA3PKJ
         del radio_dict[k]
         self.settings_changed = True
         continue
@@ -313,6 +317,10 @@ class Configuration:
         'Update Settings', wx.OK|wx.ICON_ERROR)
       ret = dlg.ShowModal()
       dlg.Destroy()
+# ===========================================================================================================================================================================
+# ===========================================================================================================================================================================
+# ===========================================================================================================================================================================
+
   def InitSoapyNames(self, radio_dict):	# Set Soapy data items, but not the hardware available lists and ranges.
     if radio_dict.get('soapy_getFullDuplex_rx', 0):
       radio_dict["add_fdx_button"] = '1'
@@ -642,7 +650,7 @@ class Configuration:
     section = None
     data_name = None
     multi_line = False
-    fp = open(filename, "r")
+    fp = open(filename, "r", encoding="utf-8")
     for line in fp:
       line = line.strip()
       if not line:
@@ -669,7 +677,7 @@ class Configuration:
         data_name = args[0]
         args = args[1].split(',', 1)
         dspl = args[0].strip()
-        fmt = args[1].strip()
+        fmt = args[1].strip() # здесь возникает ошибка, если использовать ## перед моими комментариями в файлах quisk.hardware.py и quisk_conf_defaults.py. Надо # и один пробел.
         value_list = []
         if data_name in self.format4name:
           if self.format4name[data_name] != fmt:
@@ -2194,14 +2202,17 @@ to the amplitude and phase. Click here for an adjustment screen."
     txt, cb, btn = self.AddTextComboHelp(1, "Start WSJT-X", value, lst, help_text, True)
     cb.handler = application.OnStartWsjtx
     self.NextRow()
-    help_text = "This controls the Tx level for non-digital modes. It is usually 100%."
-    c1, btn = self.AddTextSliderHelp(1, "Tx level %d%%  ", 100, 0, 100, self.OnTxLevel, help_text, span=2)
-    self.NextRow()
+
+    # ---------------------------------------------------- удалено ---------------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+    #help_text = "This controls the Tx level for non-digital modes. It is usually 100%."
+    #c1, btn = self.AddTextSliderHelp(1, "Tx level %d%%  ", 100, 0, 100, self.OnTxLevel, help_text, span=2)
+    #self.NextRow()
+
     level = conf.digital_tx_level
     help_text = "This controls the TX level for digital modes. Digital modes require greater linearity, and the digital level is often 25%."
     c2, btn = self.AddTextSliderHelp(1, "Digital Tx level %d%%  ", level, 0, level, self.OnDigitalTxLevel, help_text, span=2)
     if not hasattr(application.Hardware, "SetTxLevel"):
-      c1.slider.Enable(0)
+      #c1.slider.Enable(0) # ----------------------------- удалено ---------------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
       c2.slider.Enable(0)
     self.NextRow()
     #### Make controls SECOND column
@@ -2280,9 +2291,12 @@ The CW message will then repeat. A time of zero means no repeat.'
     cb.Enable(enable)
     self.NextRow()
     return b
-  def OnTxLevel(self, event):
-    application.tx_level = event.GetEventObject().GetValue()
-    application.Hardware.SetTxLevel()
+
+  # ---------------------------------------------------- удалено ---------------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+  #def OnTxLevel(self, event):
+    #application.tx_level = event.GetEventObject().GetValue()
+    #application.Hardware.SetTxLevel()
+
   def OnDigitalTxLevel(self, event):
     application.digital_tx_level = event.GetEventObject().GetValue()
     application.Hardware.SetTxLevel()
@@ -2418,9 +2432,12 @@ class ConfigTxAudio(BaseWindow):
     if not conf.microphone_name:
       self.btn_record.Enable(0)
     self.NextRow()
-    help_text = "Audio level that triggers VOX (all modes)."
-    self.AddTextSliderHelp(1, "VOX level %d dB", application.levelVOX, -40, 0, application.OnLevelVOX, help_text, span=2)
-    self.NextRow()
+
+    # ---------------------------------------------- удалено ---------------- Вынос слайдера VOX в главное окно --------------------------- 42 RA3PKJ
+    # help_text = "Audio level that triggers VOX (all modes)."
+    # self.AddTextSliderHelp(1, "VOX level %d dB", application.levelVOX, -40, 0, application.OnLevelVOX, help_text, span=2)
+    # self.NextRow()
+
     help_text = "Time to hold VOX after end of audio in seconds."
     self.AddTextSliderHelp(1, "VOX hold %0.2f secs", application.timeVOX, 0, 4000, application.OnTimeVOX, help_text, span=2, scale=0.001)
     self.NextRow()
