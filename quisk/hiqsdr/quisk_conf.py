@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # This is a sample config file for the N2ADR 2010 transceiver hardware and for the
 # improved version HiQSDR.  If you use the HiQSDR you should upgrade your firmware
 # to version 1.1.
@@ -8,8 +10,10 @@ from __future__ import division
 
 from hiqsdr import quisk_hardware
 
-add_imd_button = 1
-add_fdx_button = 1
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# add_imd_button = 1
+# add_fdx_button = 1
+
 latency_millisecs = 50
 # tx_level = {None:120, '60':52}	#  Use this to change your transmit level.
 

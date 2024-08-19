@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 # This is the config file for the VHF/UHF receiver and transmitter.
 
 from __future__ import print_function
@@ -61,5 +63,7 @@ display_fraction = 1.00
 fft_size_multiplier = 16
 tx_ip = "192.168.1.201"
 tx_audio_port = 0xBC79
-add_imd_button = 1
-add_fdx_button = 1
+
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# add_imd_button = 1
+# add_fdx_button = 1

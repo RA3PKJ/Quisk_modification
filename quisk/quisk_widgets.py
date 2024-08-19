@@ -152,7 +152,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     self.Bind(wx.EVT_TIMER, self.OnTimer)
     self.repeat_time = 0 # Repeat function is inactive
 
-#----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
+#------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
     if sys.platform.lower().startswith('win'):
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
   def OnEnter(self, event):
@@ -164,7 +164,8 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     if clip:
       self.SetBackgroundColour('deep pink')
     else:
-      self.SetBackgroundColour(conf.color_freq)
+     # self.SetBackgroundColour(conf.color_freq) # --- удалено --- реформа обоих окошек частоты ------ 9 RA3PKJ
+      self.SetBackgroundColour('black') # ------------ взамен ---- реформа обоих окошек частоты ------ 9 RA3PKJ
     self.Refresh()
 # -------------------------------------- удалено ----------------- реформа обоих окошек частоты ------ 9 RA3PKJ
 ##  def Display(self, freq):
@@ -281,14 +282,6 @@ class FrequencyDisplaySplitRX2(wx.lib.stattext.GenStaticText):
   def OnEnter(self, event):
     if not application.w_phase:
       self.SetFocus()    # Set focus so we get mouse wheel events
-
-  def Clip(self, clip):
-    """Change color to indicate clipping."""
-    if clip:
-      self.SetBackgroundColour('deep pink')
-    else:
-      self.SetBackgroundColour(conf.color_freq)
-    self.Refresh()
   def Display(self, freq, color):
     """Set the frequency to be displayed."""
     txt = FreqFormatter(freq)

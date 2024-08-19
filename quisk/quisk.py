@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.34.15 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.35.16 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -219,8 +219,14 @@ def str2freq (freq):
 
 def get_filter_tx(mode):	# Return the bandwidth, center of the Tx filters
   if mode in ('LSB', 'USB'):
-    bw = 2700
-    center = 1650
+    # -------------------------------------------------------- удалено----------------- Кнопка SSBtx Low ------- 45 RA3PKJ
+    # bw = 2700
+    # center = 1650
+    # --------------------------------------------------------- взамен ---------------- Кнопка SSBtx Low ------- 45 RA3PKJ
+    offset = application.offset_tx
+    bw = 3000 - offset
+    center = bw//2 + offset
+
   elif mode in ('CWL', 'CWU'):
     bw = 10
     center = 0
@@ -541,7 +547,7 @@ class HamlibHandlerSerial:
       pass
     else:
       self.Error(cmd, data)
-  def ZZFA(self, cmd, data, length):	# frequency of VFO A, the receive frequency
+  def ZZFA(self, cmd, data, length):	# frequency of VFO A, the receive frequency#-----------------------------bigon
     if length == 0:
       self.Write("%s%011d;" % (cmd, self.app.rxFreq + self.app.VFO))
     elif length == 11:
@@ -2023,8 +2029,8 @@ class GraphScreen(wx.Window):
     self.y_ticks = []
     self.VFO = 0
     self.filter_mode = 'AM'
-    self.filter_bandwidth = 0
-    self.filter_center = 0
+    self.filter_bandwidth = 0 # ширина шторки, например 2800
+    self.filter_center = 0    # середина шторки (отрицательная, если нижняя боковая, и наоборот), например -1400
     self.ritFreq = 0				# receive incremental tuning frequency offset
     self.mouse_x = 0
     #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки ------- 30 RA3PKJ
@@ -2351,6 +2357,30 @@ class GraphScreen(wx.Window):
       mouse_x -= self.filter_center * self.data_width / sample_rate
     self.mouse_x = mouse_x
     x = mouse_x - self.originX
+
+    # СПРАВКА
+    # self.filter_center - середина шторки (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
+    # self.sample_rate - величина постоянная, например 192000
+    # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
+    # self.filter_bandwidth - ширина шторки, например 2800
+    # self.data_width - величина постоянная, например 1936
+
+    # ------------------------------------------------------------- добавлено ---------- отключение скачка шторки после клика по ней мышью ---- 44 RA3PKJ
+    xx = 2 * self.filter_center * self.data_width / sample_rate
+    if self.filter_center < 0:
+      if (x - self.display.tune_rx) < 0 and (x - self.display.tune_rx) > xx:
+        self.mouse_is_rx = True
+        return
+      if (x - self.display.tune_tx) < 0 and (x - self.display.tune_tx) > xx:
+        self.mouse_is_rx = False
+        return
+    if self.filter_center > 0:
+      if (x - self.display.tune_rx) > 0 and (x - self.display.tune_rx) < xx:
+        self.mouse_is_rx = True
+        return
+      if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
+        self.mouse_is_rx = False
+        return
 
     #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
     #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
@@ -3990,7 +4020,7 @@ class App(wx.App):
     self.save_time0 = self.timer
     self.smeter_db_time0 = self.timer
     self.smeter_sunits_time0 = self.timer
-    self.fewsec_time0 = self.timer
+    self.slowheart_time0 = self.timer
     self.multi_rx_index = 0
     self.multi_rx_timer = self.timer
     self.band_up_down = 0			# Are band Up/Down buttons in use?
@@ -4034,21 +4064,23 @@ class App(wx.App):
     self.freedv_mode = 'Mode 700D'		# restore FreeDV mode setting
     self.freedv_menu = None
     self.hermes_LNA_dB = 20
-    self.offset = 300 # цифра условная, т.к.берётся из quisk_settings.json --- добавлено --- SSB Offset --- 29 RA3PKJ
-    self.freq_step = 50 # --- цифра условная, т.к.берётся из файла --- добавлено ------ шаг перестройки --- 30 RA3PKJ
+    self.offset = 200 # цифра условная, т.к.берётся из quisk_settings.json --------------------------- добавлено ----- SSB RX Offset ---- 29 RA3PKJ
+    self.offset_tx = 200 # цифра условная, т.к.берётся из quisk_settings.json ------------------------ добавлено --- Кнопка SSBtx Low --- 45 RA3PKJ
+    self.freq_step = 50 # --- цифра условная, т.к.берётся из файла ----------------------------------- добавлено ---- шаг перестройки --- 30 RA3PKJ
+    self.close = False #--------------------------------------------------- добавлено --- выключение режима TX при закрытии программы --- 46 RA3PKJ
 
-    # --- для слайдеров--------------------------------------- добавлено --------------- реформа кнопок --- 12 RA3PKJ
+    # --- для слайдеров---------------------------------------------------- добавлено ------------ реформа кнопок ----------------------- 12 RA3PKJ
     self.y_scale = 0
     self.y_zoom = 0
     self.zoom_control = 0
 
-    # -------------------------------------------------------- добавлено ---------- картинка на панораме --- 5 RA3PKJ
+    # --------------------------------------------------------------------- добавлено ---------- картинка на панораме -------------------- 5 RA3PKJ
     self.picture_bmp = "Pano_1.jpg"
     self.picture_list = [] # --- список картинок в папке
     self.picture_len = 0   # --- длина списка картинок
     self.picture_index = 0 # --- индекс в списке картинок
 
-    # -------------------------------------------------------- добавлено ---  реформа обоих окошек частоты -- 9 RA3PKJ
+    # --------------------------------------------------------------------- добавлено -------- реформа обоих окошек частоты -------------- 9 RA3PKJ
     self.snr = 0.0
     self.freedv_flag = False # --- флаг моды freedv
     self.bandscope_flag = False
@@ -4183,6 +4215,7 @@ class App(wx.App):
 
     if "Version" not in self.bandAmplPhase:
       self.FixAmplPhase()		# Convert to new format Oct 2020
+    self.FixAmplPhase2()		# New logic June 2024
     if Hardware.VarDecimGetChoices():	# Hardware can change the decimation.
       self.sample_rate = Hardware.VarDecimSet()	# Get the sample rate.
       self.vardecim_set = self.sample_rate
@@ -4572,6 +4605,7 @@ class App(wx.App):
     # нельзя заменить Rit на RIT, где-то возникает ошибка - по удалённому управлению не происходит движение крутилки на сервере (при этом сообщение о ошибке не появляется)
     self.midiControls["TxLevel"] = (self.sliderTxLevel, self.OnTxLevel) # --- добавлено ----- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
     self.midiControls["Vox"] = (self.sliderVOX, self.OnLevelVOX) # ---------- добавлено -------- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
+    self.midiControls["Compr"] = (self.CtrlTxAudioClip, self.OnTxAudioClip) # --- добавлено ---- Вынос слайдера Clip в главное окно ------ 43 RA3PKJ
     self.midiControls["Tune"]	= (None,		None)
     self.midiControls["Volume"]	= (self.sliderVol,	self.ChangeVolume)
     self.midiControls["SideTone"]	= (self.sliderSto,	self.ChangeSidetone)
@@ -4907,16 +4941,19 @@ class App(wx.App):
     event.Skip()
     self.OnBtnClose(event)
   def OnBtnClose(self, event=None):
-    # ---------------------------------------------------- добавлено ------- сохранение высоты окна при выходе --- 34 RA3PKJ
-    l, self.quisk_height = self.main_frame.GetClientSize().Get() # получить размеры (длина, высота) всего окна, существующего на момент закрытия программы
+    #----------------------- добавлено -------------------------- выключение режима TX при закрытии программы -------------- 46 RA3PKJ
+    self.close = True
+    self.pttButton.SetValue(0, True)
+    # -------------------------------------------------------------- добавлено ------- сохранение высоты окна при выходе --- 34 RA3PKJ
+    l, self.quisk_height = self.main_frame.GetClientSize().Get() # получить размеры окна на момент закрытия программы
     # сохранение высоты
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["QuiskHeight"] = self.quisk_height  # сохранение высоты окна
-        # ---------------------------------------------------- добавлено ------------- запоминание позиции окна ------ 35 RA3PKJ
+    # -------------------------------------------------------------- добавлено ------------- запоминание позиции окна ------ 35 RA3PKJ
     self.quisk_posX, self.quisk_posY = self.main_frame.GetPosition()
     configure.Settings[4]["QuiskPositionX"] = self.quisk_posX  # сохранение позиции X окна
     configure.Settings[4]["QuiskPositionY"] = self.quisk_posY  # сохранение позиции Y окна
-    # ------------------------------------------------------------------------------------ общее для 34 RA3PKJ и 35 RA3PKJ
+    # ----------------------------------------------------------------------------------------------------------- 34 RA3PKJ, 35 RA3PKJ
     self.settings_changed = True
     configure.Configuration.SaveState(self)
     self.settings_changed = False
@@ -4949,8 +4986,11 @@ class App(wx.App):
       self.hamlib_com1_handler.close()
     if self.hamlib_com2_handler:
       self.hamlib_com2_handler.close()
-    if conf.add_freedv_button:
-      QS.freedv_close()
+
+    # ------------------------------------------------ изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    # if conf.add_freedv_button:
+    QS.freedv_close()
+
     msg = QS.GetQuiskPrintf()
     if msg:
       print(msg, end='')
@@ -4987,6 +5027,25 @@ class App(wx.App):
       except:
         traceback.print_exc()
         self.bandAmplPhase[band] = {}
+  def FixAmplPhase2(self):	# New definition of phase
+    if self.bandAmplPhase["Version"]["rx"] == [1]:
+      return
+    degrad = 360.0 / 2 / math.pi
+    for band in self.bandAmplPhase:
+      if band == "Version":
+        continue
+      for rx_tx in self.bandAmplPhase[band]:
+        if rx_tx in ('rx', 'tx'):
+          data = self.bandAmplPhase[band][rx_tx]
+          for item in data:
+            vfo = item[0]
+            lst_framph = item[1]
+            for framph in lst_framph:
+              freq, am, ph = framph
+              p = math.atan(math.tan(ph / degrad) / (1.0 + am))
+              #print ("%5s %3s %8d %8d %8.4f %8.3f %8.3f" % (band, rx_tx, vfo, freq, am, ph, p * degrad))
+              framph[2] = p * degrad
+    self.bandAmplPhase["Version"]["rx"] = [1]
   def ImmediateChange(self, name):
     if name == "pulse_audio_verbose_output":
       value = getattr(conf, name)
@@ -5275,6 +5334,8 @@ class App(wx.App):
     self.sliderVOX = SliderBoxHH(frame, 'Vox', self.levelVOX, -40, 0, self.OnLevelVOX, display=False, scale=1)
     self.sliderVOX.SetValue(-40 - self.levelVOX) # --- сделана прямая зависимость
 
+    self.CtrlTxAudioClip = SliderBoxHH(frame, 'Compr', 5, 0, 20, self.OnTxAudioClip, display=False, scale=1) # ----------------- добавлено --- Вынос слайдера Clip в главное окно ---- 43 RA3PKJ
+
     self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
     self.ChangeVolume()		# set initial volume level
     self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
@@ -5463,11 +5524,14 @@ class App(wx.App):
     labels = [('CWL', 'CWU'), ('LSB', 'USB'), 'AM', 'FM', ('DGT-U', 'DGT-L', 'DGT-FM', 'DGT-IQ')]
     shortcuts = ['C', 'S', 'A', 'M', 'D']
     count = 5	# There is room for seven buttons
-    if conf.add_freedv_button:
-      n_freedv = count
-      count += 1
-      labels.append('FDV-U')
-      shortcuts.append('F')
+
+    # ----------------------------------------------------- изменено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+    # if conf.add_freedv_button:
+    n_freedv = count
+    count += 1
+    labels.append('FDV-U')
+    shortcuts.append('F')
+
     n_imd = count
     count += 1
     labels.append('IMD')
@@ -5489,44 +5553,48 @@ class App(wx.App):
     self.modeButns.buttons[4].idName = "DGT"
     self.modeButns.idName = "modeButns"
     self.freedv_menu_items = {}
-    if conf.add_freedv_button:
-      self.freedv_menu = QuiskMenu("freedv_menu")
-      msg = conf.freedv_tx_msg
-      QS.freedv_set_options(mode=conf.freedv_modes[0][1], tx_msg=msg, DEBUG=0, squelch=1)
-      self.freedv_menu.AppendCheckItem("Monitor", self.OnFreedvMonitor)
-      self.freedv_menu.AppendSeparator()
-      for mode, index in conf.freedv_modes:
-        item = self.freedv_menu.AppendRadioItem(mode, self.OnFreedvMenu, mode == self.freedv_mode)
-        self.freedv_menu_items[index] = item
-        if mode == self.freedv_mode:	# Restore mode
-          QS.freedv_set_options(mode=index)
-        if mode in ("Mode 2020", "Mode 2400A", "Mode 2400B"):
-          item.Enable(False)
 
-      # ------------------------------------------------ удалено ----------------- удаление маленького экрана ----- 16 RA3PKJ
-##      if conf.button_layout == 'Large screen':
-##        b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
-##        b.idName = "FDV"
-##        b.char_shortcut = 'F'
-##        self.btnFreeDV = WrapMenu(b, self.freedv_menu)
-##        self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
-##      else:
-##        self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
-      # ------------------------------------------------ взамен ----------------- удаление маленького экрана ----- 16 RA3PKJ
-      b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
-      b.idName = "FDV"
-      b.char_shortcut = 'F'
-      self.btnFreeDV = WrapMenu(b, self.freedv_menu)
-      self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+# ------------------------------------------------------------- изменено ---------------- инициализация скрытых кнопок ---- 18 RA3PKJ
+# ================================================================================================================================
+    # if conf.add_freedv_button:
+    self.freedv_menu = QuiskMenu("freedv_menu")
+    msg = conf.freedv_tx_msg
+    QS.freedv_set_options(mode=conf.freedv_modes[0][1], tx_msg=msg, DEBUG=0, squelch=1)
+    self.freedv_menu.AppendCheckItem("Monitor", self.OnFreedvMonitor)
+    self.freedv_menu.AppendSeparator()
+    for mode, index in conf.freedv_modes:
+      item = self.freedv_menu.AppendRadioItem(mode, self.OnFreedvMenu, mode == self.freedv_mode)
+      self.freedv_menu_items[index] = item
+      if mode == self.freedv_mode:	# Restore mode
+        QS.freedv_set_options(mode=index)
+      if mode in ("Mode 2020", "Mode 2400A", "Mode 2400B"):
+        item.Enable(False)
+# -------------------------------------------------------------- удалено ----------------- удаление маленького экрана ----- 16 RA3PKJ
+##    if conf.button_layout == 'Large screen':
+##      b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
+##      b.idName = "FDV"
+##      b.char_shortcut = 'F'
+##      self.btnFreeDV = WrapMenu(b, self.freedv_menu)
+##      self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
+##    else:
+##      self.btnFreeDV = self.modeButns.AddMenu('FDV-U', self.freedv_menu)
+# -------------------------------------------------------------- взамен  ----------------- удаление маленького экрана ----- 16 RA3PKJ
+    b = QuiskCycleCheckbutton(frame, None, ('FDV-U', 'FDV-L'), is_radio=True)
+    b.idName = "FDV"
+    b.char_shortcut = 'F'
+    self.btnFreeDV = WrapMenu(b, self.freedv_menu)
+    self.modeButns.ReplaceButton(n_freedv, self.btnFreeDV)
 
-      try:
-        ok = QS.freedv_open()
-      except:
-        traceback.print_exc()
-        ok = 0
-      if not ok:
-        conf.add_freedv_button = False
-        self.modeButns.GetButtons()[n_freedv].Enable(0)
+    try:
+      ok = QS.freedv_open()
+    except:
+      traceback.print_exc()
+      ok = 0
+    if not ok:
+      # conf.add_freedv_button = False # ------------------------ удалено ---------------- инициализация скрытых кнопок ---- 18 RA3PKJ
+      self.modeButns.GetButtons()[n_freedv].Enable(0)
+# ================================================================================================================================
+
     val = 500
     QS.set_imd_level(val)
     b = QuiskCheckbutton(frame, None, 'IMD', color=conf.color_test)
@@ -5553,11 +5621,10 @@ class App(wx.App):
     self.filterButns.ReplaceButton(5, b)
     row_width = self.filterButns.GetButtons()
 
-    # --- кнопка SSB Offset-------------------------------------- добавлено ------- SSB Offset ------ 29 RA3PKJ
+    # --- кнопка SSB RX Offset---------------------------------------- добавлено ------- SSB RX Offset ------ 29 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_ssb_offset = szr
-    #self.ssb_offset = b = QuiskPushbutton(frame, self.OnBtnOffset, "SSB Low")
-    labels_ssb_offset = ('SSB Low=200Hz', 'SSB Low=250Hz', 'SSB Low=300Hz', 'SSB Low=0Hz', 'SSB Low=50Hz', 'SSB Low=100Hz', 'SSB Low=150Hz')
+    labels_ssb_offset = ('SSBrx Low=200Hz', 'SSBrx Low=250Hz', 'SSBrx Low=300Hz', 'SSBrx Low=0Hz', 'SSBrx Low=50Hz', 'SSBrx Low=100Hz', 'SSBrx Low=150Hz')
     self.ssb_offset = b = QuiskCycleCheckbutton(frame, self.OnBtnOffset, labels_ssb_offset, conf.color_cycle_btn)
     self.idName2Button[b.idName] = b
     szr.Add(self.ssb_offset, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
@@ -5567,26 +5634,69 @@ class App(wx.App):
     try:
       self.offset = configure.Settings[4]["offset_SSB_bandwidth"]
       if self.offset == 300:
-        self.ssb_offset.SetLabel("SSB Low=300Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=300Hz")
       elif self.offset == 250:
-        self.ssb_offset.SetLabel("SSB Low=250Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=250Hz")
       elif self.offset == 200:
-        self.ssb_offset.SetLabel("SSB Low=200Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=200Hz")
       elif self.offset == 150:
-        self.ssb_offset.SetLabel("SSB Low=150Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=150Hz")
       elif self.offset == 100:
-        self.ssb_offset.SetLabel("SSB Low=100Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=100Hz")
       elif self.offset == 50:
-        self.ssb_offset.SetLabel("SSB Low=50Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=50Hz")
       elif self.offset == 0:
-        self.ssb_offset.SetLabel("SSB Low=0Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=0Hz")
       else:
         self.offset = 200
-        self.ssb_offset.SetLabel("SSB Low=200Hz")
+        self.ssb_offset.SetLabel("SSBrx Low=200Hz")
     except:
       self.offset = 200
-      self.ssb_offset.SetLabel("SSB Low=200Hz")
+      self.ssb_offset.SetLabel("SSBrx Low=200Hz")
     self.ssb_offset.Refresh()
+
+    # --- кнопка SSBtx Low-------------------------------------- добавлено --------------- Кнопка SSBtx Low ------------ 45 RA3PKJ
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_ssb_offset_tx = szr
+    labels_ssb_offset_tx = ('SSBtx Low=200Hz', 'SSBtx Low=250Hz', 'SSBtx Low=300Hz', 'SSBtx Low=0Hz', 'SSBtx Low=50Hz', 'SSBtx Low=100Hz', 'SSBtx Low=150Hz')
+    self.ssb_offset_tx = b = QuiskCycleCheckbutton(frame, self.OnBtnOffsetTX, labels_ssb_offset_tx, conf.color_cycle_btn)
+    self.idName2Button[b.idName] = b
+    szr.Add(self.ssb_offset_tx, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.ssb_offset_tx.Enable(False)
+    if self.mode in ('LSB','USB'): # -------------------- срабатывает при запуске программы (потом не работает)
+      self.ssb_offset_tx.Enable(True)
+    try:
+      self.offset_tx = configure.Settings[4]["offset_SSB_bandwidthTX"]
+      if self.offset_tx == 300:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=300Hz")
+        QS.set_ssb_low(300)
+      elif self.offset_tx == 250:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=250Hz")
+        QS.set_ssb_low(250)
+      elif self.offset_tx == 200:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=200Hz")
+        QS.set_ssb_low(200)
+      elif self.offset_tx == 150:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=150Hz")
+        QS.set_ssb_low(150)
+      elif self.offset_tx == 100:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=100Hz")
+        QS.set_ssb_low(100)
+      elif self.offset_tx == 50:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=50Hz")
+        QS.set_ssb_low(50)
+      elif self.offset_tx == 0:
+        self.ssb_offset_tx.SetLabel("SSBtx Low=0Hz")
+        QS.set_ssb_low(0)
+      else:
+        self.offset_tx = 200
+        self.ssb_offset_tx.SetLabel("SSBtx Low=200Hz")
+        QS.set_ssb_low(200)
+    except:
+      self.offset_tx = 200
+      self.ssb_offset_tx.SetLabel("SSBtx Low=200Hz")
+      QS.set_ssb_low(200)
+    self.ssb_offset_tx.Refresh()
 
     # --- кнопка Picture --------------------------- добавлено ---------- картинка на панораме ------- 5 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -5672,6 +5782,8 @@ class App(wx.App):
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderVOX, wx.EXPAND) # ------------------------------ добавлено --------------- Вынос слайдера VOX в главное окно ----- 42 RA3PKJ
     self.bs2.AddSpacer(10)
+    self.bs2.Add(self.CtrlTxAudioClip, wx.EXPAND) # ---------------------------- добавлено -------------- Вынос слайдера Clip в главное окно ----- 43 RA3PKJ
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderSto, wx.EXPAND)
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderYs, wx.EXPAND)
@@ -5756,6 +5868,7 @@ class App(wx.App):
       self.idName2Button[b.idName] = b
       self.bs7.Add(b, wx.EXPAND)
     self.bs7.Add(b_ssb_offset, wx.EXPAND)
+    self.bs7.Add(b_ssb_offset_tx, wx.EXPAND)
     self.bs7.AddSpacer(11)
     text = wx.StaticText(frame, label="Design")
     text.SetForegroundColour(color)
@@ -5822,13 +5935,13 @@ class App(wx.App):
     #self.smeter.SetLabel(t)
 # ------------------------------------------------------------------- взамен -------------  реформа обоих окошек частоты ------------- 9 RA3PKJ
   def NewDVmeter(self):
-    if conf.add_freedv_button:
-      self.snr = QS.freedv_get_snr()
-      txt = QS.freedv_get_rx_char()
-      self.graph.ScrollMsg(txt)
-      self.waterfall.ScrollMsg(txt)
-    else:
-      self.snr = 0.0
+    #if conf.add_freedv_button:# ------------------------------------ изменено ------------ инициализация скрытых кнопок ------------ 18 RA3PKJ
+    self.snr = QS.freedv_get_snr()
+    txt = QS.freedv_get_rx_char()
+    self.graph.ScrollMsg(txt)
+    self.waterfall.ScrollMsg(txt)
+    # else:
+      # self.snr = 0.0
 
 # -------------------------------- удалена функция ----------------------------------------------------- расчёт S-метра -------------- 6 RA3PKJ
 ##  def NewSmeter(self):
@@ -6288,6 +6401,14 @@ class App(wx.App):
       self.file_play_state = 0	# Not playing a file
       QS.set_record_state(3)
     btn = event.GetEventObject()
+
+    #----------------------- добавлено -------------------------- выключение режима TX при закрытии программы -------------- 46 RA3PKJ
+    if self.close == True:
+      QS.set_PTT(0)
+      Hardware.OnButtonPTT(event)
+      self.close = False
+      return
+
     if btn.GetValue():
       QS.set_PTT(1)
     else:
@@ -6302,8 +6423,24 @@ class App(wx.App):
     event = wx.PyEvent()
     event.SetEventObject(self.pttButton)
     Hardware.OnButtonPTT(event)
-  def OnTxAudioClip(self, event):
-    v = event.GetEventObject().GetValue()
+
+# --------------------------------- удалено ------------------------ Вынос слайдера Clip в главное окно ------- 43 RA3PKJ
+##  def OnTxAudioClip(self, event):
+##    v = event.GetEventObject().GetValue()
+##    if self.mode in ('USB', 'LSB'):
+##      self.txAudioClipUsb = v
+##    elif self.mode == 'AM':
+##      self.txAudioClipAm = v
+##    elif self.mode == 'FM':
+##      self.txAudioClipFm = v
+##    elif self.mode in ('FDV-U', 'FDV-L'):
+##      self.txAudioClipFdv = v
+##    else:
+##      return
+##    QS.set_tx_audio(mic_clip=v)
+# --------------------------------- взамен ------------------------- Вынос слайдера Clip в главное окно ------- 43 RA3PKJ
+  def OnTxAudioClip(self, event=None):
+    v = self.CtrlTxAudioClip.slider.GetValue()
     if self.mode in ('USB', 'LSB'):
       self.txAudioClipUsb = v
     elif self.mode == 'AM':
@@ -6315,6 +6452,7 @@ class App(wx.App):
     else:
       return
     QS.set_tx_audio(mic_clip=v)
+
   def OnTxAudioPreemph(self, event):
     v = event.GetEventObject().GetValue()
     if self.mode in ('USB', 'LSB'):
@@ -6797,7 +6935,7 @@ class App(wx.App):
       vfo = freq - tune
       self.BandFromFreq(freq)
       self.ChangeHwFrequency(tune, vfo, 'FreqEntry')
-  def ChangeHwFrequency(self, tune, vfo, source='', band='', event=None, rx_freq=None):
+  def ChangeHwFrequency(self, tune, vfo, source='', band='', event=None, rx_freq=None): #--------------------bigon
     """Change the VFO and tuning frequencies, and notify the hardware.
 
     tune:    the new tuning frequency in +- sample_rate/2;
@@ -6840,10 +6978,8 @@ class App(wx.App):
       self.graph.SetVFO(vfo)
       self.waterfall.SetVFO(vfo)
       self.station_screen.Refresh()
-      if self.w_phase:
-        self.w_phase.Redraw()
     if change:
-      if conf.name_of_sound_capt or conf.name_of_mic_play:
+      if (conf.name_of_sound_capt or conf.name_of_mic_play) and QS.get_params("softrock_correct_active") == 0:
         ampl, phase = self.GetAmplPhase('rx')
         QS.set_ampl_phase(ampl, phase, 0)
         ampl, phase = self.GetAmplPhase('tx')
@@ -6870,11 +7006,14 @@ class App(wx.App):
   def OnBtnMode(self, event):
     mode = self.modeButns.GetLabel()
 
-    # ---------------------------------------------------------------- добавлено --------------------- SSB Offset ----------------- 29 RA3PKJ
+    # -------------------------------------------------------------------------- добавлено ----------------- SSB RX Offset --------- 29 RA3PKJ
+    # -------------------------------------------------------------------------- добавлено ---------------- Кнопка SSBtx Low ------- 45 RA3PKJ
     if mode in ('LSB','USB'):
-      self.ssb_offset.Enable(True) #кнопка смещения полосы SSB
+      self.ssb_offset.Enable(True) #кнопки смещения полосы SSB
+      self.ssb_offset_tx.Enable(True)
     else:
       self.ssb_offset.Enable(False)
+      self.ssb_offset_tx.Enable(False)
 
     delta = 0	# Change frequency so switch between CW and SSB keeps tone constant
     if self.mode == 'USB':
@@ -7045,28 +7184,76 @@ class App(wx.App):
     configure.Configuration.SaveState(self)
     self.settings_changed = False
 
-  # --------------------------------------------------------------------------------- добавлено ----------------- SSB Offset ------- 29 RA3PKJ
+  # ------------------------------------------------------------------------------- добавлено ----------------- SSB RX Offset ------- 29 RA3PKJ
   def OnBtnOffset(self, event):
     ssb_offset_label = self.ssb_offset.GetLabel()
-    if ssb_offset_label == 'SSB Low=300Hz':
+    if ssb_offset_label == 'SSBrx Low=300Hz':
       self.offset = 300
-    elif ssb_offset_label == 'SSB Low=250Hz':
+    elif ssb_offset_label == 'SSBrx Low=250Hz':
       self.offset = 250
-    elif ssb_offset_label == 'SSB Low=200Hz':
+    elif ssb_offset_label == 'SSBrx Low=200Hz':
       self.offset = 200
-    elif ssb_offset_label == 'SSB Low=150Hz':
+    elif ssb_offset_label == 'SSBrx Low=150Hz':
       self.offset = 150
-    elif ssb_offset_label == 'SSB Low=100Hz':
+    elif ssb_offset_label == 'SSBrx Low=100Hz':
       self.offset = 100
-    elif ssb_offset_label == 'SSB Low=50Hz':
+    elif ssb_offset_label == 'SSBrx Low=50Hz':
       self.offset = 50
-    elif ssb_offset_label == 'SSB Low=0Hz':
+    elif ssb_offset_label == 'SSBrx Low=0Hz':
       self.offset = 0
     else:
-      self.ssb_offset.SetLabel("SSB Low=200Hz")
+      self.ssb_offset.SetLabel("SSBrx Low=200Hz")
       self.offset = 200
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidth"] = self.offset
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
+
+    # --- через RadioButtonGroup.SetLabel (quisk_widgets.py) происходит вызов здесь функции OnBtnFilter для перерисовки фильтра
+    index = self.filterButns.GetIndex() # --- индекс кнопки текущей полосы фильтра
+    try:
+      Lab = self.filterButns.buttons[index].GetLabel() # --- значение полосы на кнопке
+    except:
+      Lab = self.filterButns.buttons[0].GetLabel()
+    self.filterButns.SetLabel(Lab, True) # --- перерисовать фильтр (шторку)
+
+  # ----------------------------------------------------------------------- добавлено ----------------- Кнопка SSBtx Low ------- 45 RA3PKJ
+  def OnBtnOffsetTX(self, event):
+    ssb_offset_label_tx = self.ssb_offset_tx.GetLabel()
+    if ssb_offset_label_tx == 'SSBtx Low=300Hz':
+      self.offset_tx = 300
+      QS.set_ssb_low(300)
+    elif ssb_offset_label_tx == 'SSBtx Low=250Hz':
+      self.offset_tx = 250
+      QS.set_ssb_low(250)
+    elif ssb_offset_label_tx == 'SSBtx Low=200Hz':
+      self.offset_tx = 200
+      QS.set_ssb_low(200)
+    elif ssb_offset_label_tx == 'SSBtx Low=150Hz':
+      self.offset_tx = 150
+      QS.set_ssb_low(150)
+    elif ssb_offset_label_tx == 'SSBtx Low=100Hz':
+      self.offset_tx = 100
+      QS.set_ssb_low(100)
+    elif ssb_offset_label_tx == 'SSBtx Low=50Hz':
+      self.offset_tx = 50
+      QS.set_ssb_low(50)
+    elif ssb_offset_label_tx == 'SSBtx Low=0Hz':
+      self.offset_tx = 0
+      QS.set_ssb_low(0)
+    else:
+      self.ssb_offset_tx.SetLabel("SSBtx Low=200Hz")
+      self.offset_tx = 200
+      QS.set_ssb_low(200)
+    #QS.set_rx_mode
+    #QS.close_sound()
+    #self.OpenSound()
+    #QS.read_sound()
+    #self.sound_thread = SoundThread(self.samples_from_python)
+    wx.MessageBox ("For apply please COMPLITLY close Quisk (button X) and load again")
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["offset_SSB_bandwidthTX"] = self.offset_tx
     self.settings_changed = True
     configure.Configuration.SaveState(self)
     self.settings_changed = False
@@ -7663,9 +7850,10 @@ class App(wx.App):
           self.ChangeDisplayFrequency(tune - vfo, vfo)
         self.FldigiPoll()
         self.HamlibPoll()
-      #if self.timer - self.fewsec_time0 > 3.0:
-      #  self.fewsec_time0 = self.timer
-      #  print ('fewswc')
+      if self.timer - self.slowheart_time0 > 0.5:
+        self.slowheart_time0 = self.timer
+        if self.w_phase:
+          self.w_phase.SlowHeartBeat()
       if self.timer - self.save_time0 > 20.0:
         self.save_time0 = self.timer
         if self.CheckState():

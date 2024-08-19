@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- #added by RA3PKJ - строчка добавилась после того, как начал писать комментарии на русском языке ----------------------------------
+
 from n2adr.quisk_conf import n2adr_sound_pc_capt, n2adr_sound_pc_play, n2adr_sound_usb_play, n2adr_sound_usb_mic, favorites_file_path
 
 name_of_sound_play = n2adr_sound_usb_play
@@ -10,4 +12,4 @@ rx_udp_ip = "192.168.1.213"					# Sample source IP address "" for DHCP
 
 do_repeater_offset = True
 #bandTransverterOffset = {'10' : 300000}
-spot_button_keys_tx = True
+# spot_button_keys_tx = True # -------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ

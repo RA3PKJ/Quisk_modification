@@ -322,6 +322,8 @@ extern struct sound_dev * quiskPlaybackDevices[];	// array of Playback sound dev
 extern int quisk_close_file_play;
 extern double digital_output_level;
 
+extern int ssbTxLow; // ----------------------------- добавлено --------------------- кнопка SSBtx Low ------- 45 RA3PKJ
+
 extern PyObject * quisk_set_spot_level(PyObject * , PyObject *);
 extern PyObject * quisk_get_tx_filter(PyObject * , PyObject *);
 

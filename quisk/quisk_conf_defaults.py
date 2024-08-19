@@ -1168,7 +1168,15 @@ digital_rx1_name = ""
 ## digital_output_level		Digital output level, number
 # This is the volume control 0.0 to 1.0 for digital playback to fldigi, etc.
 # Changes are immediate (no need to restart).
-digital_output_level = 0.7
+digital_output_level = 0.700
+
+## file_play_level		File play level, number
+# Use this to reduce the volume when playing files. For example, if the volume of the CQ
+# message is too loud, reduce the level relative to radio sound.
+# Changes are immediate (no need to restart).
+file_play_level = 1.000
+#file_play_level = 0.500
+#file_play_level = 0.100
 
 # Sound card names:
 #
@@ -1613,12 +1621,13 @@ window_posX = -1
 window_posY = -1
 #window_posY = 0
 
-## button_layout				Button layout, text choice
-# This option controls how many buttons are displayed on the screen.  The large screen
-# layout is meant for a PC.  The small screen layout is meant for small touch screens, and
-# small screens used in embedded systems.
-button_layout = 'Large screen'
-#button_layout = 'Small screen'
+# --------------------------------------------------------------- удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
+# ## button_layout				Button layout, text choice
+# # This option controls how many buttons are displayed on the screen.  The large screen
+# # layout is meant for a PC.  The small screen layout is meant for small touch screens, and
+# # small screens used in embedded systems.
+# button_layout = 'Large screen'
+# #button_layout = 'Small screen'
 
 
 # These are the initial values for the Y-scale and Y-zero sliders for each screen.
@@ -1764,11 +1773,12 @@ cwTone = 600
 #cwTone = 400
 #cwTone = 800
 
-## use_sidetone				Use sidetone, integer choice
-# This controls whether Quisk will display a sidetone volume control
-# and generate a CW sidetone.
-use_sidetone = 0
-#use_sidetone = 1
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## use_sidetone				Use sidetone, integer choice
+# # This controls whether Quisk will display a sidetone volume control
+# # and generate a CW sidetone.
+# use_sidetone = 0
+# #use_sidetone = 1
 
 ## use_fast_sound		Use fast sound, boolean
 # This turns on the new faster sound system which provides a much faster and more useful sidetone
@@ -1829,12 +1839,12 @@ graph_peak_hold_1 = 0.25
 # of the Graph button.  Lower numbers give a longer time constant.
 graph_peak_hold_2 = 0.10
 
-
-## add_imd_button			Add IMD button, integer choice
-# If you want Quisk to add a button to generate a 2-tone IMD test signal,
-# set this to 1.
-add_imd_button = 0
-#add_imd_button = 1
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## add_imd_button			Add IMD button, integer choice
+# # If you want Quisk to add a button to generate a 2-tone IMD test signal,
+# # set this to 1.
+# add_imd_button = 0
+# #add_imd_button = 1
 
 ## add_extern_demod			Add ext demod button, text
 # If you want to write your own I/Q filter and demodulation module, set
@@ -1842,17 +1852,19 @@ add_imd_button = 0
 add_extern_demod = ""
 #add_extern_demod = "WFM"
 
-## add_fdx_button			Add FDX button, integer choice
-# If you want Quisk to add a full duplex button (transmit and receive at the
-# same time), set this to 1.
-add_fdx_button = 0
-#add_fdx_button = 1
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## add_fdx_button			Add FDX button, integer choice
+# # If you want Quisk to add a full duplex button (transmit and receive at the
+# # same time), set this to 1.
+# add_fdx_button = 0
+# #add_fdx_button = 1
 
-## add_freedv_button		Add FreeDv button, integer choice
-# These buttons add up to two additional mode buttons after CW, USB, etc.
-# Set this to add the FDV mode button for digital voice:
-add_freedv_button = 1
-#add_freedv_button = 0
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## add_freedv_button		Add FreeDv button, integer choice
+# # These buttons add up to two additional mode buttons after CW, USB, etc.
+# # Set this to add the FDV mode button for digital voice:
+# add_freedv_button = 1
+# #add_freedv_button = 0
 
 ## freedv_tx_msg			FreeDv Tx message, text
 # For freedv, this is the text message to send.
@@ -1880,10 +1892,11 @@ FilterBwFDV	= (1500, 2000, 3000, '6000', '', '')
 # display a PTT button you can press.  The method must switch your hardware to
 # transmit somehow, for example, by setting a serial port pin to high.
 
-## spot_button_keys_tx			Key Tx on Spot, boolean
-# If you want the Spot button to key the transmitter immediately when you press it, set this option.
-spot_button_keys_tx = True
-#spot_button_keys_tx = False
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## spot_button_keys_tx			Key Tx on Spot, boolean
+# # If you want the Spot button to key the transmitter immediately when you press it, set this option.
+# spot_button_keys_tx = True
+# #spot_button_keys_tx = False
 
 
 

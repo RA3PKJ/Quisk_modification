@@ -399,10 +399,62 @@ static int tx_filter(complex double * filtered, int count)
 			quisk_filt_dInit(&filtDecim,  quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
 			quisk_filt_dInit(&dfiltInterp, quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
 			quisk_filt_cInit(&cfiltInterp, quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
-			quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
-			quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
-			quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
-			quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+			
+            // -------------------------------------------------------------- удалено ----------------------------- кнопка SSBtx Low --- 45 RA3PKJ
+            //quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+	        //quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+	        //quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+            //quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));	
+            // -------------------------------------------------------------- взамен ------------------------------ кнопка SSBtx Low --- 45 RA3PKJ		
+			if (ssbTxLow == 0) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+            }
+  			else if (ssbTxLow == 50) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
+            }
+			else if (ssbTxLow == 100) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
+            }
+  			else if (ssbTxLow == 150) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
+            }
+  			else if (ssbTxLow == 200) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+            }
+			else if (ssbTxLow == 250) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
+            }
+  			else if (ssbTxLow == 300) {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));   
+            }
+  			else {
+			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+            }
+				
 			dtmp = 1.0 / sample_rate;		// sample time
 			time_long   = 1.0 - exp(- dtmp / 3.000);
 			time_short  = 1.0 - exp(- dtmp / 0.005);
