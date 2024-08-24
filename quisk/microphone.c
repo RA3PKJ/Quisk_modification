@@ -370,7 +370,9 @@ static void process_alc(complex double * cSamples, int count, struct alc * pt, r
 #endif
 }
 
-static int tx_filter(complex double * filtered, int count)
+//при старте программы входит сюда три раза, а в режиме передачи постоянно входит сюда
+//static int tx_filter(complex double * filtered, int count) // ----------- удалено ------------------------------ кнопка SSBtx Low --- 45 RA3PKJ
+int tx_filter(complex double * filtered, int count) // --------------------- взамен ------------------------------ кнопка SSBtx Low --- 45 RA3PKJ
 {	// Input samples are creal(filtered), output is filtered.  The input rate must be 8000 or 48000 sps.
 	int i, is_ssb, mic_interp;
 	int sample_rate = 8000;
@@ -393,66 +395,74 @@ static int tx_filter(complex double * filtered, int count)
 #endif
 	is_ssb = (rxMode == LSB || rxMode == USB);
 	if (!filtered) {		// initialization
-		if (! filter1.dCoefs) {
+		//if (! filter1.dCoefs) { // --------------------------------------- удалено ----------------------------- кнопка SSBtx Low --- 45 RA3PKJ
 			quisk_filt_dInit(&filter1, quiskMicFilt8Coefs, sizeof(quiskMicFilt8Coefs)/sizeof(double));
 			quisk_filt_dInit(&filter2, quiskMicFilt8Coefs, sizeof(quiskMicFilt8Coefs)/sizeof(double));
 			quisk_filt_dInit(&filtDecim,  quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
 			quisk_filt_dInit(&dfiltInterp, quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
 			quisk_filt_cInit(&cfiltInterp, quiskLpFilt48Coefs, sizeof(quiskLpFilt48Coefs)/sizeof(double));
 			
-            // -------------------------------------------------------------- удалено ----------------------------- кнопка SSBtx Low --- 45 RA3PKJ
+            // ------------------------------------------------------------- удалено ----------------------------- кнопка SSBtx Low --- 45 RA3PKJ
             //quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
 	        //quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
 	        //quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
             //quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));	
-            // -------------------------------------------------------------- взамен ------------------------------ кнопка SSBtx Low --- 45 RA3PKJ		
+            // ------------------------------------------------------------- взамен ------------------------------ кнопка SSBtx Low --- 45 RA3PKJ		
 			if (ssbTxLow == 0) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB, sizeof(quiskFiltTx8kAudioB)/sizeof(double));
+			  //printf("0Hz"); 
             }
   			else if (ssbTxLow == 50) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_50, sizeof(quiskFiltTx8kAudioB_50)/sizeof(double));
+			  //printf("50Hz");
             }
 			else if (ssbTxLow == 100) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_100, sizeof(quiskFiltTx8kAudioB_100)/sizeof(double));
+	          //printf("100Hz");
             }
   			else if (ssbTxLow == 150) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_150, sizeof(quiskFiltTx8kAudioB_150)/sizeof(double));
+			  //printf("150Hz");
             }
   			else if (ssbTxLow == 200) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  //printf("200Hz");
             }
 			else if (ssbTxLow == 250) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_250, sizeof(quiskFiltTx8kAudioB_250)/sizeof(double));
+			  //printf("250Hz");
             }
   			else if (ssbTxLow == 300) {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));
-			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));   
+			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_300, sizeof(quiskFiltTx8kAudioB_300)/sizeof(double));  
+			  //printf("300Hz");
             }
   			else {
 			  quisk_filt_dInit(&filtAudio1, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_dInit(&filtAudio2, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_dInit(&dfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
 			  quisk_filt_cInit(&cfiltAudio3, quiskFiltTx8kAudioB_200, sizeof(quiskFiltTx8kAudioB_200)/sizeof(double));
+			  //printf("200Hz");
             }
 				
 			dtmp = 1.0 / sample_rate;		// sample time
@@ -468,7 +478,7 @@ static int tx_filter(complex double * filtered, int count)
 			printf("Compress to %.2lf dB from %.2lf to %.2lf dB\n",
 				20 * log10(Ymax), 20 * log10(Xmin), 20 * log10(Xmax));
 #endif
-		}
+		//} // ---------------------------------------------------------- удалено ----------------------------- кнопка SSBtx Low --- 45 RA3PKJ
 		if (is_ssb) {
 		  quisk_filt_tune(&filter1, 1650.0 / sample_rate, rxMode != LSB);
 		  quisk_filt_tune(&filter2, 1650.0 / sample_rate, rxMode != LSB);

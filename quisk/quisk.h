@@ -260,6 +260,8 @@ extern PyObject * quisk_stop_remote_radio_remote_sound(PyObject * self, PyObject
 extern int receive_graph_data(double * fft_avg);
 extern void send_graph_data(double * fft_avg, int fft_size, double zoom, double deltaf, int fft_sample_rate, double scale);
 
+extern int tx_filter(complex double * filtered, int count); // -------- добавлено --------------------- кнопка SSBtx Low ------- 45 RA3PKJ
+
 void QuiskWavClose(struct QuiskWav *);
 int QuiskWavWriteOpen(struct QuiskWav *, char *, short, short, short, int, double);
 void QuiskWavWriteC(struct QuiskWav *, complex double *, int);

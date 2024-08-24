@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.35.16 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.36.17 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -6411,8 +6411,10 @@ class App(wx.App):
 
     if btn.GetValue():
       QS.set_PTT(1)
+      self.ssb_offset_tx.Enable(False)  # ----------------------------- добавлено ----------------- Кнопка SSBtx Low ------- 45 RA3PKJ
     else:
       QS.set_PTT(0)
+      self.ssb_offset_tx.Enable(True)  # ------------------------------ добавлено ----------------- Кнопка SSBtx Low ------- 45 RA3PKJ
     Hardware.OnButtonPTT(event)
   def SetPTT(self, value):
     self.pttButton.SetValue(value, False)
@@ -7246,12 +7248,6 @@ class App(wx.App):
       self.ssb_offset_tx.SetLabel("SSBtx Low=200Hz")
       self.offset_tx = 200
       QS.set_ssb_low(200)
-    #QS.set_rx_mode
-    #QS.close_sound()
-    #self.OpenSound()
-    #QS.read_sound()
-    #self.sound_thread = SoundThread(self.samples_from_python)
-    wx.MessageBox ("For apply please COMPLITLY close Quisk (button X) and load again")
     self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
     configure.Settings[4]["offset_SSB_bandwidthTX"] = self.offset_tx
     self.settings_changed = True
