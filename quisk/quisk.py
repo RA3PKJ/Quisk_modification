@@ -2364,23 +2364,33 @@ class GraphScreen(wx.Window):
     # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
     # self.filter_bandwidth - ширина шторки, например 2800
     # self.data_width - величина постоянная, например 1936
+    # self.originX - предельная слева частота на панораме
+    # self.display.tune_rx - частота приёмника по нулевым биениям
+    # self.display.tune_tx - частота передатчика по нулевым биениям
+    # x - позиция мыши
+    # xx - видимая ширина шторки на панораме
 
     # ------------------------------------------------------------- добавлено ---------- отключение скачка шторки после клика по ней мышью ---- 44 RA3PKJ
     xx = 2 * self.filter_center * self.data_width / sample_rate
     if self.filter_center < 0:
       if (x - self.display.tune_rx) < 0 and (x - self.display.tune_rx) > xx:
-        self.mouse_is_rx = True
+        self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
         return
       if (x - self.display.tune_tx) < 0 and (x - self.display.tune_tx) > xx:
-        self.mouse_is_rx = False
+        self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
         return
     if self.filter_center > 0:
       if (x - self.display.tune_rx) > 0 and (x - self.display.tune_rx) < xx:
-        self.mouse_is_rx = True
+        self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
         return
       if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
-        self.mouse_is_rx = False
+        self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
         return
+
+    # ------------------------------------------------------------- добавлено -------------------------- Настройка как в PowerSDR ------------- 47 RA3PKJ
+    if conf.mouse_tune_method: # отключение прыжков шторки при настройке как в PowerSDR
+      self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
+      return
 
     #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
     #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
@@ -2467,18 +2477,62 @@ class GraphScreen(wx.Window):
       mouse_x, mouse_y = self.GetMousePosition(event)
       if wx.GetKeyState(wx.WXK_SHIFT):
         mouse_x -= self.filter_center * self.data_width / sample_rate
-      if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
+      if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency # настройка как в PowerSDR
         x = (mouse_x - self.mouse_x)	# Thanks to VK6JBL
         self.mouse_x = mouse_x
         freq = float(x) * sample_rate / self.data_width
         freq = int(freq)
         self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+
+##        #self.mouse_x = mouse_x # -------------------------------------------------------- bigon
+##        x = mouse_x - self.originX
+##        xx = 2 * self.filter_center * self.data_width / sample_rate
+##        if self.filter_center < 0:
+##          if (x - self.display.tune_rx) < 0 and (x - self.display.tune_rx) > xx:
+####            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
+####                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
+####                self.mouse_x = mouse_x
+####                freq = float(x) * sample_rate / self.data_width
+####                freq = int(freq)
+####                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+##            self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
+##            #return
+##          if (x - self.display.tune_tx) < 0 and (x - self.display.tune_tx) > xx:
+##            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
+##                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
+##                self.mouse_x = mouse_x
+##                freq = float(x) * sample_rate / self.data_width
+##                freq = int(freq)
+##                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+##            self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
+##            # return
+##        if self.filter_center > 0:
+##          if (x - self.display.tune_rx) > 0 and (x - self.display.tune_rx) < xx:
+####            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
+####                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
+####                self.mouse_x = mouse_x
+####                freq = float(x) * sample_rate / self.data_width
+####                freq = int(freq)
+####                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+##            self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
+##            #return
+##          if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
+##            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
+##                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
+##                self.mouse_x = mouse_x
+##                freq = float(x) * sample_rate / self.data_width
+##                freq = int(freq)
+##                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+##            self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
+##            #return
+
       else:		# Mouse motion changes the tuning frequency
         # Frequency changes more rapidly for higher mouse Y position
-        speed = max(10, self.originY - mouse_y) / float(self.originY + 1)
+        # speed = max(10, self.originY - mouse_y) / float(self.originY + 1) # ------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
         x = (mouse_x - self.mouse_x)
         self.mouse_x = mouse_x
-        freq = speed * x * sample_rate / self.data_width
+        #freq = speed * x * sample_rate / self.data_width # ------------------------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
+        freq = x * sample_rate / self.data_width # ----------------------------------- взамен ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
         freq = int(freq)
         if self.mouse_is_rx:	# Mouse motion changes the receive frequency
           freq2 = application.rxFreq + freq
@@ -5392,8 +5446,9 @@ class App(wx.App):
     self.idName2Button[b.idName] = b
     b.char_shortcut = 'l'
     self.MakeAccel(b)
-    if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
-      self.splitButton.Enable(False)
+    # ------------------------------------------------------------- удалено -------------------------- Настройка как в PowerSDR ------------- 47 RA3PKJ
+    # if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
+      # self.splitButton.Enable(False)
 
     # --- кнопка NR2
     b = b_nr2 = QuiskCheckbutton(frame, self.OnBtnNR2, text='NR2')
