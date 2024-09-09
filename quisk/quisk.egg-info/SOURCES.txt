@@ -134,6 +134,8 @@ utility.c
 ./hiqsdr/__init__.py
 ./hiqsdr/quisk_conf.py
 ./hiqsdr/quisk_hardware.py
+./multuspkg/__init__.py
+./multuspkg/quisk_hardware.py
 ./n2adr/__init__.py
 ./n2adr/conf1.py
 ./n2adr/conf2.py
@@ -212,6 +214,8 @@ hermes/quisk_widgets.py
 hiqsdr/__init__.py
 hiqsdr/quisk_conf.py
 hiqsdr/quisk_hardware.py
+multuspkg/__init__.py
+multuspkg/quisk_hardware.py
 n2adr/__init__.py
 n2adr/conf1.py
 n2adr/conf2.py

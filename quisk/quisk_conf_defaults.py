@@ -1371,6 +1371,18 @@ dc_remove_bw = 100
 #dc_remove_bw = 200
 #dc_remove_bw = 400
 
+## fixed_tune_offset		Fixed tune offset, integer
+# If this is zero, Quisk tunes as usual. The hardware frequency (the VFO or center frequency)
+# is fixed and Quisk tunes
+# within the spectrum returned by the hardware. Otherwise enter a fixed offset between the
+# center frequency and the tuning frequency. Then tuning is done by the hardware.
+# This is useful with Softrock hardware as
+# it simplifies the corrections for amplitude and phase imbalance.
+# Changes are immediate (no need to restart).
+fixed_tune_offset = 0
+#fixed_tune_offset = 5000
+#fixed_tune_offset = 10000
+
 # ------------------------------------------------------ добавлено -------------------------- Настройка как в PowerSDR ----------- 47 RA3PKJ
 ## mouse_tune_method        Tuning like PowerSDR, integer
 # This determines what happens when you tune by dragging the mouse.  The correct
@@ -1440,42 +1452,44 @@ hamlib_port = 4532
 digital_xmlrpc_url = "http://localhost:7362"
 #digital_xmlrpc_url = ""
 
-## lin_hamlib_com1_name		CAT serial port name, text
-# Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
-# The serial port can be a real hardware port with a name starting with "/dev/".
-# Or to connect to an external program like N1MM+ or WSJT-X enter a file name such as "/tmp/QuiskTTYx"
-# where "x" is 0, 1, 2, etc. Quisk will create a virtual serial port when it starts.
-# Enter that name into the other program.  This is addition to the
-# "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
-# to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
-lin_hamlib_com1_name = ""
-#lin_hamlib_com1_name = "/dev/ttyUSB0"
-#lin_hamlib_com1_name = "/dev/ttyS0"
-#lin_hamlib_com1_name = "/tmp/QuiskTTY0"
+# -------------------------------------------------------------- удалено ------------------ CAT --------------------- 49 RA3PKJ
+# ## lin_hamlib_com1_name		CAT serial port name, text
+# # Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
+# # The serial port can be a real hardware port with a name starting with "/dev/".
+# # Or to connect to an external program like N1MM+ or WSJT-X enter a file name such as "/tmp/QuiskTTYx"
+# # where "x" is 0, 1, 2, etc. Quisk will create a virtual serial port when it starts.
+# # Enter that name into the other program.  This is addition to the
+# # "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
+# # to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
+# lin_hamlib_com1_name = ""
+# #lin_hamlib_com1_name = "/dev/ttyUSB0"
+# #lin_hamlib_com1_name = "/dev/ttyS0"
+# #lin_hamlib_com1_name = "/tmp/QuiskTTY0"
 
-## lin_hamlib_com2_name     CAT serial-2 name, text
-# This is a second serial port for external control of Quisk. Use a different port name.
-lin_hamlib_com2_name = ""
-#lin_hamlib_com2_name = "/dev/ttyUSB1"
-#lin_hamlib_com2_name = "/dev/ttyS1"
-#lin_hamlib_com2_name = "/tmp/QuiskTTY1"
+# ## lin_hamlib_com2_name     CAT serial-2 name, text
+# # This is a second serial port for external control of Quisk. Use a different port name.
+# lin_hamlib_com2_name = ""
+# #lin_hamlib_com2_name = "/dev/ttyUSB1"
+# #lin_hamlib_com2_name = "/dev/ttyS1"
+# #lin_hamlib_com2_name = "/tmp/QuiskTTY1"
 
-## win_hamlib_com1_name		CAT serial port name, text
-# Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
-# The serial port can be a real hardware port. Or to connect to an external program like N1MM+ or WSJT-X
-# create a pair of virtual serial ports with a program like vspMgr or HHD Software.
-# Then enter the second name into the other program.  This control method is in addition to the
-# "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
-# to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
-win_hamlib_com1_name = ""
-#win_hamlib_com1_name = "COM5"
-#win_hamlib_com1_name = "COM6"
+# ## win_hamlib_com1_name		CAT serial port name, text
+# # Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
+# # The serial port can be a real hardware port. Or to connect to an external program like N1MM+ or WSJT-X
+# # create a pair of virtual serial ports with a program like vspMgr or HHD Software.
+# # Then enter the second name into the other program.  This control method is in addition to the
+# # "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
+# # to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
+# win_hamlib_com1_name = ""
+# #win_hamlib_com1_name = "COM5"
+# #win_hamlib_com1_name = "COM6"
 
-## win_hamlib_com2_name     CAT serial-2 name, text
-# This is a second serial port for external control of Quisk. Use a different port name.
-win_hamlib_com2_name = ""
-#win_hamlib_com2_name = "COM15"
-#win_hamlib_com2_name = "COM16"
+# ## win_hamlib_com2_name     CAT serial-2 name, text
+# # This is a second serial port for external control of Quisk. Use a different port name.
+# win_hamlib_com2_name = ""
+# #win_hamlib_com2_name = "COM15"
+# #win_hamlib_com2_name = "COM16"
+# ------------------------------------------------------------------------------------------------------------------------------------
 
 ## remote_radio_ip         Remote radio IP or name, text
 # Quisk can be used as a control head to control a real radio located remotely.
@@ -1494,6 +1508,61 @@ remote_radio_password = ""
 
 hamlib_com1_name = ""
 hamlib_com2_name = ""
+hamlib_com3_name = "" # ---------------------------------------- добавлено ------------------ CAT --------------------- 49 RA3PKJ
+
+# -------------------------------------------------------------- добавлено ------------------ CAT --------------------- 49 RA3PKJ
+################ CAT
+## lin_hamlib_com1_name        CAT1 serial port, text
+# Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
+# The serial port can be a real hardware port with a name starting with "/dev/".
+# Or to connect to an external program like N1MM+ or WSJT-X enter a file name such as "/tmp/QuiskTTYx"
+# where "x" is 0, 1, 2, etc. Quisk will create a virtual serial port when it starts.
+# Enter that name into the other program.  This is addition to the
+# "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
+# to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
+lin_hamlib_com1_name = ""
+#lin_hamlib_com1_name = "/dev/ttyUSB0"
+#lin_hamlib_com1_name = "/dev/ttyS0"
+#lin_hamlib_com1_name = "/tmp/QuiskTTY0"
+
+## lin_hamlib_com2_name     CAT2 serial port, text
+# This is a second serial port for external control of Quisk. Use a different port name.
+lin_hamlib_com2_name = ""
+#lin_hamlib_com2_name = "/dev/ttyUSB1"
+#lin_hamlib_com2_name = "/dev/ttyS1"
+#lin_hamlib_com2_name = "/tmp/QuiskTTY1"
+
+## lin_hamlib_com3_name     CAT3 serial port, text
+# This is a serial port for external control of Quisk. Use a different port name.
+lin_hamlib_com3_name = ""
+#lin_hamlib_com3_name = "/dev/ttyUSB2"
+#lin_hamlib_com3_name = "/dev/ttyS2"
+#lin_hamlib_com3_name = "/tmp/QuiskTTY2"
+
+## win_hamlib_com1_name        CAT1 serial port, text
+# Quisk can read HamLib commands from a serial port. Use the HamLib radio type "Flex", and enter the port name here.
+# The serial port can be a real hardware port. Or to connect to an external program like N1MM+ or WSJT-X
+# create a pair of virtual serial ports with a program like vspMgr or HHD Software.
+# Then enter the second name into the other program.  This control method is in addition to the
+# "Hamlib NET rigctl" mechanism which is based on a network connection. Leave this blank
+# to turn off the serial port. The port settings are 9600 baud, 8 bits of data, no parity and one stop bit.
+win_hamlib_com1_name = ""
+#win_hamlib_com1_name = "COM5"
+#win_hamlib_com1_name = "COM6"
+
+## win_hamlib_com2_name     CAT2 serial port, text
+# This is a second serial port for external control of Quisk. Use a different port name.
+win_hamlib_com2_name = ""
+#win_hamlib_com2_name = "COM10"
+#win_hamlib_com2_name = "COM11"
+
+## win_hamlib_com3_name     CAT3 serial port, text
+# This is a serial port for external control of Quisk. Use a different port name.
+win_hamlib_com3_name = ""
+#win_hamlib_com3_name = "COM12"
+#win_hamlib_com3_name = "COM13"
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 
 
 ################ Keys

@@ -4,6 +4,7 @@ graft    afedrinet
 graft    freedvpkg
 graft    hermes
 graft    hiqsdr
+graft    multuspkg
 graft    n2adr
 graft    softrock
 graft    soapypkg
