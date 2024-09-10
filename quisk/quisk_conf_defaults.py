@@ -1565,6 +1565,89 @@ win_hamlib_com3_name = ""
 
 
 
+
+# ------------------------------------------------------ добавлено ----------------------------------- CW --------------------- 50 RA3PKJ
+################ CW
+## keyupDelay            Break CW delay, integer
+# This is the key hang time for semi-breakin CW. It is the time in milliseconds
+# from the last CW key release until changing to receive.
+# It only operates in CW mode.
+# Changes are immediate (no need to restart).
+keyupDelay = 150
+
+## cwTone               CW tone frequency in Hertz, integer
+# This is the CW tone frequency in Hertz.
+# Changes are immediate (no need to restart).
+cwTone = 600
+#cwTone = 400
+#cwTone = 800
+
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## use_sidetone                Use sidetone, integer choice
+# # This controls whether Quisk will display a sidetone volume control
+# # and generate a CW sidetone.
+# #use_sidetone = 0
+# ------------------------------------------------------ взамен -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+use_sidetone = 1
+
+## use_fast_sound        Use fast sound, boolean
+# This turns on the new faster sound system which provides a much faster and more useful sidetone
+# for CW operation. For Linux you must use an Alsa device for the radio sound playback device.
+# There are no special requirements for Windows.
+use_fast_sound = False
+#use_fast_sound = True
+
+## lin_quisk_serial_port            Quisk serial port, text
+# This is the serial port used for a CW key and a PTT connection.
+# Changes are immediate (no need to restart).
+lin_quisk_serial_port = ""
+#lin_quisk_serial_port = "/dev/ttyUSB0"
+#lin_quisk_serial_port = "/dev/ttyUSB1"
+
+## win_quisk_serial_port            Quisk serial port, text
+# This is the serial port used for a CW key and a PTT connection.
+# Changes are immediate (no need to restart).
+win_quisk_serial_port = ""
+#win_quisk_serial_port = "COM6"
+#win_quisk_serial_port = "COM7"
+
+quisk_serial_port = ""
+
+## quisk_serial_cts    Use CTS for, text choice
+# You can use the CTS signal of the serial port for a CW key or for push-to-talk PTT.
+# If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
+# and similarly for "when high".
+# Changes are immediate (no need to restart).
+quisk_serial_cts = "None"
+#quisk_serial_cts = "CW when high"
+#quisk_serial_cts = "CW when low"
+#quisk_serial_cts = "PTT when high"
+#quisk_serial_cts = "PTT when low"
+
+## quisk_serial_dsr    Use DSR for, text choice
+# You can use the DSR signal of the serial port for a CW key or for push-to-talk PTT.
+# If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
+# and similarly for "when high".
+# Changes are immediate (no need to restart).
+quisk_serial_dsr = "None"
+#quisk_serial_dsr = "CW when high"
+#quisk_serial_dsr = "CW when low"
+#quisk_serial_dsr = "PTT when high"
+#quisk_serial_dsr = "PTT when low"
+
+## start_cw_delay            Start CW delay msec, integer
+# Quisk generates its own CW waveform when keyed by the serial port or MIDI.  Quisk delays this CW waveform
+# so that when changing from Rx to Tx there is time for relays to switch and power amps to turn on.
+# The CW key timing is preserved.  This is the delay in milliseconds from the first
+# CW key press until RF output. The delay can be zero to 250 milliseconds.
+# If the key is attached to the hardware and the hardware generates the CW, Quisk can not implement this delay.
+# Changes are immediate (no need to restart).
+start_cw_delay = 15
+# ---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
 ################ Keys
 ## hot_key_ptt1		PTT shortcut key 1, keycode
 # Set a keyboard shortcut that will press the PTT button.
@@ -1737,7 +1820,7 @@ settings_file_path = ''
 
 
 
-################ Timing and CW
+################ Timing
 
 ## lin_latency_millisecs		Play latency msec, integer
 # Play latency determines how many samples are in the radio sound play buffer.
@@ -1802,15 +1885,6 @@ fft_size_multiplier = 0
 # and should be about 5 to 10 Hertz.  Higher rates require more processor power.
 graph_refresh = 7
 
-## start_cw_delay			Start CW delay msec, integer
-# Quisk generates its own CW waveform when keyed by the serial port or MIDI.  Quisk delays this CW waveform
-# so that when changing from Rx to Tx there is time for relays to switch and power amps to turn on.
-# The CW key timing is preserved.  This is the delay in milliseconds from the first
-# CW key press until RF output. The delay can be zero to 250 milliseconds.
-# If the key is attached to the hardware and the hardware generates the CW, Quisk can not implement this delay.
-# Changes are immediate (no need to restart).
-start_cw_delay = 15
-
 ## start_ssb_delay			Start SSB delay msec, integer
 # This discards the first few milliseconds of RF output when starting a transmission
 # so that relays can switch and power amps can turn on.
@@ -1835,71 +1909,6 @@ maximum_tx_secs = 0
 # Changes are immediate (no need to restart).
 TxRxSilenceMsec = 50
 
-## keyupDelay			Keyup delay msecs, integer
-# This is the key hang time for semi-breakin CW. It is the time in milliseconds
-# from the last CW key release until changing to receive.
-# It only operates in CW mode.
-# Changes are immediate (no need to restart).
-keyupDelay = 500
-
-## cwTone               CW tone frequency in Hertz, integer
-# This is the CW tone frequency in Hertz.
-# Changes are immediate (no need to restart).
-cwTone = 600
-#cwTone = 400
-#cwTone = 800
-
-# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
-# ## use_sidetone				Use sidetone, integer choice
-# # This controls whether Quisk will display a sidetone volume control
-# # and generate a CW sidetone.
-# use_sidetone = 0
-# #use_sidetone = 1
-
-## use_fast_sound		Use fast sound, boolean
-# This turns on the new faster sound system which provides a much faster and more useful sidetone
-# for CW operation. For Linux you must use an Alsa device for the radio sound playback device.
-# There are no special requirements for Windows.
-use_fast_sound = False
-#use_fast_sound = True
-
-## lin_quisk_serial_port			Quisk serial port, text
-# This is the serial port used for a CW key and a PTT connection.
-# Changes are immediate (no need to restart).
-lin_quisk_serial_port = ""
-#lin_quisk_serial_port = "/dev/ttyUSB0"
-#lin_quisk_serial_port = "/dev/ttyUSB1"
-
-## win_quisk_serial_port			Quisk serial port, text
-# This is the serial port used for a CW key and a PTT connection.
-# Changes are immediate (no need to restart).
-win_quisk_serial_port = ""
-#win_quisk_serial_port = "COM6"
-#win_quisk_serial_port = "COM7"
-
-quisk_serial_port = ""
-
-## quisk_serial_cts	Use CTS for, text choice
-# You can use the CTS signal of the serial port for a CW key or for push-to-talk PTT.
-# If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
-# and similarly for "when high".
-# Changes are immediate (no need to restart).
-quisk_serial_cts = "None"
-#quisk_serial_cts = "CW when high"
-#quisk_serial_cts = "CW when low"
-#quisk_serial_cts = "PTT when high"
-#quisk_serial_cts = "PTT when low"
-
-## quisk_serial_dsr	Use DSR for, text choice
-# You can use the DSR signal of the serial port for a CW key or for push-to-talk PTT.
-# If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
-# and similarly for "when high".
-# Changes are immediate (no need to restart).
-quisk_serial_dsr = "None"
-#quisk_serial_dsr = "CW when high"
-#quisk_serial_dsr = "CW when low"
-#quisk_serial_dsr = "PTT when high"
-#quisk_serial_dsr = "PTT when low"
 
 
 
