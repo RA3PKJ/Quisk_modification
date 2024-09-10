@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.37.18 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.38.18 modif. by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -351,6 +351,7 @@ class HamlibHandlerSerial:
     self.public_name = public_name	# the public name for the serial port
     self.tune_step = 1000
     if sys.platform == 'win32' or public_name.startswith("/dev/"):
+      self.port_is_mod_serial = True	# self.port is from the serial module
       try:
         import serial
       except:
@@ -363,6 +364,7 @@ class HamlibHandlerSerial:
           print ("The serial port %s could not be opened." % public_name)
     else:
       import tty
+      self.port_is_mod_serial = False	# self.port is a file descriptor
       if os.path.lexists(public_name):
         try:
           os.remove(public_name)
@@ -386,7 +388,7 @@ class HamlibHandlerSerial:
   def open(self):
     return
   def close(self):
-    if sys.platform == 'win32':
+    if self.port_is_mod_serial:
       if self.port:
         self.port.close()
       self.port = None
@@ -399,7 +401,7 @@ class HamlibHandlerSerial:
   def Read(self):
     if self.port is None:
       return
-    if sys.platform == 'win32':
+    if self.port_is_mod_serial:
       text = self.port.read(99)
       if not isinstance(text, Q3StringTypes):
         text = text.decode('utf-8')
@@ -450,22 +452,14 @@ class HamlibHandlerSerial:
       return
     if isinstance(data, Q3StringTypes):
       data = data.encode('utf-8', errors='ignore')
-    if sys.platform == 'win32':
+    if self.port_is_mod_serial:
       self.port.write(data)
     else:
       r, w, x = select.select((), (self.port,), (), 0)
       if w:
         os.write(self.port, data)
-  def set_frequency(self, freq):
-    tune = freq - self.app.VFO
-    d = self.app.sample_rate * 45 // 100
-    if -d <= tune <= d:  # Frequency is on-screen
-      vfo = self.app.VFO
-    else:  # Change the VFO
-      vfo = (freq // 5000) * 5000 - 5000
-      tune = freq - vfo
-    self.app.BandFromFreq(freq)
-    self.app.ChangeHwFrequency(tune, vfo, 'FreqEntry')
+  def set_frequency(self, freq):	# This changes the Rx frequency
+    self.app.ChangeRxTxFrequency(freq, None)
     if HAMLIB_DEBUG: print("New Freq rx,tx", self.app.txFreq + self.app.VFO, self.app.rxFreq + self.app.VFO)
   def ZZAC(self, cmd, data, length):  # Set or read tune steps
     if length == 0:
