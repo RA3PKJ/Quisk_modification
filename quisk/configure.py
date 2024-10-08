@@ -2676,11 +2676,12 @@ class ConfigTxAudio(BaseWindow):
     # sld, btn = self.AddTextSliderHelp(1, "Clip level %2d dB", 0, 0, 20, application.OnTxAudioClip, help_text, span=2)
     # application.CtrlTxAudioClip = sld
     # self.NextRow()
+    # ---------------------------------------------- удалено --------------- Вынос слайдера Preemphasis в главное окно -------------------- 39 RA3PKJ
+    # help_text = "Tx audio preemphasis of high frequencies."
+    # sld, btn = self.AddTextSliderHelp(1, "Preemphasis %4.2f", 0, 0, 100, application.OnTxAudioPreemph, help_text, span=2, scale=0.01)
+    # application.CtrlTxAudioPreemph = sld
+    # self.NextRow()
 
-    help_text = "Tx audio preemphasis of high frequencies."
-    sld, btn = self.AddTextSliderHelp(1, "Preemphasis %4.2f", 0, 0, 100, application.OnTxAudioPreemph, help_text, span=2, scale=0.01)
-    application.CtrlTxAudioPreemph = sld
-    self.NextRow()
     self.FitInside()
     self.SetScrollRate(1, 1)
   def OnTimer(self, event):

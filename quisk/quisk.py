@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.38.18 modif. by N7DDC, RA3PKJ'
+version_quisk = 'QUISK v4.2.38.19'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1795,14 +1795,16 @@ class TopScreen(wx.Window):
     dc.SetTextForeground('white')
     dc.DrawText('QUISK', 5, SmtrY - 1)
 
-    # --- строка сообщения о включении "fast sound"
+    # --- верхняя строка сообщений
     dc.SetFont(wx.Font(9, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    dc.SetTextForeground('#FFFF00')
+    dc.DrawText('Modif. by N7DDC, RA3PKJ', SmtrX + 30, SmtrY)
     if conf.use_fast_sound:
       dc.SetTextForeground('#00FF00')
-      dc.DrawText('Fast sound ON', SmtrX + 30, SmtrY)
+      dc.DrawText('Fast sound ON', SmtrX + 200, SmtrY)
     else:
       dc.SetTextForeground('#777777')
-      dc.DrawText('Fast sound OFF', SmtrX + 30, SmtrY)
+      dc.DrawText('Fast sound OFF', SmtrX + 200, SmtrY)
 
     # --- разделительная линия
     dc.SetPen(wx.Pen('#888888', 1))
@@ -1821,10 +1823,11 @@ class GraphDisplay(wx.Window):
     self.display_text = ""
     self.line = [(0, 0), (1,1)]		# initial fake graph data
     #self.SetBackgroundColour(conf.color_graph)
-    self.SetBackgroundColour('#06354F') # -------------- взамен -------------------- цвет фона на панораме --------- оформление панорамы ------- 4 RA3PKJ
+    self.SetBackgroundColour('#06354F') # ------------------------ взамен ------------ цвет фона на панораме ------------ оформление панорамы ------- 4 RA3PKJ
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, parent.OnLeftDown)
     self.Bind(wx.EVT_RIGHT_DOWN, parent.OnRightDown)
+    self.Bind(wx.EVT_RIGHT_UP, parent.OnRightUp) # ------------- добавлено --------------------------------------- Перестройка типа PowerSDR ------ 47 RA3PKJ
     self.Bind(wx.EVT_LEFT_UP, parent.OnLeftUp)
     self.Bind(wx.EVT_MOTION, parent.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, parent.OnWheel)
@@ -1841,9 +1844,9 @@ class GraphDisplay(wx.Window):
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ------------------- цвет шторки -------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ------------------- цвет шторки ----------- оформление панорамы ----------- 4 RA3PKJ
     #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
-    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----------- взамен ----- цвет горизонтальных линий на панораме ----- оформление панорамы --- 4 RA3PKJ
+    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----------- взамен ----- цвет горизонтальных линий на панораме -------- оформление панорамы --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
@@ -2035,7 +2038,7 @@ class GraphScreen(wx.Window):
     self.filter_center = 0    # середина шторки (отрицательная, если нижняя боковая, и наоборот), например -1400
     self.ritFreq = 0				# receive incremental tuning frequency offset
     self.mouse_x = 0
-    #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки ------- 30 RA3PKJ
+    #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки --------- 30 RA3PKJ
     self.txFreq = 0
     self.sample_rate = application.sample_rate
     self.zoom = 1.0
@@ -2044,7 +2047,7 @@ class GraphScreen(wx.Window):
     self.graph_width = graph_width
     self.doResize = False
     #self.pen_tick = wx.Pen(conf.color_graphticks, 1)
-    self.pen_tick = wx.Pen('#646464', 1) # ------ взамен -------- цвет рисок вокруг панорамы --------- оформление панорамы --------- 4 RA3PKJ
+    self.pen_tick = wx.Pen('#646464', 1) # ----------------- взамен ---- цвет рисок вокруг панорамы ---- оформление панорамы --------- 4 RA3PKJ
     self.pen_center = wx.Pen(conf.color_graphticks, 3)
     self.font = wx.Font(conf.graph_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
@@ -2064,11 +2067,18 @@ class GraphScreen(wx.Window):
     self.zeroDB = 10	# y location of zero dB; may be above the top of the graph
     self.scale = 10
     self.mouse_is_rx = False
+
+    # -------------------------------------------------------- добавлено ---------------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+    self.before_after_start = 0 # флаг старта программы
+    self.f_before_1_buf = 0 # промежуточная переменная
+    self.f_before_2_buf = 0 # промежуточная переменная
+    self.motion_count = 0 # счётчик входов в функцию OnMotion
+
     self.SetSize((self.width, self.height))
     self.SetSizeHints(self.width, 1, self.width)
     self.SetBackgroundColour(conf.color_graph)
     #self.backgroundBrush = wx.Brush(conf.color_graph)
-    self.backgroundBrush = wx.Brush('#000B10') # ------- взамен -------- цвет вокруг панорамы -------- оформление панорамы ------- 4 RA3PKJ
+    self.backgroundBrush = wx.Brush('#000B10') # -------------- взамен ------- цвет вокруг панорамы ---------------- оформление панорамы ------------ 4 RA3PKJ
     self.Bind(wx.EVT_SIZE, self.OnSize)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -2099,7 +2109,7 @@ class GraphScreen(wx.Window):
     dc.Clear()
     dc.SetFont(self.font)
     #dc.SetTextForeground(conf.color_graphlabels)
-    dc.SetTextForeground('yellow') # ------- взамен -------- цвет оцифровки вокруг панорамы --------- оформление панорамы -------- 4 RA3PKJ
+    dc.SetTextForeground('yellow') # ------------------------ взамен -------- цвет оцифровки вокруг панорамы --------- оформление панорамы ----------- 4 RA3PKJ
     if self.in_splitter:
       self.MakeYTicks(dc)
     else:
@@ -2324,29 +2334,91 @@ class GraphScreen(wx.Window):
       return freq - vfo
     else:
       return tune
-  def OnRightDown(self, event):
-    sample_rate = int(self.sample_rate * self.zoom)
-    VFO = self.VFO + self.zoom_deltaf
+
+  def OnRightDown(self, event): # правая клавиша мыши вниз
+    # ---------------------------------------------------- добавлено --------------------------------------- кнопки f_Before и f_After ------- 51 RA3PKJ
+    if self.before_after_start == 0: # первичная загрузка значений при старте программы
+      application.f_before_1 = self.txFreq
+      application.f_before_2 = self.VFO
+      self.before_after_start = 1
+# -------------------------------------------------------- удалено ------ отключён прыжок панорамы -------- Перестройка типа PowerSDR -------- 47 RA3PKJ
+##    sample_rate = int(self.sample_rate * self.zoom)
+##    VFO = self.VFO + self.zoom_deltaf
+##    mouse_x, mouse_y = self.GetMousePosition(event)
+##    freq = float(mouse_x - self.x0) * sample_rate / self.data_width
+##    freq = int(freq)
+##    if VFO > 0:
+##      vfo = VFO + freq - self.zoom_deltaf
+##      if sample_rate > 40000:
+##        vfo = (vfo + 5000) // 10000 * 10000	# round to even number
+##      elif sample_rate > 5000:
+##        vfo = (vfo + 500) // 1000 * 1000
+##      else:
+##        vfo = (vfo + 50) // 100 * 100
+##      tune = freq + VFO - vfo
+##      tune = self.FreqRound(tune, vfo)
+##      self.ChangeHwFrequency(tune, vfo, 'MouseBtn3', event=event)
+    # ----------------------------------------------------- взамен ----------------------------------------  Перестройка типа PowerSDR ------- 47 RA3PKJ
     mouse_x, mouse_y = self.GetMousePosition(event)
-    freq = float(mouse_x - self.x0) * sample_rate / self.data_width
-    freq = int(freq)
-    if VFO > 0:
-      vfo = VFO + freq - self.zoom_deltaf
-      if sample_rate > 40000:
-        vfo = (vfo + 5000) // 10000 * 10000	# round to even number
-      elif sample_rate > 5000:
-        vfo = (vfo + 500) // 1000 * 1000
-      else:
-        vfo = (vfo + 50) // 100 * 100
-      tune = freq + VFO - vfo
-      tune = self.FreqRound(tune, vfo)
-      self.ChangeHwFrequency(tune, vfo, 'MouseBtn3', event=event)
-  def OnLeftDown(self, event):
-    # ------------------------------------------------------------- добавлено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    self.mouse_x = mouse_x
+    self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положение
+
+  # ------------------------------------------------------ добавлено ----------- добавлена функция --------- Перестройка типа PowerSDR ------- 47 RA3PKJ
+  def OnRightUp(self, event): # правая клавиша мыши вверх
+    if self.motion_count < 2: # если не было перемещение панорамы в перестройке типа PowerSDR или было случайное перемещение на 1 шаг, то:
+      # -------------------------------------------------- добавлено --------------------------------------- кнопки f_Before и f_After ------- 51 RA3PKJ
+      self.f_before_1_buf = self.txFreq
+      self.f_before_2_buf = self.VFO
+
+      # выполнить прыжок панорамы
+      sample_rate = int(self.sample_rate * self.zoom)
+      VFO = self.VFO + self.zoom_deltaf
+      mouse_x, mouse_y = self.GetMousePosition(event)
+      freq = float(mouse_x - self.x0) * sample_rate / self.data_width
+      freq = int(freq)
+      if VFO > 0:
+        vfo = VFO + freq - self.zoom_deltaf
+        if sample_rate > 40000:
+          vfo = (vfo + 5000) // 10000 * 10000    # round to even number
+        elif sample_rate > 5000:
+          vfo = (vfo + 500) // 1000 * 1000
+        else:
+          vfo = (vfo + 50) // 100 * 100
+        tune = freq + VFO - vfo
+        tune = self.FreqRound(tune, vfo)
+        self.ChangeHwFrequency(tune, vfo, 'MouseBtn3', event=event)
+    # -------------------------------------------------- добавлено -------------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = tune
+        application.f_after_2 = vfo
+        freq_jump = abs((application.f_after_2 - application.f_after_1) - (self.f_before_2_buf - self.f_before_1_buf)) # определить, насколько далеко произошёл прыжок или перемещение частоты мышью
+        if freq_jump > 5000: # если было изменение частоты более 5кГц, то:
+          application.f_before_1 = self.f_before_1_buf
+          application.f_before_2 = self.f_before_2_buf
+    else: # если было перемещение панорамы в перестройке типа PowerSDR, то:
+      application.f_after_1 = self.txFreq
+      application.f_after_2 = self.VFO
+      if self.motion_count > 40: # если было перемещение на заметную дистанцию, то:
+        application.f_before_1 = self.f_before_1_buf
+        application.f_before_2 = self.f_before_2_buf
+    application.beforeButton.Enable(1)
+    application.afterButton.Enable(0)
+    self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положение
+
+  def OnLeftDown(self, event): # левая клавиша мыши вниз
+    # ---------------------------------------------------- взамен ---------------------------- реформа мышиного управления шторками ----------- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
     if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
+
+    # -------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After ------------ 51 RA3PKJ
+    if self.before_after_start == 0: # первичная загрузка значений при старте программы
+      application.f_before_1 = self.txFreq
+      application.f_before_2 = self.VFO
+      self.before_after_start = 1
+    else:
+      self.f_before_1_buf = self.txFreq
+      self.f_before_2_buf = self.VFO
 
     sample_rate = int(self.sample_rate * self.zoom)
     mouse_x, mouse_y = self.GetMousePosition(event)
@@ -2388,11 +2460,6 @@ class GraphScreen(wx.Window):
       if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
         self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
         return
-
-    # ------------------------------------------------------------- добавлено -------------------------- Настройка как в PowerSDR ------------- 47 RA3PKJ
-    if conf.mouse_tune_method: # отключение прыжков шторки при настройке как в PowerSDR
-      self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
-      return
 
     #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
     #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
@@ -2458,102 +2525,98 @@ class GraphScreen(wx.Window):
             freq = int(freq)
       if self.mouse_is_rx:
         self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
+        # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = self.txFreq
+        application.f_after_2 = self.VFO
       else:
         self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+        # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = freq
+        application.f_after_2 = self.VFO
+
     if not self.HasCapture():
       self.CaptureMouse()
-  def OnLeftUp(self, event):
+  def OnLeftUp(self, event): # левая клавиша мыши вверх
     if self.HasCapture():
       self.ReleaseMouse()
       freq = self.FreqRound(self.txFreq, self.VFO)
       if freq != self.txFreq:
         self.ChangeHwFrequency(freq, self.VFO, 'MouseMotion', event=event)
-  def OnMotion(self, event):
-    # ---------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    # ------------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+    freq_jump = abs((self.VFO - application.f_after_1) - (self.VFO - self.f_before_1_buf)) # определить, насколько далеко произошёл прыжок или перемещение частоты мышью
+    if freq_jump > 5000: # если было изменение частоты более 5кГц, то:
+      application.f_before_1 = self.f_before_1_buf
+      application.f_before_2 = self.f_before_2_buf
+    application.beforeButton.Enable(1)
+    application.afterButton.Enable(0)
+    self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положени
+
+  def OnMotion(self, event): # движение мыши по столу
+    # СПРАВКА
+    # self.filter_center - середина шторки (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
+    # self.sample_rate - величина постоянная, например 192000
+    # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
+    # self.filter_bandwidth - ширина шторки, например 2800
+    # self.data_width - величина постоянная, например 1936
+    # self.originX - предельная слева частота на панораме
+    # self.display.tune_rx - частота приёмника по нулевым биениям
+    # self.display.tune_tx - частота передатчика по нулевым биениям
+    # x - позиция мыши
+    # xx - видимая ширина шторки на панораме
+
+    # ----------------------------------------------------------------------------- добавлено ------------ реформа мышиного управления шторками --- 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
     if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
-      return #ничего не делать и молча выскочить
+      return
+
+    # ----------------------------------------------------------------------------- добавлено ----------------- Перестройка типа PowerSDR --------- 47 RA3PKJ
+    # ----------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+    if self.motion_count == 0: # если первый вход в эту функцию, то:
+      self.f_before_1_buf = self.txFreq
+      self.f_before_2_buf = self.VFO
+    self.motion_count += 1 # количество входов в эту функцию
 
     sample_rate = int(self.sample_rate * self.zoom)
-    if event.Dragging() and event.LeftIsDown():
+
+    # Настройка как в PowerSDR (Mouse motion changes the VFO frequency)
+    # ----------------------------------------------------------------------------- добавлено ----------------- Перестройка типа PowerSDR --------- 47 RA3PKJ
+    if event.Dragging() and event.RightIsDown():
       mouse_x, mouse_y = self.GetMousePosition(event)
-      if wx.GetKeyState(wx.WXK_SHIFT):
-        mouse_x -= self.filter_center * self.data_width / sample_rate
-      if conf.mouse_tune_method: # Mouse motion changes the VFO frequency # настройка как в PowerSDR
-        x = (mouse_x - self.mouse_x)	# Thanks to VK6JBL
-        self.mouse_x = mouse_x
-        freq = float(x) * sample_rate / self.data_width
-        freq = int(freq)
-        self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+      x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
+      self.mouse_x = mouse_x
+      freq = float(x) * sample_rate / self.data_width
+      freq = int(freq)
+      self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
+      return
 
-##        #self.mouse_x = mouse_x # -------------------------------------------------------- bigon
-##        x = mouse_x - self.originX
-##        xx = 2 * self.filter_center * self.data_width / sample_rate
-##        if self.filter_center < 0:
-##          if (x - self.display.tune_rx) < 0 and (x - self.display.tune_rx) > xx:
-####            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
-####                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
-####                self.mouse_x = mouse_x
-####                freq = float(x) * sample_rate / self.data_width
-####                freq = int(freq)
-####                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
-##            self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
-##            #return
-##          if (x - self.display.tune_tx) < 0 and (x - self.display.tune_tx) > xx:
-##            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
-##                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
-##                self.mouse_x = mouse_x
-##                freq = float(x) * sample_rate / self.data_width
-##                freq = int(freq)
-##                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
-##            self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
-##            # return
-##        if self.filter_center > 0:
-##          if (x - self.display.tune_rx) > 0 and (x - self.display.tune_rx) < xx:
-####            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
-####                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
-####                self.mouse_x = mouse_x
-####                freq = float(x) * sample_rate / self.data_width
-####                freq = int(freq)
-####                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
-##            self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
-##            #return
-##          if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
-##            if conf.mouse_tune_method:        # Mouse motion changes the VFO frequency # настройка как в PowerSDR
-##                x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
-##                self.mouse_x = mouse_x
-##                freq = float(x) * sample_rate / self.data_width
-##                freq = int(freq)
-##                self.ChangeHwFrequency(self.txFreq, self.VFO - freq, 'MouseMotion', event=event)
-##            self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
-##            #return
+    # Настройка как обычно в Quisk (Mouse motion changes the tuning frequency)
+    if event.Dragging() and event.LeftIsDown():
+      # Frequency changes more rapidly for higher mouse Y position
+      # speed = max(10, self.originY - mouse_y) / float(self.originY + 1) # ------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
+      mouse_x, mouse_y = self.GetMousePosition(event)
+      x = (mouse_x - self.mouse_x)
+      self.mouse_x = mouse_x
+      #freq = speed * x * sample_rate / self.data_width # ------------------------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
+      freq = x * sample_rate / self.data_width # ----------------------------------- взамен ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
+      freq = int(freq)
+      self.freq = freq # ---------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+      if self.mouse_is_rx:	# Mouse motion changes the receive frequency
+        freq2 = application.rxFreq + freq
+        self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseMotion', event=event, rx_freq=freq2)
+        # ------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = self.txFreq
+        application.f_after_2 = self.VFO
+      else:					# Mouse motion changes the transmit frequency
+        self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
+        # ------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = self.txFreq + freq
+        application.f_after_2 = self.VFO
 
-      else:		# Mouse motion changes the tuning frequency
-        # Frequency changes more rapidly for higher mouse Y position
-        # speed = max(10, self.originY - mouse_y) / float(self.originY + 1) # ------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-        x = (mouse_x - self.mouse_x)
-        self.mouse_x = mouse_x
-        #freq = speed * x * sample_rate / self.data_width # ------------------------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-        freq = x * sample_rate / self.data_width # ----------------------------------- взамен ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-        freq = int(freq)
-        if self.mouse_is_rx:	# Mouse motion changes the receive frequency
-          freq2 = application.rxFreq + freq
-          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseMotion', event=event, rx_freq=freq2)
-        else:					# Mouse motion changes the transmit frequency
-          self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
-    else:
+    else: # Bandplan mode message
       mouse_x, mouse_y = self.GetMousePosition(event)
       if not self.in_splitter and self.originY <= mouse_y <= self.originY + self.tick and (
             self.originX <= mouse_x <= self.originX + self.graph_width):
-        #sample_rate = int(self.sample_rate * self.zoom)	# Measure the frequency
-        #freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf + self.VFO
-        #freq = int(freq)
-        #color = None
-        #for start_freq, start_color in application.BandPlan:
-        #  if start_freq >= freq:
-        #    break
-        #  color = start_color
         dc = wx.ClientDC(self)	# Read the pixel at the mouse position
         pixel = dc.GetPixel(mouse_x, mouse_y)
         pixel = "#%02X%02X%02X" % (pixel[0], pixel[1], pixel[2])
@@ -2580,12 +2643,19 @@ class GraphScreen(wx.Window):
             self.bandplanWindow.Hide()
       elif self.bandplanWindow.IsShown():
         self.bandplanWindow.Hide()
-  def OnWheel(self, event):
-    # ----------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+  def OnWheel(self, event): # колесо мыши
+    # -------------------------------------------------- добавлено -------------------------------- реформа мышиного управления шторками ------ 13 RA3PKJ
     #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
     if application.split_rxtx == False and application.new_split == False and application.split_locktx:
       self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
       return #ничего не делать и молча выскочить
+
+    # -------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After ------------ 51 RA3PKJ
+    if self.before_after_start == 0: # первичная загрузка значений при старте программы
+      application.f_before_1 = self.txFreq
+      application.f_before_2 = self.VFO
+      self.before_after_start = 1
+
     if conf.freq_spacing:
       wm = conf.freq_spacing
     else:
@@ -2630,6 +2700,10 @@ class GraphScreen(wx.Window):
         freq = - (- freq // wm * wm)
       tune = freq - self.VFO
       self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseWheel', event=event, rx_freq=tune)
+      # ----------------------------------------------------------------------------------- добавлено -------- кнопки f_Before и f_After --------- 51 RA3PKJ
+      application.f_after_1 = self.txFreq
+      application.f_after_2 = self.VFO
+
     else:
       freq = self.txFreq + self.VFO + wm * event.GetWheelRotation() // event.GetWheelDelta()
       if conf.freq_spacing:
@@ -2640,6 +2714,12 @@ class GraphScreen(wx.Window):
         freq = - (- freq // wm * wm)
       tune = freq - self.VFO
       self.ChangeHwFrequency(tune, self.VFO, 'MouseWheel', event=event)
+      # ----------------------------------------------------------------------------------- добавлено -------- кнопки f_Before и f_After --------- 51 RA3PKJ
+      application.f_after_1 = tune
+      application.f_after_2 = self.VFO
+    application.beforeButton.Enable(1)
+    application.afterButton.Enable(0)
+
   def ChangeHwFrequency(self, tune, vfo, source='', band='', event=None, rx_freq=None):
     application.ChangeHwFrequency(tune, vfo, source, band, event, rx_freq)
   def PeakHold(self, name):
@@ -4101,6 +4181,12 @@ class App(wx.App):
     self.txAudioPreemphFdv = 0
     self.levelSpot = 500			# Spot level control, 0 to 1000
     self.TxLevel = 100 # ----------------------------------- добавлено ------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+    # --------------------------------------------------------------------------------------------------------------------------------- 51 RA3PKJ
+    self.f_before_1 = None # первый аргумент (частота "До") функции ChangeHwFrequency
+    self.f_before_2 = None # второй аргумент (частота "До") функции ChangeHwFrequency
+    self.f_after_1 = None  # первый аргумент (частота "После") функции ChangeHwFrequency
+    self.f_after_2 = None  # второй аргумент (частота "После") функции ChangeHwFrequency
+
     self.volumeAudio = 300			# audio volume
     self.VFO = 0					# frequency of the VFO
     self.ritFreq = 0				# receive incremental tuning frequency offset
@@ -4515,6 +4601,9 @@ class App(wx.App):
     self.bs2 = wx.BoxSizer()
     vertBox.Add(self.bs2, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
     vertBox.AddSpacer(4)
+    self.bs2a = wx.BoxSizer()
+    vertBox.Add(self.bs2a, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+    vertBox.AddSpacer(4)
     self.bs3 = wx.BoxSizer()
     vertBox.Add(self.bs3, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
     vertBox.AddSpacer(4)
@@ -4668,9 +4757,10 @@ class App(wx.App):
 ##    self.midiControls["Zo"]	= (self.sliderZo,	self.OnChangeZoom)
     #----------------------------------------- взамен ------------- реформа крутилок ------------- 36 RA3PKJ
     # нельзя заменить Rit на RIT, где-то возникает ошибка - по удалённому управлению не происходит движение крутилки на сервере (при этом сообщение о ошибке не появляется)
-    self.midiControls["TxLevel"] = (self.sliderTxLevel, self.OnTxLevel) # --- добавлено ----- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
-    self.midiControls["Vox"] = (self.sliderVOX, self.OnLevelVOX) # ---------- добавлено -------- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
-    self.midiControls["Compr"] = (self.CtrlTxAudioClip, self.OnTxAudioClip) # --- добавлено ---- Вынос слайдера Clip в главное окно ------ 43 RA3PKJ
+    self.midiControls["TxLevel"] = (self.sliderTxLevel, self.OnTxLevel) # --------------- добавлено -------- Вынос слайдера TxLevel в главное окно ---------- 41 RA3PKJ
+    self.midiControls["Vox"] = (self.sliderVOX, self.OnLevelVOX) # ---------------------- добавлено -------- Вынос слайдера VOX в главное окно -------------- 42 RA3PKJ
+    self.midiControls["Compr"] = (self.CtrlTxAudioClip, self.OnTxAudioClip) # ----------- добавлено -------- Вынос слайдера Clip в главное окно ------------- 43 RA3PKJ
+    self.midiControls["MicTone"] = (self.CtrlTxAudioPreemph, self.OnTxAudioPreemph) # --- добавлено -------- Вынос слайдера PreemPhasis в главное окно ------ 39 RA3PKJ
     self.midiControls["Tune"]	= (None,		None)
     self.midiControls["Volume"]	= (self.sliderVol,	self.ChangeVolume)
     self.midiControls["SideTone"]	= (self.sliderSto,	self.ChangeSidetone)
@@ -5364,6 +5454,18 @@ class App(wx.App):
     b.Enable(False)
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
+    # ---- кнопки f_Before и f_After
+    szr = wx.BoxSizer(wx.HORIZONTAL)    # add control to box sizer for centering
+    b_short_freq = szr
+    b = self.beforeButton = QuiskPushbutton(frame, self.OnBtnBefore, 'f_Before')
+    self.idName2Button[b.idName] = b
+    b.Enable(0)
+    szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    b = self.afterButton = QuiskPushbutton(frame, self.OnBtnAfter, 'f_After')
+    self.idName2Button[b.idName] = b
+    b.Enable(0)
+    szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
+
     # ---- кнопки Favorites
     szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
     b_fav = szr
@@ -5398,12 +5500,13 @@ class App(wx.App):
 # --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
     # --- создание слайдеров
 
-    self.sliderTxLevel = SliderBoxHH(frame, 'TxLevel', self.TxLevel, 0, 100, self.OnTxLevel, display=False, scale=1) # --- добавлено --- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
-    # -------------------------------------------------------------------------------------------------------------------- добавлено --- Вынос слайдера VOX в главное окно ------- 42 RA3PKJ
+    self.sliderTxLevel = SliderBoxHH(frame, 'TxLevel', self.TxLevel, 0, 100, self.OnTxLevel, display=False, scale=1) # ---- добавлено --- Вынос слайдера TxLevel в главное окно ------- 41 RA3PKJ
+    # --------------------------------------------------------------------------------------------------------------------- добавлено --- Вынос слайдера VOX в главное окно ----------- 42 RA3PKJ
     self.sliderVOX = SliderBoxHH(frame, 'Vox', self.levelVOX, -40, 0, self.OnLevelVOX, display=False, scale=1)
     self.sliderVOX.SetValue(-40 - self.levelVOX) # --- сделана прямая зависимость
 
-    self.CtrlTxAudioClip = SliderBoxHH(frame, 'Compr', 5, 0, 20, self.OnTxAudioClip, display=False, scale=1) # ----------------- добавлено --- Вынос слайдера Clip в главное окно ---- 43 RA3PKJ
+    self.CtrlTxAudioClip = SliderBoxHH(frame, 'Compr', 5, 0, 20, self.OnTxAudioClip, display=False, scale=1) # ------------ добавлено --- Вынос слайдера Clip в главное окно ---------- 43 RA3PKJ
+    self.CtrlTxAudioPreemph = SliderBoxHH(frame, 'MicTone', 0, 0, 100, self.OnTxAudioPreemph, display=False, scale=1) # --- добавлено --- Вынос слайдера PreemPhasis в главное окно --- 39 RA3PKJ
 
     self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
     self.ChangeVolume()		# set initial volume level
@@ -5450,19 +5553,20 @@ class App(wx.App):
     self.bandBtnGroup.idName = 'bandBtnGroup'
     band_buttons = self.bandBtnGroup.buttons
 
+    # --- кнопка RX2
+    self.splitButton = b_rx2 = b = QuiskCheckbutton(frame, self.OnBtnSplit, "RX2")
+    self.idName2Button[b.idName] = b
+    b.char_shortcut = 'l'
+    self.MakeAccel(b)
+
     # --- кнопка Mute
     b = b_mute = QuiskCheckbutton(frame, self.OnBtnMute, text='Mute')
     self.idName2Button[b.idName] = b
     b.char_shortcut = 'u'
     self.MakeAccel(b) # --- связать горячую клавишу с кнопкой
 
-    # --- кнопка RX2
-    self.splitButton = b_rx2 = b = QuiskCheckbutton(frame, self.OnBtnSplit, "RX2")
-    self.idName2Button[b.idName] = b
-    b.char_shortcut = 'l'
-    self.MakeAccel(b)
-    # ------------------------------------------------------------- удалено -------------------------- Настройка как в PowerSDR ------------- 47 RA3PKJ
-    # if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency
+    # --------------------------------------------------------------------- удалено -------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    # if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency as in PowerSDR
       # self.splitButton.Enable(False)
 
     # --- кнопка NR2
@@ -5826,6 +5930,12 @@ class App(wx.App):
     self.bs1.AddSpacer(3)
     self.bs1.Add(b_membtn, wx.EXPAND)
     self.bs1.AddSpacer(11)
+    text = wx.StaticText(frame, label="Short Freq Mem")
+    text.SetForegroundColour(color)
+    self.bs1.Add(text)
+    self.bs1.AddSpacer(3)
+    self.bs1.Add(b_short_freq, wx.EXPAND)
+    self.bs1.AddSpacer(11)
     text = wx.StaticText(frame, label="Favorites")
     text.SetForegroundColour(color)
     self.bs1.Add(text)
@@ -5848,21 +5958,25 @@ class App(wx.App):
     self.bs2.AddSpacer(9)
     self.bs2.Add(self.sliderVol, wx.EXPAND)
     self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderTxLevel, wx.EXPAND) # -------------------------- добавлено ------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
+    self.bs2.Add(self.sliderTxLevel, wx.EXPAND) # ---------------------- добавлено ------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
     self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderVOX, wx.EXPAND) # ------------------------------ добавлено --------------- Вынос слайдера VOX в главное окно ----- 42 RA3PKJ
+    self.bs2.Add(self.sliderVOX, wx.EXPAND) # -------------------------- добавлено -------------- Вынос слайдера VOX в главное окно ------ 42 RA3PKJ
     self.bs2.AddSpacer(10)
-    self.bs2.Add(self.CtrlTxAudioClip, wx.EXPAND) # ---------------------------- добавлено -------------- Вынос слайдера Clip в главное окно ----- 43 RA3PKJ
+    self.bs2.Add(self.CtrlTxAudioClip, wx.EXPAND) # -------------------- добавлено -------------- Вынос слайдера Clip в главное окно ----- 43 RA3PKJ
     self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderSto, wx.EXPAND)
-    self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderYs, wx.EXPAND)
-    self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderYz, wx.EXPAND)
-    self.bs2.AddSpacer(10)
-    self.bs2.Add(self.sliderZo, wx.EXPAND)
-    self.bs2.AddSpacer(15)
-    self.bs2.Add(self.ritScale, wx.EXPAND)
+    self.bs2.Add(self.CtrlTxAudioPreemph, wx.EXPAND) # ----------------- добавлено --------- Вынос слайдера PreemPhasis в главное окно --- 39 RA3PKJ
+
+    # -------------------------- установка слайдеров в сайзер bs2a
+    self.bs2a.AddSpacer(10)
+    self.bs2a.Add(self.sliderSto, wx.EXPAND)
+    self.bs2a.AddSpacer(9)
+    self.bs2a.Add(self.sliderYs, wx.EXPAND)
+    self.bs2a.AddSpacer(10)
+    self.bs2a.Add(self.sliderYz, wx.EXPAND)
+    self.bs2a.AddSpacer(10)
+    self.bs2a.Add(self.sliderZo, wx.EXPAND)
+    self.bs2a.AddSpacer(15)
+    self.bs2a.Add(self.ritScale, wx.EXPAND)
 
     # ----------------------------- установка кнопок в сайзер bs3
     text = wx.StaticText(frame, label="   Band")
@@ -5878,8 +5992,8 @@ class App(wx.App):
     text.SetForegroundColour(color)
     self.bs4.Add(text)
     self.bs4.AddSpacer(3)
-    self.bs4.Add(b_mute, wx.EXPAND)
     self.bs4.Add(b_rx2, wx.EXPAND)
+    self.bs4.Add(b_mute, wx.EXPAND)
     self.bs4.Add(b_nr2, wx.EXPAND)
     self.bs4.Add(b_agc, wx.EXPAND)
     self.bs4.Add(b_sqlch, wx.EXPAND)
@@ -6496,7 +6610,7 @@ class App(wx.App):
     event.SetEventObject(self.pttButton)
     Hardware.OnButtonPTT(event)
 
-# --------------------------------- удалено ------------------------ Вынос слайдера Clip в главное окно ------- 43 RA3PKJ
+# --------------------------------- удалено ------------------------ Вынос слайдера Clip в главное окно ------------------- 43 RA3PKJ
 ##  def OnTxAudioClip(self, event):
 ##    v = event.GetEventObject().GetValue()
 ##    if self.mode in ('USB', 'LSB'):
@@ -6510,7 +6624,7 @@ class App(wx.App):
 ##    else:
 ##      return
 ##    QS.set_tx_audio(mic_clip=v)
-# --------------------------------- взамен ------------------------- Вынос слайдера Clip в главное окно ------- 43 RA3PKJ
+# --------------------------------- взамен ------------------------- Вынос слайдера Clip в главное окно ------------------- 43 RA3PKJ
   def OnTxAudioClip(self, event=None):
     v = self.CtrlTxAudioClip.slider.GetValue()
     if self.mode in ('USB', 'LSB'):
@@ -6525,8 +6639,23 @@ class App(wx.App):
       return
     QS.set_tx_audio(mic_clip=v)
 
-  def OnTxAudioPreemph(self, event):
-    v = event.GetEventObject().GetValue()
+# --------------------------------- удалено ------------------------ Вынос слайдера PreemPhasis в главное окно ------------- 39 RA3PKJ
+##  def OnTxAudioPreemph(self, event):
+##    v = event.GetEventObject().GetValue()
+##    if self.mode in ('USB', 'LSB'):
+##      self.txAudioPreemphUsb = v
+##    elif self.mode == 'AM':
+##      self.txAudioPreemphAm = v
+##    elif self.mode == 'FM':
+##      self.txAudioPreemphFm = v
+##    elif self.mode in ('FDV-U', 'FDV-L'):
+##      self.txAudioPreemphFdv = v
+##    else:
+##      return
+##    QS.set_tx_audio(mic_preemphasis = v * 0.01)
+# --------------------------------- взамен ------------------------- Вынос слайдера PreemPhasis в главное окно ------------- 39 RA3PKJ
+  def OnTxAudioPreemph(self, event=None):
+    v = self.CtrlTxAudioPreemph.slider.GetValue()
     if self.mode in ('USB', 'LSB'):
       self.txAudioPreemphUsb = v
     elif self.mode == 'AM':
@@ -6538,6 +6667,7 @@ class App(wx.App):
     else:
       return
     QS.set_tx_audio(mic_preemphasis = v * 0.01)
+
   def SetTxAudio(self):
     if self.mode[0:3] in ('CWL', 'CWU', 'FDV', 'DGT'):
       self.CtrlTxAudioClip.slider.Enable(False)
@@ -6649,6 +6779,16 @@ class App(wx.App):
     else:
       self.split_locktx = False
     self.lockVFOButton.Refresh()
+
+  # ------------------------------------------------------------------------------- добавлено ------ кнопки f_Before и f_After ------- 51 RA3PKJ
+  def OnBtnBefore(self, event):
+    self.beforeButton.Enable(0)
+    self.afterButton.Enable(1)
+    self.ChangeHwFrequency(self.f_before_1, self.f_before_2, 'MouseWheel')
+  def OnBtnAfter(self, event):
+    self.afterButton.Enable(0)
+    self.beforeButton.Enable(1)
+    self.ChangeHwFrequency(self.f_after_1, self.f_after_2, 'MouseWheel')
 
 # ---------------------------------------------------------- удалено -------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
 ##  def OnBtnSplit(self, event):	# Called when the Split check button is pressed

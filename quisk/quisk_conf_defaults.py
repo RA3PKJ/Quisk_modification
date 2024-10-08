@@ -1383,15 +1383,6 @@ fixed_tune_offset = 0
 #fixed_tune_offset = 5000
 #fixed_tune_offset = 10000
 
-# ------------------------------------------------------ добавлено -------------------------- Настройка как в PowerSDR ----------- 47 RA3PKJ
-## mouse_tune_method        Tuning like PowerSDR, integer
-# This determines what happens when you tune by dragging the mouse.  The correct
-# choice depends on how your hardware performs tuning.  You may want to use a
-# custom hardware file with a custom ChangeFrequency() method too.
-# 0 - The Quisk tune frequency changes and the VFO frequency is unchanged.
-# 1 - The Quisk tune frequency is unchanged and the VFO changes.
-mouse_tune_method = 0
-#mouse_tune_method = 1
 
 ################ Remote
 # DX cluster telent login data, thanks to DJ4CM.  Must have station_display_lines > 0.
@@ -2693,7 +2684,7 @@ default_mode = 'USB'
 # If you use a soundcard with Ethernet control of the VFO, set these parameters:
 rx_ip = ""							# Receiver IP address for VFO control
 
-# ------------------------------------------------------ удалено -------------------------- Настройка как в PowerSDR ----------- 47 RA3PKJ
+# ----------------------------------------------------------- удалено (Настройка как в PowerSDR) ------- реформа мышиного управления шторками ----- 13 RA3PKJ
 # # This determines what happens when you tune by dragging the mouse.  The correct
 # # choice depends on how your hardware performs tuning.  You may want to use a
 # # custom hardware file with a custom ChangeFrequency() method too.
