@@ -137,7 +137,7 @@ class Hardware(BaseHardware):
       self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
     except:
       import wx
-      dlg = wx.MessageBox('Please check the network adapter setup and LAN-connection', 'Error',
+      dlg = wx.MessageBox('Please check the network adapter setup, LAN-connection and SDR electric power supply', 'Error',
 			     wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
 
     return QS.open_rx_udp(self.conf.rx_udp_ip, self.conf.rx_udp_port)
@@ -414,6 +414,8 @@ class Hardware(BaseHardware):
     if do_tx:
       try:
         self.rx_udp_socket.send(s)
+        if DEBUG:
+          self.PrintStatus(' Send', self.want_udp_status)
       except:
         pass
   def SetVNA(self, key_down=None, vna_start=None, vna_stop=None, vna_count=None, do_tx=False):

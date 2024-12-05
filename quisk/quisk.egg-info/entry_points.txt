@@ -1,4 +1,3 @@
 [gui_scripts]
 quisk = quisk.quisk:main
 quisk_vna = quisk.quisk_vna:main
-

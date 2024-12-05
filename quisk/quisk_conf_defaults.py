@@ -1559,7 +1559,7 @@ win_hamlib_com3_name = ""
 
 # ------------------------------------------------------ добавлено ----------------------------------- CW --------------------- 50 RA3PKJ
 ################ CW
-## keyupDelay            Break CW delay, integer
+## keyupDelay            Keyup delay msecs, integer
 # This is the key hang time for semi-breakin CW. It is the time in milliseconds
 # from the last CW key release until changing to receive.
 # It only operates in CW mode.

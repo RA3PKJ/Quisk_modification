@@ -17,16 +17,16 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-# ----------------------------------------------------- добавлено --------- заголовок окна -------- 3 RA3PKJ
+# ----------------------------------------------------- добавлено ------------------------------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK v4.2.38.19'
+version_quisk = 'QUISK 4.2.40.20 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
 # and to find ./__init__.py and ./help.html.
 import sys, os
 
-# ------------------------------------------------------------------------------------------------ добавлено ------ автоматика водопада ------- 24 RA3PKJ
+# ----------------------------------------------------- добавлено --------------------------------------- автоматика водопада ------- 24 RA3PKJ
 import numpy as np
 import array
 
@@ -1492,12 +1492,8 @@ class ConfigStatus(wx.ScrolledCanvas):
     self.MakeRow2("Sample interrupts", self.interrupts, cfile)
     self.MakeRow2("Microphone or DGT level dB", level, qfile)
     self.MakeRow2("FFT number of points", self.fft_size, err_msg)
-    if conf.dxClHost:		# connection to dx cluster
-      nSpots = len(application.dxCluster.dxSpots)
-      if nSpots > 0:
-        msg = str(nSpots) + ' DX spot' + ('' if nSpots==1 else 's') + ' received from ' + application.dxCluster.getHost()
-      else:
-        msg = "No DX Cluster data from %s" % conf.dxClHost
+    if application.dxCluster:
+      msg = application.dxCluster.dxStatus()
       self.MakeRow2("FFT number of errors", self.fft_error, msg)
     else:
       self.MakeRow2("FFT number of errors", self.fft_error)
@@ -1776,7 +1772,7 @@ class ConfigFavorites(wx.grid.Grid):
     if self.changed:
       self.WriteOut()
 
-# ------------------------------------------------------ добавлено ----------------------- создание строки состояния ----------- 28 RA3PKJ
+# ------------------------------------------------------ добавлено ------------------------------- создание строки состояния ----------- 28 RA3PKJ
 class TopScreen(wx.Window):
   def __init__(self, parent, width, height):
     wx.Window.__init__(self, parent,
@@ -1788,27 +1784,25 @@ class TopScreen(wx.Window):
     self.Bind(wx.EVT_PAINT, self.OnPaint)
   def OnPaint(self, event):
     dc = wx.PaintDC(self)
-    SmtrX = 30 # X-position
-    SmtrY = 2  # Y-position
-
+    Xpos = 0 # X-position
+    Ypos = 2  # Y-position
+    # ------------------------------------------------------------------------------------------------------------- версия
     dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
     dc.SetTextForeground('white')
-    dc.DrawText('QUISK', 5, SmtrY - 1)
-
-    # --- верхняя строка сообщений
+    Xpos = Xpos + 5
+    dc.DrawText(version_quisk, Xpos, Ypos - 1)
+    # --------------------------------------------------------------------------------------------------------- Fast sound
     dc.SetFont(wx.Font(9, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
-    dc.SetTextForeground('#FFFF00')
-    dc.DrawText('Modif. by N7DDC, RA3PKJ', SmtrX + 30, SmtrY)
+    Xpos = Xpos + 250
     if conf.use_fast_sound:
       dc.SetTextForeground('#00FF00')
-      dc.DrawText('Fast sound ON', SmtrX + 200, SmtrY)
+      dc.DrawText('Fast sound ON', Xpos, Ypos)
     else:
       dc.SetTextForeground('#777777')
-      dc.DrawText('Fast sound OFF', SmtrX + 200, SmtrY)
-
-    # --- разделительная линия
+      dc.DrawText('Fast sound OFF', Xpos, Ypos)
+    # ----------------------------------------------------------------------------------------------- разделительная линия
     dc.SetPen(wx.Pen('#888888', 1))
-    dc.DrawLine(0, SmtrY + 17, self.width, SmtrY + 17)
+    dc.DrawLine(0, Ypos + 17, self.width, Ypos + 17)
 
 class GraphDisplay(wx.Window):
   """Display the FFT graph within the graph screen."""
@@ -1823,11 +1817,11 @@ class GraphDisplay(wx.Window):
     self.display_text = ""
     self.line = [(0, 0), (1,1)]		# initial fake graph data
     #self.SetBackgroundColour(conf.color_graph)
-    self.SetBackgroundColour('#06354F') # ------------------------ взамен ------------ цвет фона на панораме ------------ оформление панорамы ------- 4 RA3PKJ
+    self.SetBackgroundColour('#06354F') # -------------- взамен ------------ цвет фона на панораме ------------ оформление панорамы ------- 4 RA3PKJ
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, parent.OnLeftDown)
     self.Bind(wx.EVT_RIGHT_DOWN, parent.OnRightDown)
-    self.Bind(wx.EVT_RIGHT_UP, parent.OnRightUp) # ------------- добавлено --------------------------------------- Перестройка типа PowerSDR ------ 47 RA3PKJ
+    self.Bind(wx.EVT_RIGHT_UP, parent.OnRightUp) # ---- добавлено --------------------------------------- Перестройка типа PowerSDR ------ 47 RA3PKJ
     self.Bind(wx.EVT_LEFT_UP, parent.OnLeftUp)
     self.Bind(wx.EVT_MOTION, parent.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, parent.OnWheel)
@@ -1844,9 +1838,9 @@ class GraphDisplay(wx.Window):
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ------------------- цвет шторки ----------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ---------- цвет шторки ----------- оформление панорамы ----------- 4 RA3PKJ
     #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
-    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ----------- взамен ----- цвет горизонтальных линий на панораме -------- оформление панорамы --- 4 RA3PKJ
+    self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ------ взамен ----- цвет горизонтальных линий на панораме ---- оформление панорамы --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
     self.SetFont(self.font)
@@ -1855,7 +1849,7 @@ class GraphDisplay(wx.Window):
     else:
       self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
-    #----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
+    #----------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
     #if sys.platform == 'win32':
     if sys.platform.lower().startswith('win'):
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
@@ -1871,9 +1865,9 @@ class GraphDisplay(wx.Window):
     # If self.tune_rx is zero, draw the Rx filter at the Tx tuning line. There is no separate Rx display.
     # Otherwise draw both an Rx and Tx tuning display.
 
-# ------------------------------------------------------------------------------- добавлено --------- картинка на панораме ---------------------- 5 RA3PKJ
+# --------------------------------------------------------------------------- добавлено --------- картинка на панораме --------------------- 5 RA3PKJ
     picture_bmp = application.picture_bmp
-    # ------------- коррекция длины картинки ------------------------------------ добавлено --------- на всю длину монитора -------------------- 33 RA3PKJ
+    # ------------- коррекция длины картинки -------------------------------- добавлено --------- на всю длину монитора ------------------- 33 RA3PKJ
     global MyDisplayWidth
     if conf.window_width > 0:
       if conf.window_width > MyDisplayWidth:
@@ -2317,7 +2311,7 @@ class GraphScreen(wx.Window):
     """For mouse clicks in our display, translate to our screen coordinates."""
     mouse_x, mouse_y = event.GetPosition()
     win = event.GetEventObject()
-    if win is not self:
+    if win and win is not self:
       x, y = win.GetPosition().Get()
       mouse_x += x
       mouse_y += y
@@ -3904,7 +3898,8 @@ class QMainFrame(wx.Frame):
     #fp = open('__init__.py')		# Read in the title
     #self.title = fp.readline().strip()[1:]
     #fp.close()
-    self.title = version_quisk # -------------------------------- взамен ------------------ заголовок окна ------------------ 3 RA3PKJ
+    self.title = '!!!' # ------------------------------------------ взамен ------------------ заголовок окна ------------------ 3 RA3PKJ
+
     x = conf.window_posX
     y = conf.window_posY
     wx.Frame.__init__(self, None, -1, self.title, (x, y),
@@ -3924,7 +3919,7 @@ class QMainFrame(wx.Frame):
   def SetConfigText(self, text):
     if len(text) > 100:
       text = text[0:80] + '|||' + text[-17:]
-    self.SetTitle("N2ADR %s   %s   %s" % (application.local_conf.RadioName, self.title, text)) # --- изменено --- заголовок окна --- 3 RA3PKJ
+    self.SetTitle("N2ADR %s%s   %s" % (application.local_conf.RadioName, self.title, text)) # ------------- изменено ------------ заголовок окна ------ 3 RA3PKJ
 
 class Spacer(wx.Window):
   """Create a bar between the graph screen and the controls"""
@@ -4045,6 +4040,7 @@ class App(wx.App):
     if not os.path.isdir(self.QuiskFilesDir):
       self.QuiskFilesDir = DefaultConfigDir
     self.std_out_err = StdOutput(self)
+    self.std_out_err.Logfile("WxPython " + wx.version())
     QS.set_params(quisk_is_vna=0)	# We are not the VNA program
     # Read in configuration from the selected radio
     self.BandPlan = []
@@ -4140,6 +4136,7 @@ class App(wx.App):
         setattr(conf, 'widgets_file_name',  '')
     Hardware = self.Hardware
     self.use_fast_heart_beat = hasattr(Hardware, "FastHeartBeat")
+    self.poll_gui_control = hasattr(Hardware, "PollGuiControl")
     # Initialization - may be over-written by persistent state
     self.local_conf.Initialize()
     self.clip_time0 = 0		# timer to display a CLIP message on ADC overflow
@@ -4212,6 +4209,10 @@ class App(wx.App):
     self.offset_tx = 200 # цифра условная, т.к.берётся из quisk_settings.json ------------------------ добавлено --- Кнопка SSBtx Low --- 45 RA3PKJ
     self.freq_step = 50 # --- цифра условная, т.к.берётся из файла ----------------------------------- добавлено ---- шаг перестройки --- 30 RA3PKJ
     self.close = False #--------------------------------------------------- добавлено --- выключение режима TX при закрытии программы --- 46 RA3PKJ
+
+    # --------------------------------------------------------------------- добавлено -------------- CW Training ------------------------ 52 RA3PKJ
+    self.cts_old = None
+    self.dsr_old = None
 
     # --- для слайдеров---------------------------------------------------- добавлено ------------ реформа кнопок ----------------------- 12 RA3PKJ
     self.y_scale = 0
@@ -4547,7 +4548,7 @@ class App(wx.App):
     self.config_screen = ConfigScreen(frame, width, self.fft_size)
     self.config_screen.Hide()
 
-    # -------------------------------------------------- добавлено ------- кнопка Hardware --------- 15 RA3PKJ
+    # -------------------------------------------------- добавлено ---------------------------------------- кнопка Hardware --------- 15 RA3PKJ
     self.radios_screen = RadiosScreen(frame, width)
     self.radios_screen.Hide()
 
@@ -4560,11 +4561,11 @@ class App(wx.App):
     if self.rate_audio_fft:
       self.audio_fft_screen = AudioFFTScreen(frame, self.data_width, self.graph_width, self.rate_audio_fft)
       self.audio_fft_screen.Hide()
-    # ----------------------------------------------- удалено ------------- кнопка Hardware --------- 15 RA3PKJ
+    # --------------------------------------------------- удалено ----------------------------------------- кнопка Hardware --------- 15 RA3PKJ
     #self.help_screen = HelpScreen(frame, width, self.screen_height // 10)
     #self.help_screen.Hide()
 
-    top_screen = TopScreen(frame, width, 23) # ----- добавлено -------- создание строки состояния --- 28 RA3PKJ
+    top_screen = TopScreen(frame, width, 23) # --------- добавлено ------------------------------------ создание строки состояния --- 28 RA3PKJ
 
     self.station_screen = StationScreen(frame, width, conf.station_display_lines)
     self.station_screen.Hide()
@@ -4574,22 +4575,22 @@ class App(wx.App):
     frame.SetSizer(vertBox)
 
     # --- добавить скрины к vertBox
-    vertBox.Add(top_screen) # -------------------- добавлено ------ создание строки состояния ------- 28 RA3PKJ
+    vertBox.Add(top_screen) # -------------------------- добавлено -------------------------------- создание строки состояния ------- 28 RA3PKJ
     vertBox.Add(self.config_screen, 1, wx.EXPAND)
-    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # --- добавлено ------- кнопка Hardware ----------- 15 RA3PKJ
+    vertBox.Add(self.radios_screen, 1, wx.EXPAND) # ---- добавлено -------------------------------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.multi_rx_screen, 1)
     vertBox.Add(self.scope, 1)
     vertBox.Add(self.bandscope_screen, 1)
     vertBox.Add(self.filter_screen, 1)
     if self.rate_audio_fft:
       vertBox.Add(self.audio_fft_screen, 1)
-    #vertBox.Add(self.help_screen, 1)    # -------- удалено ------------- кнопка Hardware ----------- 15 RA3PKJ
+    #vertBox.Add(self.help_screen, 1)    # -------------- удалено --------------------------------------- кнопка Hardware ----------- 15 RA3PKJ
     vertBox.Add(self.station_screen)
 
     # Add the spacer
     vertBox.Add(Spacer(frame), 0, wx.EXPAND)
 
-    # --------------------------------------------- добавлено -------------------- реформа кнопок --- 12 RA3PKJ
+    # ------------------------------------------------- добавлено ------------------------------------------------ реформа кнопок --- 12 RA3PKJ
     # --- план размещения сайзеров (кнопки, слайдеры, окошки)
     vertBox.AddSpacer(5)
     self.bs0 = wx.BoxSizer()
@@ -4718,7 +4719,6 @@ class App(wx.App):
     if conf.dxClHost:
       # create DX Cluster and register listener for change notification
       self.dxCluster = dxcluster.DxCluster()
-      self.dxCluster.setListener(self.OnDxClChange)
       self.dxCluster.start()
     # Create shortcut keys for buttons
     #if conf.button_layout == 'Large screen':# ------------------------------ удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
@@ -5087,8 +5087,6 @@ class App(wx.App):
                 conf.tx_ip, conf.tx_audio_port,
                 conf.mic_sample_rate, conf.mic_channel_I, conf.mic_channel_Q,
 				0.7, conf.mic_playback_rate)
-  def OnDxClChange(self):
-    self.station_screen.Refresh()
   def OnIdle(self, event):
     if self.screen:
       self.screen.OnIdle(event)
@@ -5693,6 +5691,15 @@ class App(wx.App):
     b.char_shortcut = 'V'
     self.MakeAccel(b)
 
+    # --- кнопка CW Training
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_CWtrain = szr
+    self.CWtrainButton = b = QuiskCheckbutton(frame, self.OnBtnCWtrain, "CW Training")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.CWtrainButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.CWtrainButton.SetLabel("CW Training")
+    self.CWtrainButton.Refresh()
+
     # ---- кнопки мод
     mode_names = ['CWL', 'CWU', 'LSB', 'USB', 'AM', 'FM', 'DGT-U', 'DGT-L', 'DGT-FM', 'DGT-IQ', 'FDV-U', 'FDV-L', 'IMD']
     labels = [('CWL', 'CWU'), ('LSB', 'USB'), 'AM', 'FM', ('DGT-U', 'DGT-L', 'DGT-FM', 'DGT-IQ')]
@@ -6024,6 +6031,11 @@ class App(wx.App):
     self.bs5.Add(b_vox, wx.EXPAND)
 
     # ----------------------------- установка кнопок в сайзер bs6
+    text = wx.StaticText(frame, label=" CW Training")
+    text.SetForegroundColour(color)
+    self.bs6.Add(text)
+    #self.bs6.AddSpacer(3)
+    self.bs6.Add(b_CWtrain, wx.EXPAND)
     text = wx.StaticText(frame, label=" Mode")
     text.SetForegroundColour(color)
     self.bs6.Add(text)
@@ -7230,6 +7242,34 @@ class App(wx.App):
     if rx_freq and self.split_rxtx:
       tune = rx_freq - self.VFO
       self.ChangeHwFrequency(self.txFreq, self.VFO, 'FreqEntry', rx_freq=tune)
+
+# ------------------------------------------------------------------------------ добавлено ------------------ CW Training ---------- 52 RA3PKJ
+  def OnBtnCWtrain(self, event):
+    if self.CWtrainButton.GetValue(): # кнопка нажата
+      self.cts_old = conf.quisk_serial_cts
+      self.dsr_old = conf.quisk_serial_dsr
+      if conf.quisk_serial_cts[0:4] == "PTT " and conf.quisk_serial_dsr[0:4] == "PTT ":
+        return
+      if conf.quisk_serial_cts == "PTT when high":
+        conf.quisk_serial_cts = "CW when high"
+        conf.quisk_serial_dsr = "None"
+      elif conf.quisk_serial_cts == "PTT when low":
+        conf.quisk_serial_cts = "CW when low"
+        conf.quisk_serial_dsr = "None"
+      elif conf.quisk_serial_dsr == "PTT when high":
+        conf.quisk_serial_dsr = "CW when high"
+        conf.quisk_serial_cts = "None"
+      elif conf.quisk_serial_dsr == "PTT when low":
+        conf.quisk_serial_dsr = "CW when low"
+        conf.quisk_serial_cts = "None"
+      else:
+        return
+    else: # кнопка отпущена
+      conf.quisk_serial_cts = self.cts_old
+      conf.quisk_serial_dsr = self.dsr_old
+    self.ImmediateChange("quisk_serial_cts")
+    self.ImmediateChange("quisk_serial_dsr")
+
   def OnBtnMode(self, event):
     mode = self.modeButns.GetLabel()
 
@@ -7881,6 +7921,8 @@ class App(wx.App):
 
     if self.use_fast_heart_beat:
       Hardware.FastHeartBeat()
+    if self.poll_gui_control:
+      Hardware.PollGuiControl()
     if conf.do_repeater_offset:
       hold = QS.tx_hold_state(-1)
       if hold == 2:	# Tx is being held for an FM repeater TX frequency shift
@@ -8076,6 +8118,9 @@ class App(wx.App):
           self.ChangeDisplayFrequency(tune - vfo, vfo)
         self.FldigiPoll()
         self.HamlibPoll()
+        if self.dxCluster:
+          if self.dxCluster.Poll():
+            self.station_screen.Refresh()
       if self.timer - self.slowheart_time0 > 0.5:
         self.slowheart_time0 = self.timer
         if self.w_phase:
