@@ -2652,110 +2652,57 @@ class GraphScreen(wx.Window):
       self.f_before_1_buf = self.txFreq
       self.f_before_2_buf = self.VFO
 
-    # получить позицию x мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # получить позицию "x" мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
     sample_rate = int(self.sample_rate * self.zoom)
     mouse_x, mouse_y = self.GetMousePosition(event)
     if mouse_x <= self.originX:		# click left of Y axis
       return
     if mouse_x >= self.originX + self.graph_width:	# click past FFT data
       return
-    shift = wx.GetKeyState(wx.WXK_SHIFT) # проверить клавишу Shift
-    if shift: # если нажата клавиша Shift
-      mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение курсора мыши для ориентирования прыжков шторки приёмника по средней линии шторки в однополосных модах
+    # ------------------------------------------------------ удалено ------------------------------- реформа мышиного управления шторками ------- 13 RA3PKJ
+    #shift = wx.GetKeyState(wx.WXK_SHIFT) # проверить клавишу Shift
+    #if shift:
+      #mouse_x -= self.filter_center * self.data_width / sample_rate
     self.mouse_x = mouse_x
     x = mouse_x - self.originX
 
-    # только в однополосных модах ---------------------------------- добавлено ------------ отключение скачка шторки после клика по ней мышью ---- 44 RA3PKJ
-    x_rx, w_rx, rit_rx = self.display.parent.GetFilterDisplayXWR(rx_filters=True) # параметры шторки приёмника (то же самое, что в режиме одной шторки), параметры зависят от ZOOM
-    x_tx, w_tx, rit_tx = self.display.parent.GetFilterDisplayXWR(rx_filters=False) # параметры шторки передатчика,  параметры зависят от ZOOM
+    # координаты шторок
+    x_rx, w_rx, rit_rx = self.display.parent.GetFilterDisplayXWR(rx_filters=True) # параметры шторки приёмника в Split (RX2) или основной шторки в режиме одной шторки, параметры зависят от ZOOM
+    x_tx, w_tx, rit_tx = self.display.parent.GetFilterDisplayXWR(rx_filters=False) # параметры шторки передатчика в Split (RX2),  параметры зависят от ZOOM
     # СПРАВКА
-    # x_rx, x_tx - координата левого края шторки относительно нулевой частоты (подавленной несущей в SSB)
-    # w_rx, w_tx - ширина шторки
+    # x_rx, x_tx - координата левого края шторки относительно нулевой частоты (подавленной несущей в SSB), отрицательная при нижней боковой и положительная при верхней боковой
+    # w_rx, w_tx - абсолютная ширина шторки
     # rit_tx, rit_rx - смещение шторки при расстройке, но rit_tx похоже не существует, так как это тоже самое, что rit_rx
-    if self.filter_center < 0: # нижняя боковая
-      if self.display.tune_rx: # если есть разделение на приёмник и передатчик (Split или RX2)
-        if (x - self.display.tune_rx - rit_rx) < (x_rx + w_rx) and (x - self.display.tune_rx - rit_rx) > x_rx:
-          self.mouse_is_rx = True # разрешено тащить шторку приёмника
-          self.priznak_filter = 1
-          return # но прыжок не делать
-        if (x - self.display.tune_tx) < (x_tx + w_tx) and (x - self.display.tune_tx) > x_tx:
-          self.mouse_is_rx = False # запретить захват и движение шторки приёмника
-          self.priznak_filter = 2
-          return
-      else: # одна шторка
-        if (x - self.display.tune_tx - rit_rx) < (x_rx + w_rx) and (x - self.display.tune_tx - rit_rx) > x_rx: # передатчик и приёмник это одно и то же, но используется self.display.tune_tx
-          self.mouse_is_tx = False # нельзя двигать шторку
-          self.priznak_filter = 1
-          return
-    elif self.filter_center > 0: # верхняя боковая
-      if self.display.tune_rx: # если есть разделение на приёмник и передатчик (Split или RX2)
-        if (x - self.display.tune_rx - rit_rx) > x_rx and (x - self.display.tune_rx - rit_rx) < (x_rx + w_rx):
-          self.mouse_is_rx = True # разрешено захватывать и двигать шторку приёмника
-          self.priznak_filter = 1
-          return
-        if (x - self.display.tune_tx) > x_tx and (x - self.display.tune_tx) < (x_tx + w_tx):
-          self.mouse_is_rx = False # запретить захват и движение шторки приёмника
-          self.priznak_filter = 2
-          return
-      else: # одна шторка
-        if (x - self.display.tune_tx - rit_rx) > x_rx and (x - self.display.tune_tx - rit_rx) < (x_rx + w_rx): # передатчик и приёмник это одно и то же
-          self.mouse_is_tx = False # нельзя двигать шторку
-          self.priznak_filter = 1
-          return
-
-    # ------------------------------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
-    #if self.split_unavailable:
-      #self.mouse_is_rx = False
 
     if mouse_y < self.originY: # click above X axis - если клик на панораме (включая водопад), то получить частоту, которая соответствует клику мыши
       freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
       freq = int(freq)
 
       # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
-      # если нажата клавиша Shift, то клик мыши создаёт прыжок шторки приёмника по центру шторки
-      if shift:
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          if abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
-            if application.split_lockrx: # если залочен приёмник
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-              self.priznak_filter = 2
-            else:
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
-              self.priznak_filter = 1
-          else:
-            if application.split_locktx: # если залочен передатчик
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
-              self.priznak_filter = 1
-            else:
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-              self.priznak_filter = 2
-        else:
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-          self.priznak_filter = 2
-
-      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
-      elif conf.freq_spacing:
+      # для трансверторов
+      if conf.freq_spacing:
         if not self.mouse_is_rx:
           freq = self.FreqRound(freq, self.VFO)
         if application.new_split == True or application.split_rxtx == True: # Split или RX2
           if abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
             if application.split_lockrx: # если залочен приёмник
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
               self.priznak_filter = 2
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
             else:
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
               self.priznak_filter = 1
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
           else:
             if application.split_locktx: # если залочен передатчик
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
               self.priznak_filter = 1
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
             else:
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
               self.priznak_filter = 2
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
         else:
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
           self.priznak_filter = 2
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
 
+      # прыжки в CW
       elif application.mode in ('CWU', 'CWL'):	# Move to a nearby peak
         CW_width = self.data_width * application.filter_bandwidth // sample_rate // 2	# width tolerance
         CW_mouse = mouse_x - self.originX
@@ -2785,228 +2732,74 @@ class GraphScreen(wx.Window):
         if application.new_split == True or application.split_rxtx == True: # Split или RX2
           if abs(x - (self.display.tune_tx)) > abs(x - (self.display.tune_rx)): #если клик мыши далеко от передатчика, то...
             if application.split_lockrx: # если залочен приёмник
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик, хотя он и далеко
               self.priznak_filter = 2
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик, хотя он и далеко
             else:
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник
               self.priznak_filter = 1
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник
             # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
             application.f_after_1 = self.txFreq
             application.f_after_2 = self.VFO
           else: #если клик мыши близко от передатчика, то...
             if application.split_locktx: # если залочен передатчик
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник, хотя он и далеко
               self.priznak_filter = 1
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник, хотя он и далеко
             else:
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик
               self.priznak_filter = 2
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик
             # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
             application.f_after_1 = freq
             application.f_after_2 = self.VFO
         else: # одна шторка
           if application.split_locktx: # если залочен передатчик
             return
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
           self.priznak_filter = 2
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
           # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
           application.f_after_1 = freq
           application.f_after_2 = self.VFO
 
-      # ---------------------------------------------------------------- добавлено -------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
-      # прыжки шторок в модах с нижней боковой
-      elif self.filter_center < 0:
-        # найти к какому краю шторок ближе всего клик мыши
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          lsb_rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
-          lsb_rx_up_split = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
-          lsb_tx_down_split = abs(x - (self.display.tune_tx + x_tx))
-          lsb_tx_up_split = abs(x - (self.display.tune_tx + x_tx + w_tx))
-          if application.split_lockrx:
-            slovar = {'lsb_tx_down_split':lsb_tx_down_split, 'lsb_tx_up_split':lsb_tx_up_split}
-          elif application.split_locktx:
-            slovar = {'lsb_rx_down_split':lsb_rx_down_split, 'lsb_rx_up_split':lsb_rx_up_split}
-          else:
-            slovar = {'lsb_rx_down_split':lsb_rx_down_split, 'lsb_rx_up_split':lsb_rx_up_split, 'lsb_tx_down_split':lsb_tx_down_split, 'lsb_tx_up_split':lsb_tx_up_split}
-          min_key = min(slovar, key=slovar.get)
-        else: # одна шторка
-          lsb_tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
-          lsb_tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx + rit_rx))
-          slovar = {'lsb_tx_down':lsb_tx_down, 'lsb_tx_up':lsb_tx_up}
-          min_key = min(slovar, key=slovar.get)
-        # применить найденное
-        # LSB, Split или RX2
-        if min_key == 'lsb_rx_down_split':
-          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'lsb_rx_up_split':
-          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'lsb_tx_down_split':
-          freq = float(x + self.originX - self.x0 - x_tx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'lsb_tx_up_split':
-          freq = float(x + self.originX - self.x0 - x_tx - w_tx) * sample_rate / self.data_width + self.zoom_deltaf
-        # LSB, одна шторка
-        elif min_key == 'lsb_tx_down':
-          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'lsb_tx_up':
-          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        # создать прыжок частоты
-        if min_key in ('lsb_tx_down_split', 'lsb_tx_up_split', 'lsb_tx_down', 'lsb_tx_up'):
-          if application.split_locktx: # если залочен передатчик
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
-          self.priznak_filter = 2
-          # ---------------------------------------------------------- добавлено ----------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = freq
-          application.f_after_2 = self.VFO
-        elif min_key in ('lsb_rx_down_split', 'lsb_rx_up_split', 'lsb_rx_down', 'lsb_rx_up'):
-          if application.split_lockrx: # если залочен приёмник
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
-          self.priznak_filter = 1
-          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = self.txFreq
-          application.f_after_2 = self.VFO
-
-      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
-      # прыжки шторок в модах с верхней боковой
-      elif self.filter_center > 0:
-      # найти к какому краю шторок ближе всего клик мыши
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          usb_rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
-          usb_rx_up_split = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
-          usb_tx_down_split = abs(x - (self.display.tune_tx + x_tx))
-          usb_tx_up_split = abs(x - (self.display.tune_tx + x_tx + w_tx))
-          if application.split_lockrx:
-            slovar = {'usb_tx_down_split':usb_tx_down_split, 'usb_tx_up_split':usb_tx_up_split}
-          elif application.split_locktx:
-            slovar = {'usb_rx_down_split':usb_rx_down_split, 'usb_rx_up_split':usb_rx_up_split}
-          else:
-            slovar = {'usb_rx_down_split':usb_rx_down_split, 'usb_rx_up_split':usb_rx_up_split, 'usb_tx_down_split':usb_tx_down_split, 'usb_tx_up_split':usb_tx_up_split}
-          min_key = min(slovar, key=slovar.get)
-        else: # одна шторка
-          usb_tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
-          usb_tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx + rit_rx))
-          slovar = {'usb_tx_down':usb_tx_down, 'usb_tx_up':usb_tx_up}
-          min_key = min(slovar, key=slovar.get)
-        # применить найденное
-        # USB, Split или RX2
-        if min_key == 'usb_rx_down_split':
-          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'usb_rx_up_split':
-          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'usb_tx_down_split':
-          freq = float(x + self.originX - self.x0 - x_tx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'usb_tx_up_split':
-          freq = float(x + self.originX - self.x0 - x_tx - w_tx) * sample_rate / self.data_width + self.zoom_deltaf
-        # USB, одна шторка
-        elif min_key == 'usb_tx_down':
-          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'usb_tx_up':
-          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        # создать прыжок частоты
-        if min_key in ('usb_tx_down_split', 'usb_tx_up_split', 'usb_tx_down', 'usb_tx_up'):
-          if application.split_locktx: # если залочен передатчик
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
-          self.priznak_filter = 2
-          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = freq
-          application.f_after_2 = self.VFO
-        elif min_key in ('usb_rx_down_split', 'usb_rx_up_split', 'usb_rx_down', 'usb_rx_up'):
-          if application.split_lockrx: # если залочен приёмник
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
-          self.priznak_filter = 1
-          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = self.txFreq
-          application.f_after_2 = self.VFO
-
-      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
-      # прыжки шторок в модах с центральным расположением нулевой линии (AM, FM и некоторые цифровые)
+      # ---------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ------ 13 RA3PKJ
+      # клик мыши создаёт прыжок шторки с совмещением курсора с центром шторки
       else:
+        mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение курсора мыши для ориентирования прыжков шторки по центру шторки в однополосных модах
+        freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        freq = int(freq)
         # найти к какому краю шторок ближе всего клик мыши
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
-          rx_up_split = abs(x - (self.display.tune_rx - x_rx + rit_rx))
-          tx_down_split = abs(x - (self.display.tune_tx + x_tx))
-          tx_up_split = abs(x - (self.display.tune_tx - x_tx))
-          if application.split_lockrx:
-            slovar = {'tx_down_split':tx_down_split, 'tx_up_split':tx_up_split}
-          elif application.split_locktx:
-            slovar = {'rx_down_split':rx_down_split, 'rx_up_split':rx_up_split}
-          else:
-            slovar = {'rx_down_split':rx_down_split, 'rx_up_split':rx_up_split, 'tx_down_split':tx_down_split, 'tx_up_split':tx_up_split}
-          min_key = min(slovar, key=slovar.get)
-        else: # одна шторка
-          tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
-          tx_up = abs(x - (self.display.tune_tx - x_rx + rit_rx))
+        if self.display.tune_rx: # если Split или RX2
+          rx_down = abs(x - (self.display.tune_rx + x_rx + rit_rx))
+          rx_up = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
+          tx_down = abs(x - (self.display.tune_tx + x_tx))
+          tx_up = abs(x - (self.display.tune_tx + x_tx + w_tx))
+        else:
+          tx_down = abs(x - (self.display.tune_tx + x_rx))
+          tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx))
+        if self.display.tune_rx and application.split_lockrx:
           slovar = {'tx_down':tx_down, 'tx_up':tx_up}
-          min_key = min(slovar, key=slovar.get)
-        # применить найденное
-        # Split или RX2
-        if min_key == 'rx_down_split':
-          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'rx_up_split':
-          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'tx_down_split':
-          freq = float(x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'tx_up_split':
-          freq = float(x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
-        # одна шторка
-        elif min_key == 'tx_down':
-          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        elif min_key == 'tx_up':
-          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
-        # создать прыжок частоты
-        if min_key in ('tx_down_split', 'tx_up_split', 'tx_down', 'tx_up'):
-          if application.split_locktx: # если залочен передатчик
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if application.mode in ('AM', 'FM'):
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+        elif self.display.tune_rx and application.split_locktx:
+          slovar = {'rx_down':rx_down, 'rx_up':rx_up}
+        elif self.display.tune_rx:
+          slovar = {'rx_down':rx_down, 'rx_up':rx_up, 'tx_down':tx_down, 'tx_up':tx_up}
+        else:
+          slovar = {'tx_down':tx_down, 'tx_up':tx_up}
+        min_key = min(slovar, key=slovar.get) # получить шторку, до которой минимальное расстояние от клика
+        # создать прыжок
+        if min_key in ('tx_down', 'tx_up'):
+          rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if rnd:
+            freq = (freq + rnd // 2) // rnd * rnd
           self.priznak_filter = 2
-          # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
           application.f_after_1 = freq
           application.f_after_2 = self.VFO
-        elif min_key in ('rx_down_split', 'rx_up_split', 'rx_down', 'rx_up'):
-          if application.split_lockrx: # если залочен приёмник
-            return
-          freq = int(freq)
-          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if application.mode in ('AM', 'FM'):
-            rnd = conf.freq_round_ssb
-            if rnd:
-              freq = (freq + rnd // 2) // rnd * rnd
-          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+        elif min_key in ('rx_down', 'rx_up'):
+          rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if rnd:
+            freq = (freq + rnd // 2) // rnd * rnd
           self.priznak_filter = 1
-          # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
           application.f_after_1 = self.txFreq
           application.f_after_2 = self.VFO
 
@@ -3014,7 +2807,6 @@ class GraphScreen(wx.Window):
       self.CaptureMouse()
 
   def OnLeftUp(self, event): # левая клавиша мыши вверх
-    self.priznak_filter = 0 # 0-исходное, 1-перемещение мышью шторки RX в Split(RX2), 2-перемещение мышью шторки TX в Split(RX2) - добавлено - перемещение шторок мышью - 56 RA3PKJ
     self.mouse_is_rx = False # привести в исходное
     if self.HasCapture():
       self.ReleaseMouse()
