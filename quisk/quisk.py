@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено ------------------------------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.40.20 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.40.21 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -430,7 +430,8 @@ class HamlibHandlerSerial:
     else:
       data = cmd[2:]
       cmd = cmd[0:2].upper()
-      if cmd in ('FA', 'FB', 'IF', 'PS'):	# Use the ZZxx command method
+      #if cmd in ('FA', 'FB', 'IF', 'PS'): # Use the ZZxx command method # ---- удалено ---- устранение ошибок из-за несоответствия CAT-протоколов TS-590S и Flex ---- 54 RA3PKJ
+      if cmd in ('FA', 'FB', 'PS'):        # Use the ZZxx command method # ----- взамен ---- устранение ошибок из-за несоответствия CAT-протоколов TS-590S и Flex ---- 54 RA3PKJ
         func = 'ZZ' + cmd
       else:			# Use the two-letter method
         func = cmd
@@ -476,6 +477,7 @@ class HamlibHandlerSerial:
   def ZZAD(self, cmd, data, length):  # VFO A down by a selected step
     if length == 0:
       oldfreq = self.app.rxFreq + self.app.VFO
+      self.tune_step = application.freq_step # ------------------------------ добавлено ----------------------------------- шаг перестройки ------- 30 RA3PKJ
       freq = oldfreq - self.tune_step
       self.set_frequency(freq)
     else:
@@ -510,10 +512,37 @@ class HamlibHandlerSerial:
   def ZZAU(self, cmd, data, length):  # VFO A up by a selected step
     if length == 0:
       oldfreq = self.app.rxFreq + self.app.VFO
+      self.tune_step = application.freq_step # ------------------------------ добавлено ----------------------------------- шаг перестройки ------- 30 RA3PKJ
       freq = oldfreq + self.tune_step
       self.set_frequency(freq)
     else:
       self.Error(cmd, data)
+  def ZZBD(self, cmd, data, length): # диапазон вниз ------------------------ добавлено ---- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
+    band = self.app.lastBand
+    if band == '40' or band == '60':
+      band = '80'
+      index_band = conf.bandLabels.index(band)
+    else:
+      index_band = conf.bandLabels.index(band)
+      index_band -= 1
+    length = len(conf.bandLabels)
+    if index_band < 0:
+      index_band = length -1
+    band = conf.bandLabels[index_band]
+    self.app.bandBtnGroup.SetLabel(band, do_cmd=True, direction=0)
+  def ZZBU(self, cmd, data, length): # диапазон вверх ----------------------- добавлено ---- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
+    band = self.app.lastBand
+    if band == '80' or band == '60':
+      band = '40'
+      index_band = conf.bandLabels.index(band)
+    else:
+      index_band = conf.bandLabels.index(band)
+      index_band += 1
+    length = len(conf.bandLabels)
+    if index_band >= length:
+      index_band = 0
+    band = conf.bandLabels[index_band]
+    self.app.bandBtnGroup.SetLabel(band, do_cmd=True, direction=0)
   def ZZBS(self, cmd, data, length):	# band switch
     if length == 0:
       band = self.app.lastBand
@@ -593,6 +622,40 @@ class HamlibHandlerSerial:
       self.radio_id = '900'
     else:
       self.Error(cmd, data)
+  def IF(self, cmd, data, length):# -------------- добавлено ------- устранение ошибок из-за несоответствия CAT-протоколов TS-590S и Flex -------- 54 RA3PKJ
+    ritFreq = self.app.ritScale.GetValue()
+    if self.app.ritButton.GetValue():
+      rit = 1
+    else:
+      rit = 0
+    mode = self.app.mode
+    info = cmd
+    info += "%011d" % (self.app.rxFreq + self.app.VFO)    # frequency, ZZFA
+    info += '00000'
+    if ritFreq < 0:    # RIT freq
+      info += "-%04d" % -ritFreq
+    else:
+      info += "+%04d" % ritFreq
+    info += "%d" % rit    # RIT status
+    info += '0000'
+    if QS.is_key_down():    # MOX, key down
+      info += '1'
+    else:
+      info += '0'
+    if len(cmd) == 4:    # Flex ZZIF
+      code = self.Mo2CoFlex.get(mode, 1)
+      info += "%02d" % code    # operating mode
+    else:        # Kenwood IF
+      code = self.Mo2CoKen.get(mode, 1)
+      info += "%d" % code    # operating mode
+    info += '00'
+    if self.app.split_rxtx:
+      info += '1'
+    else:
+      info += '0'
+    info += '0000'
+    info += ';'
+    self.Write(info)
   def ZZIF(self, cmd, data, length):	# return information for ZZIF and IF
     ritFreq = self.app.ritScale.GetValue()
     if self.app.ritButton.GetValue():
@@ -627,6 +690,71 @@ class HamlibHandlerSerial:
     info += '0000'
     info += ';'
     self.Write(info)
+  def IG(self, cmd, data, length): # ------------------------ добавлено -------------- встраивание своих CAT-команд для аппаратной панели -------- 53 RA3PKJ
+    ritFreq = self.app.ritScale.GetValue()
+    if self.app.ritButton.GetValue():
+      rit = 1
+    else:
+      rit = 0
+    mode = self.app.mode
+    info = cmd
+    info += "%011d" % (self.app.rxFreq + self.app.VFO)    # frequency, ZZFA
+    info += "%05d" % application.freq_step # --------------------------------- добавлен шаг перестойки
+    if ritFreq < 0:    # RIT freq
+      info += "-%04d" % -ritFreq
+    else:
+      info += "+%04d" % ritFreq
+    info += "%d" % rit    # RIT status
+    info += '0000'
+    if QS.is_key_down():    # MOX, key down
+      info += '1'
+    else:
+      info += '0'
+    if len(cmd) == 4:    # Flex ZZIF
+      code = self.Mo2CoFlex.get(mode, 1)
+      info += "%02d" % code    # operating mode
+    else:        # Kenwood IF
+      code = self.Mo2CoKen.get(mode, 1)
+      info += "%d" % code    # operating mode
+    info += '00'
+    if self.app.split_rxtx:
+      info += '1'
+    else:
+      info += '0'
+    info += '0000'
+    info += ';'
+    self.Write(info)
+  def IJ(self, cmd, data, length): # переключение шага ---- добавлено ---- встраивание своих CAT-команд для аппаратной панели -------- 53 RA3PKJ
+    step_label = application.step_btn.GetLabel()
+    if step_label == 'Step 1':
+      application.freq_step = 10
+      application.step_btn.SetLabel("Step 10", do_cmd=False)
+    elif step_label == 'Step 10':
+      application.freq_step = 25
+      application.step_btn.SetLabel("Step 25", do_cmd=False)
+    elif step_label == 'Step 25':
+      application.freq_step = 50
+      application.step_btn.SetLabel("Step 50", do_cmd=False)
+    elif step_label == 'Step 50':
+      application.freq_step = 100
+      application.step_btn.SetLabel("Step 100", do_cmd=False)
+    elif step_label == 'Step 100':
+      application.freq_step = 250
+      application.step_btn.SetLabel("Step 250", do_cmd=False)
+    elif step_label == 'Step 250':
+      application.freq_step = 500
+      application.step_btn.SetLabel("Step 500", do_cmd=False)
+    elif step_label == 'Step 500':
+      application.freq_step = 1000
+      application.step_btn.SetLabel("Step 1kHz", do_cmd=False)
+    elif step_label == 'Step 1kHz':
+      application.freq_step = 1
+      application.step_btn.SetLabel("Step 1", do_cmd=False)
+    self.StatePath = os.path.join(conf.DefaultConfigDir, "quisk_settings.json")
+    configure.Settings[4]["FrequencyStep"] = application.freq_step
+    self.settings_changed = True
+    configure.Configuration.SaveState(self)
+    self.settings_changed = False
   def MD(self, cmd, data, length):	# the mode; USB, CW, etc.
     if length == 0:
       mode = self.app.mode
@@ -654,9 +782,46 @@ class HamlibHandlerSerial:
       self.Write("%s0;" % cmd)
   def OI(self, cmd, data, length):      # return information
     self.ZZIF(cmd, data, length)
+  def ZZPA(self, cmd, data, length): # переключените аттенюатора HiQSDDR --- добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
+    att_label = application.BtnRfGain.GetLabel()
+    if att_label == 'RF 0db':
+      Hardware.HiQSDR_Attenuator = 0
+      Hardware.HiQSDR_Connector_X1 |= 0x10
+      Hardware.rf_gain = +10
+      application.BtnRfGain.SetLabel("RF +10db", do_cmd=False)
+    elif att_label == 'RF +10db':
+      Hardware.HiQSDR_Attenuator = 0x08
+      Hardware.HiQSDR_Connector_X1 &= ~0x10    # Mask in the preamp bit
+      Hardware.rf_gain = -10
+      application.BtnRfGain.SetLabel("RF -10db", do_cmd=False)
+    elif att_label == 'RF -10db':
+      Hardware.HiQSDR_Attenuator = 0x10
+      Hardware.rf_gain = -20
+      application.BtnRfGain.SetLabel("RF -20db", do_cmd=False)
+    elif att_label == 'RF -20db':
+      Hardware.HiQSDR_Attenuator = 0x18
+      Hardware.rf_gain = -30
+      application.BtnRfGain.SetLabel("RF -30db", do_cmd=False)
+    elif att_label == 'RF -30db':
+      Hardware.HiQSDR_Attenuator = 0
+      Hardware.rf_gain = 0
+      application.BtnRfGain.SetLabel("RF 0db", do_cmd=False)
+    Hardware.NewUdpStatus()
   def ZZPS(self, cmd, data, length):	# power status
     if length == 0:
       self.Write("%s1;" % cmd)
+  def ZZRC(self, cmd, data, length): # обнуление RIT --------------------- добавлено ---- встраивание своих CAT-команд для аппаратной панели ---- 53 RA3PKJ
+    application.ritScale.SetValue(0)
+    application.OnRitScale()
+  def ZZRD(self, cmd, data, length): # RIT на один шаг меньше ------------ добавлено ---- встраивание своих CAT-команд для аппаратной панели ---- 53 RA3PKJ
+    ritFreq = application.ritScale.GetValue()
+    ritFreq -= application.freq_step
+    if ritFreq < -2000:
+      ritFreq = -2000
+    application.ritScale.SetValue(ritFreq)
+    application.ritButton.SetLabel("RIT %d" % ritFreq)
+    application.ritButton.Refresh()
+    application.OnRitScale()
   def ZZRS(self, cmd, data, length):	# the RX2 status
     if length == 0:
       self.Write("%s0;" % cmd)
@@ -664,6 +829,23 @@ class HamlibHandlerSerial:
       pass
     else:
       self.Error(cmd, data)
+  def ZZRT(self, cmd, data, length): # вкл/выкл RIT ---------------------- добавлено ---- встраивание своих CAT-команд для аппаратной панели ---- 53 RA3PKJ
+    if not application.ritButton.GetValue(): # ------------ если RIT не нажата, то нажать
+      application.ritButton.SetValue("RIT") # ------- происходит физическое нажатие кнопки в окне Quisk
+      application.OnBtnRit() # --------------------- происходит реальное применение расстройки, которая накручена слайдером RIT
+    else:
+      application.ritButton.SetValue("") # ---------- происходит физическое отжатие кнопки в окне Quisk
+      application.ritFreq = 0 # -------------------- подготовка для возврата приёмника на исходную частоту
+      application.OnBtnRit() # --------------------- происходит реальное отключение расстройки
+  def ZZRU(self, cmd, data, length): # RIT на один шаг больше ------------ добавлено ---- встраивание своих CAT-команд для аппаратной панели ---- 53 RA3PKJ
+    ritFreq = application.ritScale.GetValue()
+    ritFreq += application.freq_step
+    if ritFreq > 2000:
+      ritFreq = 2000
+    application.ritScale.SetValue(ritFreq)
+    application.ritButton.SetLabel("RIT %d" % ritFreq)
+    application.ritButton.Refresh()
+    application.OnRitScale()
   def RX(self, cmd, data, length):	# turn off MOX
     if length == 0:
       self.app.pttButton.SetValue(0, True)
@@ -1838,7 +2020,7 @@ class GraphDisplay(wx.Window):
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # ---------- взамен ---------- цвет шторки ----------- оформление панорамы ----------- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#009999', wx.SOLID) # ---------- взамен ---------- цвет шторки ----------- оформление панорамы ----------- 4 RA3PKJ
     #self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
     self.horizPen = wx.Pen('#003C50', 1, wx.SOLID) # ------ взамен ----- цвет горизонтальных линий на панораме ---- оформление панорамы --- 4 RA3PKJ
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
@@ -1886,11 +2068,41 @@ class GraphDisplay(wx.Window):
     dc.SetPen(self.horizPen)
     for y in self.parent.y_ticks:
       dc.DrawLine(0, y, self.graph_width, y)	# y line
-
-    dc.SetPen(wx.Pen('white', 1)) # ---- перенесено и изменено ----------------------------- цвет шумовой дорожки ----- оформление панорамы ----- 4 RA3PKJ
+    dc.SetPen(wx.Pen('white', 1)) # ---- перенесено и изменено ------------------------------ цвет шумовой дорожки ----- оформление панорамы ----- 4 RA3PKJ
     dc.DrawLines(self.line)
 
-    if self.display_text:
+    # ------------------------------------------------------------------------- добавлено ------------------ надписи RX,TX,Lock на шторках ------- 55 RA3PKJ
+    # СПРАВКА
+    # x - координата левого края шторки относительно нулевой частоты (подавленной несущей в SSB)
+    # w - ширина шторки
+    # rit - смещение шторки при расстройке
+    dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    if application.new_split == True or application.split_rxtx == True: # если включен Split или RX2
+      application.lockVFOButton_RX.Enable(True)
+      application.lockVFOButton_TX.SetLabel('LockTX') # переименовать после перехода в режим Split (также RX2)
+      application.lockVFOButton_TX.Refresh() # перерисовать кнопку
+      x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True) # получение параметров шторки и смещения шторки приёмника
+      dc.SetTextForeground('white')
+      dc.DrawText('RX', self.tune_rx + x + rit, 60)
+      if application.lockVFOButton_RX.GetValue(): # если включен LockRX
+        dc.SetTextForeground('yellow')
+        dc.DrawText('Lock', self.tune_rx + x + rit, 70)
+      x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=False) # получение параметров шторки и смещения шторки передатчика
+      dc.SetTextForeground('white')
+      dc.DrawText('TX', self.tune_tx + x, 80) # у передатчика нет RIT
+      if application.lockVFOButton_TX.GetValue(): # если включен LockTX
+        dc.SetTextForeground('yellow')
+        dc.DrawText('Lock', self.tune_tx + x, 90)
+    else: # режим одной шторки
+      application.lockVFOButton_RX.Enable(False) # отключить кнопку LockRX
+      application.lockVFOButton_TX.SetLabel('LockVFO') # переименовать после перехода в режим одной шторки
+      application.lockVFOButton_TX.Refresh()           # перерисовать кнопку
+      if application.lockVFOButton_TX.GetValue(): # если включен LockVFO
+        x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True) # получение параметров шторки и смещения шторки приёмника (он же передатчик)
+        dc.SetTextForeground('yellow')
+        dc.DrawText('Lock', self.tune_tx + x + rit, 90)
+
+    if self.display_text: # установки для текста на панораме
       dc.SetFont(self.font)
       dc.SetTextBackground(conf.color_graph_msg_bg)
       dc.SetTextForeground(conf.color_graph_msg_fg)
@@ -1965,14 +2177,14 @@ class GraphDisplay(wx.Window):
     dc.SetLogicalFunction(wx.COPY)
     scale = 1.0 / self.parent.zoom / self.parent.sample_rate * self.graph_width
     dc.SetBrush(self.filterBrush)
-    if self.tune_rx:
+    if self.tune_rx: # если включен Split и RX2
       x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=False)
       dc.DrawRectangle(self.tune_tx + x, 0, w, self.height)
       x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True)
       dc.DrawRectangle(self.tune_rx + rit + x, 0, w, self.height)
       dc.SetPen(self.tuningPenRx)
       dc.DrawLine(self.tune_rx, 0, self.tune_rx, self.height)
-    else:
+    else: # режим одной шторки
       x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True)
       dc.DrawRectangle(self.tune_tx + rit + x, 0, w, self.height)
     dc.SetPen(self.tuningPenTx)
@@ -2017,7 +2229,7 @@ class GraphScreen(wx.Window):
   def __init__(self, parent, data_width, graph_width, in_splitter=0):
     wx.Window.__init__(self, parent, pos = (0, 0))
     self.in_splitter = in_splitter	# Are we in the top of a splitter window?
-    self.split_unavailable = False		# Are we a multi receive graph or waterfall window?
+    # self.split_unavailable = False # -------------------------- удалено ------------------------ реформа мышиного управления шторками -------- 13 RA3PKJ
     if in_splitter:
       self.y_scale = conf.waterfall_graph_y_scale
       self.y_zero = conf.waterfall_graph_y_zero
@@ -2032,7 +2244,7 @@ class GraphScreen(wx.Window):
     self.filter_center = 0    # середина шторки (отрицательная, если нижняя боковая, и наоборот), например -1400
     self.ritFreq = 0				# receive incremental tuning frequency offset
     self.mouse_x = 0
-    #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки --------- 30 RA3PKJ
+    #self.WheelMod = conf.mouse_wheelmod # ------------------- удалено ------------------------------------ шаг перестройки -------------------- 30 RA3PKJ
     self.txFreq = 0
     self.sample_rate = application.sample_rate
     self.zoom = 1.0
@@ -2041,7 +2253,7 @@ class GraphScreen(wx.Window):
     self.graph_width = graph_width
     self.doResize = False
     #self.pen_tick = wx.Pen(conf.color_graphticks, 1)
-    self.pen_tick = wx.Pen('#646464', 1) # ----------------- взамен ---- цвет рисок вокруг панорамы ---- оформление панорамы --------- 4 RA3PKJ
+    self.pen_tick = wx.Pen('#646464', 1) # ----------------- взамен ---- цвет рисок вокруг панорамы ------- оформление панорамы ----------------- 4 RA3PKJ
     self.pen_center = wx.Pen(conf.color_graphticks, 3)
     self.font = wx.Font(conf.graph_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
           wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface)
@@ -2061,8 +2273,9 @@ class GraphScreen(wx.Window):
     self.zeroDB = 10	# y location of zero dB; may be above the top of the graph
     self.scale = 10
     self.mouse_is_rx = False
+    self.priznak_filter = 0 # 0-исходное, 1-перемещение мышью шторки RX в Split(RX2), 2-перемещение мышью шторки TX в Split(RX2) - добавлено - перемещение шторок мышью - 56 RA3PKJ
 
-    # -------------------------------------------------------- добавлено ---------------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+    # -------------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
     self.before_after_start = 0 # флаг старта программы
     self.f_before_1_buf = 0 # промежуточная переменная
     self.f_before_2_buf = 0 # промежуточная переменная
@@ -2072,7 +2285,7 @@ class GraphScreen(wx.Window):
     self.SetSizeHints(self.width, 1, self.width)
     self.SetBackgroundColour(conf.color_graph)
     #self.backgroundBrush = wx.Brush(conf.color_graph)
-    self.backgroundBrush = wx.Brush('#000B10') # -------------- взамен ------- цвет вокруг панорамы ---------------- оформление панорамы ------------ 4 RA3PKJ
+    self.backgroundBrush = wx.Brush('#000B10') # -------------- взамен ------- цвет вокруг панорамы ------------ оформление панорамы ------------ 4 RA3PKJ
     self.Bind(wx.EVT_SIZE, self.OnSize)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -2330,6 +2543,11 @@ class GraphScreen(wx.Window):
       return tune
 
   def OnRightDown(self, event): # правая клавиша мыши вниз
+    # ---------------------------------------------------- взамен ---------------------------- реформа мышиного управления шторками ----------- 13 RA3PKJ
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx: # если залочен передатчик (он же приёмник) в режиме одной шторки
+      self.mouse_is_rx = False
+      return
+
     # ---------------------------------------------------- добавлено --------------------------------------- кнопки f_Before и f_After ------- 51 RA3PKJ
     if self.before_after_start == 0: # первичная загрузка значений при старте программы
       application.f_before_1 = self.txFreq
@@ -2359,6 +2577,11 @@ class GraphScreen(wx.Window):
 
   # ------------------------------------------------------ добавлено ----------- добавлена функция --------- Перестройка типа PowerSDR ------- 47 RA3PKJ
   def OnRightUp(self, event): # правая клавиша мыши вверх
+    # ----------------------------------------------------------------------------- добавлено ------------ реформа мышиного управления шторками --- 13 RA3PKJ
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx: # если залочен передатчик (он же приёмник) в режиме одной шторки
+      self.mouse_is_rx = False
+      return
+
     if self.motion_count < 2: # если не было перемещение панорамы в перестройке типа PowerSDR или было случайное перемещение на 1 шаг, то:
       # -------------------------------------------------- добавлено --------------------------------------- кнопки f_Before и f_After ------- 51 RA3PKJ
       self.f_before_1_buf = self.txFreq
@@ -2399,13 +2622,28 @@ class GraphScreen(wx.Window):
     self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положение
 
   def OnLeftDown(self, event): # левая клавиша мыши вниз
-    # ---------------------------------------------------- взамен ---------------------------- реформа мышиного управления шторками ----------- 13 RA3PKJ
-    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
-      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
-      return #ничего не делать и молча выскочить
+    # СПРАВКА
+    # self.VFO - абсолютная частота посередине панорамы в Герцах
+    # self.filter_center - середина шторки приёмника в однополосных модах (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
+    # self.sample_rate - величина постоянная, например 192000
+    # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
+    # self.filter_bandwidth - ширина шторки приёмника, например 2800
+    # self.data_width - постоянная величина ширины панорамы в единицах разрешения экрана, прописанного в Quisk (Window width pixels
+    # self.originX - предельная слева частота на панораме
+    # self.display.tune_rx - частота приёмника по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.display.tune_tx - частота передатчика по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # x - позиция мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.zoom - коэффициент зуммирования, пример использования: sample_rate = int(self.sample_rate * self.zoom)
+    # self.originX - левый край, не зависит от ZOOM, но не равен нулю
 
-    # -------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After ------------ 51 RA3PKJ
+    # ------------------------------------------------------------------------------------------- реформа мышиного управления шторками ----------- 13 RA3PKJ
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx: # если залочен передатчик (он же приёмник) в режиме одной шторки
+      self.mouse_is_rx = False # т.е. оставить режим одной шторки перед выходом из функции
+      return # выход из функции
+    if application.split_locktx == True and application.split_lockrx == True: # если всё залочено
+      return # выход из функции
+
+    # ----------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After ------------ 51 RA3PKJ
     if self.before_after_start == 0: # первичная загрузка значений при старте программы
       application.f_before_1 = self.txFreq
       application.f_before_2 = self.VFO
@@ -2414,84 +2652,110 @@ class GraphScreen(wx.Window):
       self.f_before_1_buf = self.txFreq
       self.f_before_2_buf = self.VFO
 
+    # получить позицию x мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
     sample_rate = int(self.sample_rate * self.zoom)
     mouse_x, mouse_y = self.GetMousePosition(event)
     if mouse_x <= self.originX:		# click left of Y axis
       return
     if mouse_x >= self.originX + self.graph_width:	# click past FFT data
       return
-    shift = wx.GetKeyState(wx.WXK_SHIFT)
-    if shift:
-      mouse_x -= self.filter_center * self.data_width / sample_rate
+    shift = wx.GetKeyState(wx.WXK_SHIFT) # проверить клавишу Shift
+    if shift: # если нажата клавиша Shift
+      mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение курсора мыши для ориентирования прыжков шторки приёмника по средней линии шторки в однополосных модах
     self.mouse_x = mouse_x
     x = mouse_x - self.originX
 
+    # только в однополосных модах ---------------------------------- добавлено ------------ отключение скачка шторки после клика по ней мышью ---- 44 RA3PKJ
+    x_rx, w_rx, rit_rx = self.display.parent.GetFilterDisplayXWR(rx_filters=True) # параметры шторки приёмника (то же самое, что в режиме одной шторки), параметры зависят от ZOOM
+    x_tx, w_tx, rit_tx = self.display.parent.GetFilterDisplayXWR(rx_filters=False) # параметры шторки передатчика,  параметры зависят от ZOOM
     # СПРАВКА
-    # self.filter_center - середина шторки (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
-    # self.sample_rate - величина постоянная, например 192000
-    # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
-    # self.filter_bandwidth - ширина шторки, например 2800
-    # self.data_width - величина постоянная, например 1936
-    # self.originX - предельная слева частота на панораме
-    # self.display.tune_rx - частота приёмника по нулевым биениям
-    # self.display.tune_tx - частота передатчика по нулевым биениям
-    # x - позиция мыши
-    # xx - видимая ширина шторки на панораме
+    # x_rx, x_tx - координата левого края шторки относительно нулевой частоты (подавленной несущей в SSB)
+    # w_rx, w_tx - ширина шторки
+    # rit_tx, rit_rx - смещение шторки при расстройке, но rit_tx похоже не существует, так как это тоже самое, что rit_rx
+    if self.filter_center < 0: # нижняя боковая
+      if self.display.tune_rx: # если есть разделение на приёмник и передатчик (Split или RX2)
+        if (x - self.display.tune_rx - rit_rx) < (x_rx + w_rx) and (x - self.display.tune_rx - rit_rx) > x_rx:
+          self.mouse_is_rx = True # разрешено тащить шторку приёмника
+          self.priznak_filter = 1
+          return # но прыжок не делать
+        if (x - self.display.tune_tx) < (x_tx + w_tx) and (x - self.display.tune_tx) > x_tx:
+          self.mouse_is_rx = False # запретить захват и движение шторки приёмника
+          self.priznak_filter = 2
+          return
+      else: # одна шторка
+        if (x - self.display.tune_tx - rit_rx) < (x_rx + w_rx) and (x - self.display.tune_tx - rit_rx) > x_rx: # передатчик и приёмник это одно и то же, но используется self.display.tune_tx
+          self.mouse_is_tx = False # нельзя двигать шторку
+          self.priznak_filter = 1
+          return
+    elif self.filter_center > 0: # верхняя боковая
+      if self.display.tune_rx: # если есть разделение на приёмник и передатчик (Split или RX2)
+        if (x - self.display.tune_rx - rit_rx) > x_rx and (x - self.display.tune_rx - rit_rx) < (x_rx + w_rx):
+          self.mouse_is_rx = True # разрешено захватывать и двигать шторку приёмника
+          self.priznak_filter = 1
+          return
+        if (x - self.display.tune_tx) > x_tx and (x - self.display.tune_tx) < (x_tx + w_tx):
+          self.mouse_is_rx = False # запретить захват и движение шторки приёмника
+          self.priznak_filter = 2
+          return
+      else: # одна шторка
+        if (x - self.display.tune_tx - rit_rx) > x_rx and (x - self.display.tune_tx - rit_rx) < (x_rx + w_rx): # передатчик и приёмник это одно и то же
+          self.mouse_is_tx = False # нельзя двигать шторку
+          self.priznak_filter = 1
+          return
 
-    # ------------------------------------------------------------- добавлено ---------- отключение скачка шторки после клика по ней мышью ---- 44 RA3PKJ
-    xx = 2 * self.filter_center * self.data_width / sample_rate
-    if self.filter_center < 0:
-      if (x - self.display.tune_rx) < 0 and (x - self.display.tune_rx) > xx:
-        self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
-        return
-      if (x - self.display.tune_tx) < 0 and (x - self.display.tune_tx) > xx:
-        self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
-        return
-    if self.filter_center > 0:
-      if (x - self.display.tune_rx) > 0 and (x - self.display.tune_rx) < xx:
-        self.mouse_is_rx = True # запрещен скачок шторки, т.е. обратная self.mouse_is_tx = False
-        return
-      if (x - self.display.tune_tx) > 0 and (x - self.display.tune_tx) < xx:
-        self.mouse_is_rx = False # разрешён скачок шторки, т.е. обратная self.mouse_is_tx = True
-        return
-
-    #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
-    #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
-    if self.split_unavailable:
-      self.mouse_is_rx = False
-
-    #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика, то...
-    #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-    elif (application.split_rxtx or application.new_split) and application.split_locktx: # -- взамен -- реформа мышиного управления шторками --- 13 RA3PKJ
-
-    # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-      #self.mouse_is_rx = True
-    #elif application.split_rxtx and application.split_lockrx:
+    # ------------------------------------------------------------------- удалено ----------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    #if self.split_unavailable:
       #self.mouse_is_rx = False
-      # --------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
-      if abs(x - self.display.tune_tx) < abs(x - self.display.tune_rx): #если клик мыши ближе к передатчику, то...
-        self.mouse_is_rx = True #в исходное положение, чтобы не возникало артефактов в других режимах
-        return #ничего не делать
-      else:    #если клик мыши ближе к приёмнику, то...
-        self.mouse_is_rx = True #сдвинуть приёмник
 
-    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx): #если клик мыши далеко от передатчика, то...
-      self.mouse_is_rx = True #сдвинуть приёмник
-    else:
-      self.mouse_is_rx = False #если все вышеприведённые условия не имеют место быть, то сдвинуть передатчик
-
-    if mouse_y < self.originY:		# click above X axis
+    if mouse_y < self.originY: # click above X axis - если клик на панораме (включая водопад), то получить частоту, которая соответствует клику мыши
       freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
       freq = int(freq)
+
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
+      # если нажата клавиша Shift, то клик мыши создаёт прыжок шторки приёмника по центру шторки
       if shift:
-        pass
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          if abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
+            if application.split_lockrx: # если залочен приёмник
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+              self.priznak_filter = 2
+            else:
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
+              self.priznak_filter = 1
+          else:
+            if application.split_locktx: # если залочен передатчик
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
+              self.priznak_filter = 1
+            else:
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+              self.priznak_filter = 2
+        else:
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+          self.priznak_filter = 2
+
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
       elif conf.freq_spacing:
         if not self.mouse_is_rx:
           freq = self.FreqRound(freq, self.VFO)
-      elif application.mode in ('LSB', 'USB', 'AM', 'FM', 'FDV-U', 'FDV-L'):
-        rnd = conf.freq_round_ssb
-        if rnd:
-          freq = (freq + rnd // 2) // rnd * rnd
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          if abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
+            if application.split_lockrx: # если залочен приёмник
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+              self.priznak_filter = 2
+            else:
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
+              self.priznak_filter = 1
+          else:
+            if application.split_locktx: # если залочен передатчик
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
+              self.priznak_filter = 1
+            else:
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+              self.priznak_filter = 2
+        else:
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+          self.priznak_filter = 2
+
       elif application.mode in ('CWU', 'CWL'):	# Move to a nearby peak
         CW_width = self.data_width * application.filter_bandwidth // sample_rate // 2	# width tolerance
         CW_mouse = mouse_x - self.originX
@@ -2517,65 +2781,289 @@ class GraphScreen(wx.Window):
             CW_x += CW_correct
             freq = float(CW_x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
             freq = int(freq)
-      if self.mouse_is_rx:
-        self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
-        # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-        application.f_after_1 = self.txFreq
-        application.f_after_2 = self.VFO
+        # -------------------------------------------------------------- добавлено -------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          if abs(x - (self.display.tune_tx)) > abs(x - (self.display.tune_rx)): #если клик мыши далеко от передатчика, то...
+            if application.split_lockrx: # если залочен приёмник
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик, хотя он и далеко
+              self.priznak_filter = 2
+            else:
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник
+              self.priznak_filter = 1
+            # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+            application.f_after_1 = self.txFreq
+            application.f_after_2 = self.VFO
+          else: #если клик мыши близко от передатчика, то...
+            if application.split_locktx: # если залочен передатчик
+              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник, хотя он и далеко
+              self.priznak_filter = 1
+            else:
+              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик
+              self.priznak_filter = 2
+            # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+            application.f_after_1 = freq
+            application.f_after_2 = self.VFO
+        else: # одна шторка
+          if application.split_locktx: # если залочен передатчик
+            return
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
+          self.priznak_filter = 2
+          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = freq
+          application.f_after_2 = self.VFO
+
+      # ---------------------------------------------------------------- добавлено -------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+      # прыжки шторок в модах с нижней боковой
+      elif self.filter_center < 0:
+        # найти к какому краю шторок ближе всего клик мыши
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          lsb_rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
+          lsb_rx_up_split = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
+          lsb_tx_down_split = abs(x - (self.display.tune_tx + x_tx))
+          lsb_tx_up_split = abs(x - (self.display.tune_tx + x_tx + w_tx))
+          if application.split_lockrx:
+            slovar = {'lsb_tx_down_split':lsb_tx_down_split, 'lsb_tx_up_split':lsb_tx_up_split}
+          elif application.split_locktx:
+            slovar = {'lsb_rx_down_split':lsb_rx_down_split, 'lsb_rx_up_split':lsb_rx_up_split}
+          else:
+            slovar = {'lsb_rx_down_split':lsb_rx_down_split, 'lsb_rx_up_split':lsb_rx_up_split, 'lsb_tx_down_split':lsb_tx_down_split, 'lsb_tx_up_split':lsb_tx_up_split}
+          min_key = min(slovar, key=slovar.get)
+        else: # одна шторка
+          lsb_tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
+          lsb_tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx + rit_rx))
+          slovar = {'lsb_tx_down':lsb_tx_down, 'lsb_tx_up':lsb_tx_up}
+          min_key = min(slovar, key=slovar.get)
+        # применить найденное
+        # LSB, Split или RX2
+        if min_key == 'lsb_rx_down_split':
+          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'lsb_rx_up_split':
+          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'lsb_tx_down_split':
+          freq = float(x + self.originX - self.x0 - x_tx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'lsb_tx_up_split':
+          freq = float(x + self.originX - self.x0 - x_tx - w_tx) * sample_rate / self.data_width + self.zoom_deltaf
+        # LSB, одна шторка
+        elif min_key == 'lsb_tx_down':
+          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'lsb_tx_up':
+          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        # создать прыжок частоты
+        if min_key in ('lsb_tx_down_split', 'lsb_tx_up_split', 'lsb_tx_down', 'lsb_tx_up'):
+          if application.split_locktx: # если залочен передатчик
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+          self.priznak_filter = 2
+          # ---------------------------------------------------------- добавлено ----------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = freq
+          application.f_after_2 = self.VFO
+        elif min_key in ('lsb_rx_down_split', 'lsb_rx_up_split', 'lsb_rx_down', 'lsb_rx_up'):
+          if application.split_lockrx: # если залочен приёмник
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+          self.priznak_filter = 1
+          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = self.txFreq
+          application.f_after_2 = self.VFO
+
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
+      # прыжки шторок в модах с верхней боковой
+      elif self.filter_center > 0:
+      # найти к какому краю шторок ближе всего клик мыши
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          usb_rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
+          usb_rx_up_split = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
+          usb_tx_down_split = abs(x - (self.display.tune_tx + x_tx))
+          usb_tx_up_split = abs(x - (self.display.tune_tx + x_tx + w_tx))
+          if application.split_lockrx:
+            slovar = {'usb_tx_down_split':usb_tx_down_split, 'usb_tx_up_split':usb_tx_up_split}
+          elif application.split_locktx:
+            slovar = {'usb_rx_down_split':usb_rx_down_split, 'usb_rx_up_split':usb_rx_up_split}
+          else:
+            slovar = {'usb_rx_down_split':usb_rx_down_split, 'usb_rx_up_split':usb_rx_up_split, 'usb_tx_down_split':usb_tx_down_split, 'usb_tx_up_split':usb_tx_up_split}
+          min_key = min(slovar, key=slovar.get)
+        else: # одна шторка
+          usb_tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
+          usb_tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx + rit_rx))
+          slovar = {'usb_tx_down':usb_tx_down, 'usb_tx_up':usb_tx_up}
+          min_key = min(slovar, key=slovar.get)
+        # применить найденное
+        # USB, Split или RX2
+        if min_key == 'usb_rx_down_split':
+          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'usb_rx_up_split':
+          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'usb_tx_down_split':
+          freq = float(x + self.originX - self.x0 - x_tx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'usb_tx_up_split':
+          freq = float(x + self.originX - self.x0 - x_tx - w_tx) * sample_rate / self.data_width + self.zoom_deltaf
+        # USB, одна шторка
+        elif min_key == 'usb_tx_down':
+          freq = float(x + self.originX - self.x0 - x_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'usb_tx_up':
+          freq = float(x + self.originX - self.x0 - x_rx - w_rx - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        # создать прыжок частоты
+        if min_key in ('usb_tx_down_split', 'usb_tx_up_split', 'usb_tx_down', 'usb_tx_up'):
+          if application.split_locktx: # если залочен передатчик
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+          self.priznak_filter = 2
+          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = freq
+          application.f_after_2 = self.VFO
+        elif min_key in ('usb_rx_down_split', 'usb_rx_up_split', 'usb_rx_down', 'usb_rx_up'):
+          if application.split_lockrx: # если залочен приёмник
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if not application.mode in ('DGT-L','DGT-U'): # в цифровых модах не надо
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+          self.priznak_filter = 1
+          # ---------------------------------------------------------- добавлено ------------------------------ кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = self.txFreq
+          application.f_after_2 = self.VFO
+
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
+      # прыжки шторок в модах с центральным расположением нулевой линии (AM, FM и некоторые цифровые)
       else:
-        self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-        # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-        application.f_after_1 = freq
-        application.f_after_2 = self.VFO
+        # найти к какому краю шторок ближе всего клик мыши
+        if application.new_split == True or application.split_rxtx == True: # Split или RX2
+          rx_down_split = abs(x - (self.display.tune_rx + x_rx + rit_rx))
+          rx_up_split = abs(x - (self.display.tune_rx - x_rx + rit_rx))
+          tx_down_split = abs(x - (self.display.tune_tx + x_tx))
+          tx_up_split = abs(x - (self.display.tune_tx - x_tx))
+          if application.split_lockrx:
+            slovar = {'tx_down_split':tx_down_split, 'tx_up_split':tx_up_split}
+          elif application.split_locktx:
+            slovar = {'rx_down_split':rx_down_split, 'rx_up_split':rx_up_split}
+          else:
+            slovar = {'rx_down_split':rx_down_split, 'rx_up_split':rx_up_split, 'tx_down_split':tx_down_split, 'tx_up_split':tx_up_split}
+          min_key = min(slovar, key=slovar.get)
+        else: # одна шторка
+          tx_down = abs(x - (self.display.tune_tx + x_rx + rit_rx))
+          tx_up = abs(x - (self.display.tune_tx - x_rx + rit_rx))
+          slovar = {'tx_down':tx_down, 'tx_up':tx_up}
+          min_key = min(slovar, key=slovar.get)
+        # применить найденное
+        # Split или RX2
+        if min_key == 'rx_down_split':
+          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'rx_up_split':
+          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'tx_down_split':
+          freq = float(x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'tx_up_split':
+          freq = float(x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        # одна шторка
+        elif min_key == 'tx_down':
+          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        elif min_key == 'tx_up':
+          freq = float(x + self.originX - self.x0 - rit_rx) * sample_rate / self.data_width + self.zoom_deltaf
+        # создать прыжок частоты
+        if min_key in ('tx_down_split', 'tx_up_split', 'tx_down', 'tx_up'):
+          if application.split_locktx: # если залочен передатчик
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if application.mode in ('AM', 'FM'):
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+          self.priznak_filter = 2
+          # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = freq
+          application.f_after_2 = self.VFO
+        elif min_key in ('rx_down_split', 'rx_up_split', 'rx_down', 'rx_up'):
+          if application.split_lockrx: # если залочен приёмник
+            return
+          freq = int(freq)
+          # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+          if application.mode in ('AM', 'FM'):
+            rnd = conf.freq_round_ssb
+            if rnd:
+              freq = (freq + rnd // 2) // rnd * rnd
+          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+          self.priznak_filter = 1
+          # ---------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+          application.f_after_1 = self.txFreq
+          application.f_after_2 = self.VFO
 
     if not self.HasCapture():
       self.CaptureMouse()
+
   def OnLeftUp(self, event): # левая клавиша мыши вверх
+    self.priznak_filter = 0 # 0-исходное, 1-перемещение мышью шторки RX в Split(RX2), 2-перемещение мышью шторки TX в Split(RX2) - добавлено - перемещение шторок мышью - 56 RA3PKJ
+    self.mouse_is_rx = False # привести в исходное
     if self.HasCapture():
       self.ReleaseMouse()
       freq = self.FreqRound(self.txFreq, self.VFO)
       if freq != self.txFreq:
         self.ChangeHwFrequency(freq, self.VFO, 'MouseMotion', event=event)
     # ------------------------------------------------------------- добавлено --------------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+    if application.f_after_1 == None:
+      application.f_after_1 = 0
     freq_jump = abs((self.VFO - application.f_after_1) - (self.VFO - self.f_before_1_buf)) # определить, насколько далеко произошёл прыжок или перемещение частоты мышью
     if freq_jump > 5000: # если было изменение частоты более 5кГц, то:
       application.f_before_1 = self.f_before_1_buf
       application.f_before_2 = self.f_before_2_buf
     application.beforeButton.Enable(1)
     application.afterButton.Enable(0)
-    self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положени
+    self.motion_count = 0 # привести счётчик входов в функцию OnMotion в исходное положение
 
   def OnMotion(self, event): # движение мыши по столу
     # СПРАВКА
-    # self.filter_center - середина шторки (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
+    # self.VFO - абсолютная частота посередине панорамы в Герцах
+    # self.filter_center - середина шторки приёмника в однополосных модах (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
     # self.sample_rate - величина постоянная, например 192000
     # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
-    # self.filter_bandwidth - ширина шторки, например 2800
-    # self.data_width - величина постоянная, например 1936
+    # self.filter_bandwidth - ширина шторки приёмника, например 2800
+    # self.data_width - постоянная величина ширины панорамы в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
     # self.originX - предельная слева частота на панораме
-    # self.display.tune_rx - частота приёмника по нулевым биениям
-    # self.display.tune_tx - частота передатчика по нулевым биениям
-    # x - позиция мыши
-    # xx - видимая ширина шторки на панораме
+    # self.display.tune_rx - частота приёмника по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.display.tune_tx - частота передатчика по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # x - позиция мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.zoom - коэффициент зуммирования, пример использования: sample_rate = int(self.sample_rate * self.zoom)
+    # self.originX - левый край, не зависит от ZOOM, но не равен нулю
+
+    sample_rate = int(self.sample_rate * self.zoom)
 
     # ----------------------------------------------------------------------------- добавлено ------------ реформа мышиного управления шторками --- 13 RA3PKJ
-    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
-      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx: # если залочен передатчик (он же приёмник) в режиме одной шторкиа
+      self.mouse_is_rx = False
       return
 
-    # ----------------------------------------------------------------------------- добавлено ----------------- Перестройка типа PowerSDR --------- 47 RA3PKJ
     # ----------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
     if self.motion_count == 0: # если первый вход в эту функцию, то:
       self.f_before_1_buf = self.txFreq
       self.f_before_2_buf = self.VFO
     self.motion_count += 1 # количество входов в эту функцию
 
-    sample_rate = int(self.sample_rate * self.zoom)
-
     # Настройка как в PowerSDR (Mouse motion changes the VFO frequency)
     # ----------------------------------------------------------------------------- добавлено ----------------- Перестройка типа PowerSDR --------- 47 RA3PKJ
     if event.Dragging() and event.RightIsDown():
+      pass
       mouse_x, mouse_y = self.GetMousePosition(event)
       x = (mouse_x - self.mouse_x)    # Thanks to VK6JBL
       self.mouse_x = mouse_x
@@ -2588,30 +3076,48 @@ class GraphScreen(wx.Window):
     if event.Dragging() and event.LeftIsDown():
       # Frequency changes more rapidly for higher mouse Y position
       # speed = max(10, self.originY - mouse_y) / float(self.originY + 1) # ------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-      mouse_x, mouse_y = self.GetMousePosition(event)
-      x = (mouse_x - self.mouse_x)
-      self.mouse_x = mouse_x
+      mouse_x, mouse_y = self.GetMousePosition(event)   # получить координаты мыши
+      x = (mouse_x - self.mouse_x)                      # получить смещение между новыми и старыми координатами мыши
+      self.mouse_x = mouse_x                            # сохранить новые координаты мыши
       #freq = speed * x * sample_rate / self.data_width # ------------------------- удалено ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-      freq = x * sample_rate / self.data_width # ----------------------------------- взамен ----------- скорость шторки относительно курсора ------ 48 RA3PKJ
-      freq = int(freq)
+      freq = x * sample_rate / self.data_width          # пересчитать смещение в частоту --- взамен --- скорость шторки относительно курсора ------ 48 RA3PKJ
+      freq = int(freq)                                  # отбросить дробную часть частотного смещения
       self.freq = freq # ---------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-      if self.mouse_is_rx:	# Mouse motion changes the receive frequency
-        freq2 = application.rxFreq + freq
-        self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseMotion', event=event, rx_freq=freq2)
+
+# --------------------------------------------------------------------------------- добавлено ----------------- перемещение шторок мышью ---------- 56 RA3PKJ
+      # СПРАВКА self.priznak_filter запоминает шторку, которую перемещает мышь без отрыва, т.е за один приём. 0-исходное, 1-перемещение мышью шторки RX в Split(RX2), 2-перемещение мышью шторки TX в Split(RX2)
+      if application.split_rxtx == True or application.new_split == True:     # режим Split или RX2   # Mouse motion changes the receive frequency
+        if application.split_lockrx and application.split_locktx:
+          return
+        if application.split_lockrx:
+          self.priznak_filter = 2
+        elif application.split_locktx:
+          self.priznak_filter = 1
+
+        if self.priznak_filter == 1:
+          freq2 = application.rxFreq + freq                # новая частота приёмника с учётом частотного смещения
+          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseMotion', event=event, rx_freq=freq2)
+          self.priznak_filter = 1
+        elif self.priznak_filter == 2:
+          self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
+          self.priznak_filter = 2
         # ------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
         application.f_after_1 = self.txFreq
         application.f_after_2 = self.VFO
-      else:					# Mouse motion changes the transmit frequency
+      else:     # режим одной шторки  # Mouse motion changes the transmit frequency
+        if application.split_locktx:
+          return
         self.ChangeHwFrequency(self.txFreq + freq, self.VFO, 'MouseMotion', event=event)
         # ------------------------------------------------------------------------- добавлено ----------------- кнопки f_Before и f_After --------- 51 RA3PKJ
         application.f_after_1 = self.txFreq + freq
         application.f_after_2 = self.VFO
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     else: # Bandplan mode message
       mouse_x, mouse_y = self.GetMousePosition(event)
       if not self.in_splitter and self.originY <= mouse_y <= self.originY + self.tick and (
             self.originX <= mouse_x <= self.originX + self.graph_width):
-        dc = wx.ClientDC(self)	# Read the pixel at the mouse position
+        dc = wx.ClientDC(self)    # Read the pixel at the mouse position
         pixel = dc.GetPixel(mouse_x, mouse_y)
         pixel = "#%02X%02X%02X" % (pixel[0], pixel[1], pixel[2])
         txt = application.BandPlanC2T.get(pixel, '')
@@ -2637,12 +3143,26 @@ class GraphScreen(wx.Window):
             self.bandplanWindow.Hide()
       elif self.bandplanWindow.IsShown():
         self.bandplanWindow.Hide()
+
   def OnWheel(self, event): # колесо мыши
+    # СПРАВКА
+    # self.VFO - абсолютная частота посередине панорамы в Герцах
+    # self.filter_center - середина шторки приёмника в однополосных модах (отрицательная - если нижняя боковая, и наоборот), например -1400 при полосе 2800
+    # self.sample_rate - величина постоянная, например 192000
+    # sample_rate - уменьшается ниже 192000, если делать ZOOM панорамы
+    # self.filter_bandwidth - ширина шторки приёмника, например 2800
+    # self.data_width - постоянная величина ширины панорамы в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.originX - предельная слева частота на панораме
+    # self.display.tune_rx - частота приёмника по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.display.tune_tx - частота передатчика по нулевым биениям в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # x - позиция мыши в единицах разрешения экрана, прописанного в Quisk (Window width pixels)
+    # self.zoom - коэффициент зуммирования, пример использования: sample_rate = int(self.sample_rate * self.zoom)
+    # self.originX - левый край, не зависит от ZOOM, но не равен нулю
+
     # -------------------------------------------------- добавлено -------------------------------- реформа мышиного управления шторками ------ 13 RA3PKJ
-    #залочить (если выставлен флаг application.split_locktx) передатчик, когда не используется расщепление (выключены RX2 и Split)
-    if application.split_rxtx == False and application.new_split == False and application.split_locktx:
-      self.mouse_is_rx = False #в исходное положение, чтобы не возникало артефактов в других режимах
-      return #ничего не делать и молча выскочить
+    if application.split_rxtx == False and application.new_split == False and application.split_locktx: # если залочен передатчик (он же приёмник) в режиме одной шторки
+      self.mouse_is_rx = False # в исходное положение, чтобы не возникало артефактов в других режимах
+      return # ничего не делать и молча выскочить
 
     # -------------------------------------------------- добавлено ------------------------------------- кнопки f_Before и f_After ------------ 51 RA3PKJ
     if self.before_after_start == 0: # первичная загрузка значений при старте программы
@@ -2655,35 +3175,27 @@ class GraphScreen(wx.Window):
     else:
       #wm = self.WheelMod # ----------------------------------------------------------------- удалено -------------- шаг перестройки ----------- 30 RA3PKJ
       wm = application.freq_step # ----------------------------------------------------------- взамен -------------- шаг перестройки ----------- 30 RA3PKJ
-
     mouse_x, mouse_y = self.GetMousePosition(event)
     x = mouse_x - self.originX
-
-    #Внимание! Если ниже сделать self.mouse_is_rx = True, то на панораме появляется приёмник, который можно двигать, но нельзя двигать передатчик
-    #если в принципе запрещён режим расщепления на отдельные приёмник и передатчик:
-    if self.split_unavailable:
-      self.mouse_is_rx = False
-
-    #если есть расщепление на RX и TX и выставлен флаг application.split_locktx запрета сдвига передатчика
-    #elif application.split_rxtx and application.split_locktx: # -------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-    elif (application.split_rxtx or application.new_split) and application.split_locktx: # -- взамен -- реформа мышиного управления шторками --- 13 RA3PKJ
-
-    # ------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками --- 13 RA3PKJ
-      #self.mouse_is_rx = True
-    #elif application.split_rxtx and application.split_lockrx:
+    # --------------------------------------------------------------------------------------- удалено --- реформа мышиного управления шторками - 13 RA3PKJ
+    #if self.split_unavailable:
       #self.mouse_is_rx = False
-      # --------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
-      if abs(x - self.display.tune_tx) < abs(x - self.display.tune_rx): #если колесо мыши ближе к передатчику, то...
-        self.mouse_is_rx = True #в исходное положение, чтобы не возникало артефактов в других режимах
-        return #ничего не делать
-      else:    #если колесо мыши ближе к приёмнику, то...
-        self.mouse_is_rx = True #сдвинуть приёмник
 
-    elif self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx): #если колесо мыши далеко от передатчика, то...
-      self.mouse_is_rx = True #сдвинуть приёмник
+    # ----------------------------------------------------------------------------------- добавлено --- реформа мышиного управления шторками --- 13 RA3PKJ
+    if self.display.tune_rx and abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx): #если колесо мыши далеко от передатчика, то...
+      self.mouse_is_rx = True # сдвинуть приёмник
     else:
-      self.mouse_is_rx = False #если все вышеприведённые условия не имеют место быть, то сдвинуть передатчик
+      self.mouse_is_rx = False # сдвинуть передатчик
 
+    # залочка шторок
+    if application.split_lockrx and application.split_locktx:
+      return
+    if application.split_lockrx:
+      self.mouse_is_rx = False
+    if application.split_locktx:
+      self.mouse_is_rx = True
+
+    # двигать приёмник
     if self.mouse_is_rx:
       freq = application.rxFreq + self.VFO + wm * event.GetWheelRotation() // event.GetWheelDelta()
       if conf.freq_spacing:
@@ -2697,7 +3209,7 @@ class GraphScreen(wx.Window):
       # ----------------------------------------------------------------------------------- добавлено -------- кнопки f_Before и f_After --------- 51 RA3PKJ
       application.f_after_1 = self.txFreq
       application.f_after_2 = self.VFO
-
+    # двигать передатчик
     else:
       freq = self.txFreq + self.VFO + wm * event.GetWheelRotation() // event.GetWheelDelta()
       if conf.freq_spacing:
@@ -2713,6 +3225,8 @@ class GraphScreen(wx.Window):
       application.f_after_2 = self.VFO
     application.beforeButton.Enable(1)
     application.afterButton.Enable(0)
+
+    self.mouse_is_rx = False # привести в исходное
 
   def ChangeHwFrequency(self, tune, vfo, source='', band='', event=None, rx_freq=None):
     application.ChangeHwFrequency(tune, vfo, source, band, event, rx_freq)
@@ -2933,7 +3447,7 @@ class WaterfallDisplay(wx.Window):
     #self.tuningPenRx = wx.Pen(conf.color_rxline, 3)
     self.tuningPenRx = wx.Pen(conf.color_rxline, 2) # цвет и ширина вертикального тонкого огрызка на водопаде (RX) -- взамен -- оформление панорамы -- 4 RA3PKJ
     #self.filterBrush = wx.Brush(conf.color_bandwidth, wx.SOLID)
-    self.filterBrush = wx.Brush('#82B3C8', wx.SOLID) # цвет шторки -------------------------------------------------- взамен -- оформление панорамы -- 4 RA3PKJ
+    self.filterBrush = wx.Brush('#009999', wx.SOLID) # цвет шторки -------------------------------------------------- взамен -- оформление панорамы -- 4 RA3PKJ
     # Size of top faster scroll region is (top_key + 2) * (top_key - 1) // 2
     self.top_key = 8
     self.top_size = (self.top_key + 2) * (self.top_key - 1) // 2
@@ -3222,7 +3736,7 @@ class WaterfallPane(GraphScreen):
     i2 = i1 + self.graph_width
     self.raw_graph_data = data[i1:i2]
     self.display.OnGraphData(data[i1:i2], self.y_zero, self.y_scale)
-  # --------------------------------------------------------------------------------------- добавлено --------- выбор водопада ---------- 25 RA3PKJ
+  # ------------------------------------------------------------- добавлено ------------------------------ выбор водопада ---------------------- 25 RA3PKJ
   def ChangePalette(self):
     self.display.ChangePalette()
 
@@ -3240,7 +3754,7 @@ class MultiRxGraph(GraphScreen):
     self.waterfall_display.data_width = self.data_width
     self.waterfall_y_scale = conf.waterfall_y_scale
     self.waterfall_y_zero = conf.waterfall_y_zero
-    self.split_unavailable = True
+    # self.split_unavailable = True # -------------------------- удалено ----------------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
     width = self.originX + self.graph_width
     self.tabX = width + (multi_rx.graph.width - width - multi_rx.rx_btn_width) // 2
     self.popupX = self.tabX - multi_rx.rx_btn_width * 2
@@ -4302,7 +4816,7 @@ class App(wx.App):
     self.new_split = False  # ------------------------------------------- добавлено ---------------------------------------- реформа кнопок ---------- 12 RA3PKJ
 
     self.split_locktx = False   # Flag Tx frequency is fixed
-    #self.split_lockrx = False	# Split mode Rx frequency is fixed. # ------- удалено ------------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
+    self.split_lockrx = False   # Flag Rx frequency is fixed
     self.split_rxtx_play = 2    # Play 1=both, high on Right; 2=both, high on Left; 3=only Rx; 4=only Tx
     #self.split_offset = 0	# current frequency difference when using Split # ---- удалено -------- чистка кнопки Split и перевод её на RX2 ---------- 10 RA3PKJ
     self.savedState = {}
@@ -5366,14 +5880,23 @@ class App(wx.App):
     self.newsplitButton.SetLabel("Split")
     self.newsplitButton.Refresh()
 
-    # --- кнопка Lock
+    # --- кнопка LockRX
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_lockVFO_RX = szr
+    self.lockVFOButton_RX = b = QuiskCheckbutton(frame, self.OnBtnLockVFO_RX, "LockRX")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.lockVFOButton_RX, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.lockVFOButton_RX.SetLabel("LockRX")
+    self.lockVFOButton_RX.Refresh()
+
+    # --- кнопка LockTX
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
-    self.lockVFOButton = b = QuiskCheckbutton(frame, self.OnBtnLockVFO, "Lock")
+    self.lockVFOButton_TX = b = QuiskCheckbutton(frame, self.OnBtnLockVFO_TX, "Lock")
     self.idName2Button[b.idName] = b
-    szr.Add(self.lockVFOButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.lockVFOButton.SetLabel("LockTX")
-    self.lockVFOButton.Refresh()
+    szr.Add(self.lockVFOButton_TX, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.lockVFOButton_TX.SetLabel("LockTX")
+    self.lockVFOButton_TX.Refresh()
 
     # --- кнопка Step ------------------------------------ добавлено ----------- шаг перестройки ---- 30 RA3PKJ
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
@@ -5925,6 +6448,7 @@ class App(wx.App):
     self.bs0.Add(b_bandupdown, wx.EXPAND)
     self.bs0.Add(b_newsplit, wx.EXPAND)
     self.bs0.Add(b_lockVFO, wx.EXPAND)
+    self.bs0.Add(b_lockVFO_RX, wx.EXPAND)
     self.bs0.Add(b_step, wx.EXPAND)
     self.bs0.Add(b_rit, wx.EXPAND)
     self.bs0.AddSpacer(10)
@@ -5971,7 +6495,7 @@ class App(wx.App):
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.CtrlTxAudioClip, wx.EXPAND) # -------------------- добавлено -------------- Вынос слайдера Clip в главное окно ----- 43 RA3PKJ
     self.bs2.AddSpacer(10)
-    self.bs2.Add(self.CtrlTxAudioPreemph, wx.EXPAND) # ----------------- добавлено --------- Вынос слайдера PreemPhasis в главное окно --- 39 RA3PKJ
+    self.bs2.Add(self.ritScale, wx.EXPAND)
 
     # -------------------------- установка слайдеров в сайзер bs2a
     self.bs2a.AddSpacer(10)
@@ -5982,8 +6506,8 @@ class App(wx.App):
     self.bs2a.Add(self.sliderYz, wx.EXPAND)
     self.bs2a.AddSpacer(10)
     self.bs2a.Add(self.sliderZo, wx.EXPAND)
-    self.bs2a.AddSpacer(15)
-    self.bs2a.Add(self.ritScale, wx.EXPAND)
+    self.bs2a.AddSpacer(10)
+    self.bs2a.Add(self.CtrlTxAudioPreemph, wx.EXPAND) # ----------------- добавлено --------- Вынос слайдера PreemPhasis в главное окно --- 39 RA3PKJ
 
     # ----------------------------- установка кнопок в сайзер bs3
     text = wx.StaticText(frame, label="   Band")
@@ -6784,13 +7308,21 @@ class App(wx.App):
     self.rxFreq = self.txFreq
     self.ChangeHwFrequency(rx, self.VFO, 'FreqEntry')
   # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
-  def OnBtnLockVFO(self, event): # обработчик нажатия кнопки Lock
-    self.lock_vfo = self.lockVFOButton.GetValue() # See that button turn On or Off?
+  def OnBtnLockVFO_RX(self, event): # обработчик нажатия кнопки LockRX
+    self.lock_vfo_RX = self.lockVFOButton_RX.GetValue() # See that button turn On or Off?
+    if self.lock_vfo_RX:
+      self.split_lockrx = True #глобальный флаг для операций мыши на панораме
+    else:
+      self.split_lockrx = False
+    self.lockVFOButton_RX.Refresh()
+  # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnLockVFO_TX(self, event): # обработчик нажатия кнопки LockTX
+    self.lock_vfo = self.lockVFOButton_TX.GetValue() # See that button turn On or Off?
     if self.lock_vfo:
       self.split_locktx = True #глобальный флаг для операций мыши на панораме
     else:
       self.split_locktx = False
-    self.lockVFOButton.Refresh()
+    self.lockVFOButton_TX.Refresh()
 
   # ------------------------------------------------------------------------------- добавлено ------ кнопки f_Before и f_After ------- 51 RA3PKJ
   def OnBtnBefore(self, event):
@@ -6861,6 +7393,8 @@ class App(wx.App):
       if aa == False:
         self.new_split = self.newsplitButton.GetValue() #проверить нажата или отжата кнопка Split после клика
         if self.new_split == False: #кнопка отжата после клика
+          self.lockVFOButton_RX.SetValue(False)
+          self.lockVFOButton_RX.Enable(False)
           # Rx и Tx меняются местами
           rx = self.rxFreq
           self.rxFreq = self.txFreq
@@ -6872,6 +7406,7 @@ class App(wx.App):
         self.split_rxtx = self.new_split # --- использовать те же методы, что и для кнопки RX2
 
         if self.new_split: #кнопка нажата после клика
+          self.lockVFOButton_RX.Enable(True)
           if self.mode in ("CWL", "CWU"):
             self.rxFreq = self.txFreq + 1000 # Rx и Tx ниже поменяются местами
           else:

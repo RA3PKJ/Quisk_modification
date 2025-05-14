@@ -1260,7 +1260,7 @@ file_name_playback = ""
 do_repeater_offset = False
 #do_repeater_offset = True
 
-## correct_smeter       S-meter correction in S units, number
+## correct_smeter       S-meter correction in db, number
 # This converts from dB to S-units for the S-meter (it is in S-units).
 correct_smeter = 15.5
 #correct_smeter = 7.7

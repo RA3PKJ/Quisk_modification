@@ -92,7 +92,7 @@ class Hardware(BaseHardware):
     except:
       pass
     if conf.use_rx_udp == 2:	# Set to 2 for the HiQSDR
-      self.rf_gain_labels = ('RF 0 dB', 'RF +10', 'RF -10', 'RF -20', 'RF -30')
+      self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db')
       self.antenna_labels = ('Ant 1', 'Ant 2')
     self.firmware_version = None	# firmware version is initially unknown
     self.rx_udp_socket = None

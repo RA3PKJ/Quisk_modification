@@ -14,7 +14,7 @@ class Hardware(ControlCommon):
       self.decimations.append(dec * 64)
     self.decimations.append(80)
     self.decimations.append(64)
-    self.rf_gain_labels = ('RF 0 dB', 'RF +10', 'RF -10', 'RF -20', 'RF -30') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
     self.antenna_labels = ('Ant 1', 'Ant 2') # ------------------------------------ добавлено --- реформа удалённого управления --- 37 RA3PKJ
   def RadioInit(self):	# Send initial parameters not covered by CommonInit()
     pass
