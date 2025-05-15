@@ -2083,10 +2083,16 @@ class GraphDisplay(wx.Window):
       application.lockVFOButton_TX.Refresh() # перерисовать кнопку
       x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True) # получение параметров шторки и смещения шторки приёмника
       dc.SetTextForeground('white')
-      dc.DrawText('RX', self.tune_rx + x + rit, 60)
+      if self.tune_rx == 0: # при совмещении двух шторок в Split(RX2) пропадает self.tune_rx
+        dc.DrawText('RX', self.tune_tx + x + rit, 60)
+      else:
+        dc.DrawText('RX', self.tune_rx + x + rit, 60)
       if application.lockVFOButton_RX.GetValue(): # если включен LockRX
         dc.SetTextForeground('yellow')
-        dc.DrawText('Lock', self.tune_rx + x + rit, 70)
+        if self.tune_rx == 0: # при совмещении двух шторок в Split(RX2) пропадает self.tune_rx
+          dc.DrawText('Lock', self.tune_tx + x + rit, 70)
+        else:
+          dc.DrawText('Lock', self.tune_rx + x + rit, 70)
       x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=False) # получение параметров шторки и смещения шторки передатчика
       dc.SetTextForeground('white')
       dc.DrawText('TX', self.tune_tx + x, 80) # у передатчика нет RIT
@@ -2675,35 +2681,17 @@ class GraphScreen(wx.Window):
     # rit_tx, rit_rx - смещение шторки при расстройке, но rit_tx похоже не существует, так как это тоже самое, что rit_rx
 
     if mouse_y < self.originY: # click above X axis - если клик на панораме (включая водопад), то получить частоту, которая соответствует клику мыши
-      freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
-      freq = int(freq)
-
       # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ---------- 13 RA3PKJ
-      # для трансверторов
+      # для трансверторов большие прыжки
       if conf.freq_spacing:
+        freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        freq = int(freq)
         if not self.mouse_is_rx:
           freq = self.FreqRound(freq, self.VFO)
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          if abs(x - self.display.tune_tx) > abs(x - self.display.tune_rx):
-            if application.split_lockrx: # если залочен приёмник
-              self.priznak_filter = 2
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-            else:
-              self.priznak_filter = 1
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
-          else:
-            if application.split_locktx: # если залочен передатчик
-              self.priznak_filter = 1
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq)
-            else:
-              self.priznak_filter = 2
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-        else:
-          self.priznak_filter = 2
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-
       # прыжки в CW
       elif application.mode in ('CWU', 'CWL'):	# Move to a nearby peak
+        freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        freq = int(freq)
         CW_width = self.data_width * application.filter_bandwidth // sample_rate // 2	# width tolerance
         CW_mouse = mouse_x - self.originX
         CW_max = -9999	# look for a peak significantly greater than the average
@@ -2728,80 +2716,59 @@ class GraphScreen(wx.Window):
             CW_x += CW_correct
             freq = float(CW_x + self.originX - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
             freq = int(freq)
-        # -------------------------------------------------------------- добавлено -------------- реформа мышиного управления шторками ---------- 13 RA3PKJ
-        if application.new_split == True or application.split_rxtx == True: # Split или RX2
-          if abs(x - (self.display.tune_tx)) > abs(x - (self.display.tune_rx)): #если клик мыши далеко от передатчика, то...
-            if application.split_lockrx: # если залочен приёмник
-              self.priznak_filter = 2
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик, хотя он и далеко
-            else:
-              self.priznak_filter = 1
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник
-            # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-            application.f_after_1 = self.txFreq
-            application.f_after_2 = self.VFO
-          else: #если клик мыши близко от передатчика, то...
-            if application.split_locktx: # если залочен передатчик
-              self.priznak_filter = 1
-              self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # сдвинуть приёмник, хотя он и далеко
-            else:
-              self.priznak_filter = 2
-              self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # сдвинуть передатчик
-            # ---------------------------------------------------------- добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-            application.f_after_1 = freq
-            application.f_after_2 = self.VFO
-        else: # одна шторка
-          if application.split_locktx: # если залочен передатчик
-            return
-          self.priznak_filter = 2
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event)
-          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = freq
-          application.f_after_2 = self.VFO
 
-      # ---------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ------ 13 RA3PKJ
-      # клик мыши создаёт прыжок шторки с совмещением курсора с центром шторки
-      else:
-        mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение курсора мыши для ориентирования прыжков шторки по центру шторки в однополосных модах
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ------ 13 RA3PKJ
+      # прыжки шторок с совмещением курсора с центром шторок (self.filter_center существует только в однополосных модах, но в других видах и так всё прыгает по центру шторок)
+      #else:
+      # -------------------------------------------------------------- добавлено ------------------ реформа мышиного управления шторками ------ 13 RA3PKJ
+      # найти к какому краю шторок ближе всего клик мыши
+      if self.display.tune_rx: # если Split или RX2
+        rx_down = abs(x - (self.display.tune_rx + x_rx + rit_rx))
+        rx_up = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
+        tx_down = abs(x - (self.display.tune_tx + x_tx))
+        tx_up = abs(x - (self.display.tune_tx + x_tx + w_tx))
+      else: # одна шторка
+        tx_down = abs(x - (self.display.tune_tx + x_rx))
+        tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx))
+      if self.display.tune_rx and application.split_lockrx: # если Split или RX2, залочен приёмник
+        slovar = {'tx_down':tx_down, 'tx_up':tx_up}
+      elif self.display.tune_rx and application.split_locktx: # если Split или RX2, залочен передатчик
+        slovar = {'rx_down':rx_down, 'rx_up':rx_up}
+      elif self.display.tune_rx: # если Split или RX2, ничего не залочено
+        slovar = {'rx_down':rx_down, 'rx_up':rx_up, 'tx_down':tx_down, 'tx_up':tx_up}
+      else: # если одна шторка
+        slovar = {'tx_down':tx_down, 'tx_up':tx_up}
+      min_key = min(slovar, key=slovar.get) # получить шторку, до которой минимальное расстояние от клика
+      # создать прыжок
+      if min_key in ('tx_down', 'tx_up'): # если клик близко к передатчику
+        if not self.filter_center == 0 and not application.mode in ('CWL','CWU'): # однополосные моды, но не телеграф
+          if self.display.tune_rx: # если Split или RX2
+            mouse_x -= x_tx + w_tx//2 # сымитировать смещение курсора мыши для ориентирования прыжков шторки по центру шторки в однополосных модах
+          else:
+            mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение в режиме одной шторки
         freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
         freq = int(freq)
-        # найти к какому краю шторок ближе всего клик мыши
-        if self.display.tune_rx: # если Split или RX2
-          rx_down = abs(x - (self.display.tune_rx + x_rx + rit_rx))
-          rx_up = abs(x - (self.display.tune_rx + x_rx + w_rx + rit_rx))
-          tx_down = abs(x - (self.display.tune_tx + x_tx))
-          tx_up = abs(x - (self.display.tune_tx + x_tx + w_tx))
-        else:
-          tx_down = abs(x - (self.display.tune_tx + x_rx))
-          tx_up = abs(x - (self.display.tune_tx + x_rx + w_rx))
-        if self.display.tune_rx and application.split_lockrx:
-          slovar = {'tx_down':tx_down, 'tx_up':tx_up}
-        elif self.display.tune_rx and application.split_locktx:
-          slovar = {'rx_down':rx_down, 'rx_up':rx_up}
-        elif self.display.tune_rx:
-          slovar = {'rx_down':rx_down, 'rx_up':rx_up, 'tx_down':tx_down, 'tx_up':tx_up}
-        else:
-          slovar = {'tx_down':tx_down, 'tx_up':tx_up}
-        min_key = min(slovar, key=slovar.get) # получить шторку, до которой минимальное расстояние от клика
-        # создать прыжок
-        if min_key in ('tx_down', 'tx_up'):
-          rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if rnd:
-            freq = (freq + rnd // 2) // rnd * rnd
-          self.priznak_filter = 2
-          self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
-          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = freq
-          application.f_after_2 = self.VFO
-        elif min_key in ('rx_down', 'rx_up'):
-          rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
-          if rnd:
-            freq = (freq + rnd // 2) // rnd * rnd
-          self.priznak_filter = 1
-          self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
-          # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
-          application.f_after_1 = self.txFreq
-          application.f_after_2 = self.VFO
+        rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+        if rnd:
+          freq = (freq + rnd // 2) // rnd * rnd
+        self.priznak_filter = 2
+        self.ChangeHwFrequency(freq, self.VFO, 'MouseBtn1', event=event) # прыжок передатчика
+        # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = freq
+        application.f_after_2 = self.VFO
+      elif min_key in ('rx_down', 'rx_up'): # если клик близко к приёмнику
+        if not self.filter_center == 0 and not application.mode in ('CWL','CWU'): # однополосные моды, но не телеграф
+          mouse_x -= self.filter_center * self.data_width / sample_rate # сымитировать смещение курсора мыши для ориентирования прыжков шторки по центру шторки в однополосных модах
+        freq = float(mouse_x - self.x0) * sample_rate / self.data_width + self.zoom_deltaf
+        freq = int(freq)
+        rnd = conf.freq_round_ssb # если установлен параметр "Frequency round for SSB" (прыжки частоты округляются до целого, например 1кГц)
+        if rnd:
+          freq = (freq + rnd // 2) // rnd * rnd
+        self.priznak_filter = 1
+        self.ChangeHwFrequency(self.txFreq, self.VFO, 'MouseBtn1', event=event, rx_freq=freq) # прыжок приёмника
+        # ------------------------------------------------------------ добавлено -------------------------- кнопки f_Before и f_After --------- 51 RA3PKJ
+        application.f_after_1 = self.txFreq
+        application.f_after_2 = self.VFO
 
     if not self.HasCapture():
       self.CaptureMouse()
