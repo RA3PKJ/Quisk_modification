@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено ------------------------------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.40.21 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.41.22 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -1480,14 +1480,12 @@ class RadiosScreen(wx.Panel):
     sizer = wx.BoxSizer()
     sizer.Add(notebook_2, 1, wx.EXPAND)
     self.SetSizer(sizer)
-
     self.radios = configure.Radios(notebook_2)
     self.SetBackgroundColour(self.radios.bg_color)
     self.SetForegroundColour(self.radios.tfg_color)
     notebook_2.bg_color = self.radios.bg_color
     notebook_2.tfg_color = self.radios.tfg_color
     notebook_2.AddPage(self.radios, "Radios")
-
   def FinishPages(self):
     if self.finish_pages:
       self.finish_pages = False
@@ -2286,7 +2284,6 @@ class GraphScreen(wx.Window):
     self.f_before_1_buf = 0 # промежуточная переменная
     self.f_before_2_buf = 0 # промежуточная переменная
     self.motion_count = 0 # счётчик входов в функцию OnMotion
-
     self.SetSize((self.width, self.height))
     self.SetSizeHints(self.width, 1, self.width)
     self.SetBackgroundColour(conf.color_graph)
@@ -5651,7 +5648,7 @@ class App(wx.App):
     # --- кнопка LockTX
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_lockVFO = szr
-    self.lockVFOButton_TX = b = QuiskCheckbutton(frame, self.OnBtnLockVFO_TX, "Lock")
+    self.lockVFOButton_TX = b = QuiskCheckbutton(frame, self.OnBtnLockVFO_TX, "LockTX")
     self.idName2Button[b.idName] = b
     szr.Add(self.lockVFOButton_TX, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.lockVFOButton_TX.SetLabel("LockTX")
@@ -7057,10 +7054,13 @@ class App(wx.App):
   # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   # ------------------------------------------------------------------------------- добавлено -------------- выбор водопада ---------- 25 RA3PKJ
   def OnBtnWaterFallPalette(self, event): # обработчик нажатия кнопки Palette
-    if configure.Settings[1] == "ConfigFileRadio":
+    try:
+      if configure.Settings[1] == "ConfigFileRadio":
+        pass
+      else:
+        self.multi_rx_screen.ChangePalette()
+    except:
       pass
-    else:
-      self.multi_rx_screen.ChangePalette()
   # ------------------------------------------------------------------------------- добавлено -------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnVFOAB(self, event): # обработчик нажатия кнопки A<>B
     rx = self.rxFreq
