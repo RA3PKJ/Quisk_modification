@@ -7,6 +7,7 @@ from ac2yd.control_common import ControlCommon
 class Hardware(ControlCommon):
   def __init__(self, app, conf):
     ControlCommon.__init__(self, app, conf)
+    self.hard_radio = "hermes"  # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
     self.hermes_code_version = 40
     self.HL2_TEMP = ";;;"
     self.var_rates = ['48', '96', '192', '384']

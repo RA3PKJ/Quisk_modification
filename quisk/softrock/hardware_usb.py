@@ -60,6 +60,7 @@ class Hardware(BaseHardware):
     self.vfo = None
     self.mode = None
     self.band = None
+    self.hard_radio = "softrock" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
     self.repeater_freq = None		# original repeater output frequency
     try:
       self.repeater_delay = conf.repeater_delay		# delay for changing repeater frequency in seconds
@@ -151,7 +152,7 @@ class Hardware(BaseHardware):
       reduc = self.application.digital_tx_level
     else:
       reduc = self.application.tx_level
-    tx_level = int(tx_level * reduc / 100.0 + 0.5)  
+    tx_level = int(tx_level * reduc / 100.0 + 0.5)
     if tx_level < 0:
       tx_level = 0
     elif tx_level > 100:

@@ -783,30 +783,28 @@ class HamlibHandlerSerial:
   def OI(self, cmd, data, length):      # return information
     self.ZZIF(cmd, data, length)
   def ZZPA(self, cmd, data, length): # переключените аттенюатора HiQSDDR --- добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
-    att_label = application.BtnRfGain.GetLabel()
-    if att_label == 'RF 0db':
-      Hardware.HiQSDR_Attenuator = 0
-      Hardware.HiQSDR_Connector_X1 |= 0x10
-      Hardware.rf_gain = +10
-      application.BtnRfGain.SetLabel("RF +10db", do_cmd=False)
-    elif att_label == 'RF +10db':
-      Hardware.HiQSDR_Attenuator = 0x08
-      Hardware.HiQSDR_Connector_X1 &= ~0x10    # Mask in the preamp bit
-      Hardware.rf_gain = -10
-      application.BtnRfGain.SetLabel("RF -10db", do_cmd=False)
-    elif att_label == 'RF -10db':
-      Hardware.HiQSDR_Attenuator = 0x10
-      Hardware.rf_gain = -20
-      application.BtnRfGain.SetLabel("RF -20db", do_cmd=False)
-    elif att_label == 'RF -20db':
-      Hardware.HiQSDR_Attenuator = 0x18
-      Hardware.rf_gain = -30
-      application.BtnRfGain.SetLabel("RF -30db", do_cmd=False)
-    elif att_label == 'RF -30db':
-      Hardware.HiQSDR_Attenuator = 0
-      Hardware.rf_gain = 0
-      application.BtnRfGain.SetLabel("RF 0db", do_cmd=False)
-    Hardware.NewUdpStatus()
+    try:
+      if Hardware.hard_radio == "hiqsdr":
+        att_label = application.BtnRfGain.GetLabel()
+        if att_label == 'ATT 0db':
+          Hardware.HiQSDR_Attenuator = 0x08
+          Hardware.rf_gain = -10
+          application.BtnRfGain.SetLabel("ATT -10db", do_cmd=False)
+        elif att_label == 'ATT -10db':
+          Hardware.HiQSDR_Attenuator = 0x10
+          Hardware.rf_gain = -20
+          application.BtnRfGain.SetLabel("ATT -20db", do_cmd=False)
+        elif att_label == 'ATT -20db':
+          Hardware.HiQSDR_Attenuator = 0x18
+          Hardware.rf_gain = -30
+          application.BtnRfGain.SetLabel("ATT -30db", do_cmd=False)
+        elif att_label == 'ATT -30db':
+          Hardware.HiQSDR_Attenuator = 0
+          Hardware.rf_gain = 0
+          application.BtnRfGain.SetLabel("ATT 0db", do_cmd=False)
+        Hardware.NewUdpStatus()
+    except:
+      pass
   def ZZPS(self, cmd, data, length):	# power status
     if length == 0:
       self.Write("%s1;" % cmd)
@@ -5605,6 +5603,7 @@ class App(wx.App):
     self.idName2Button[b.idName] = b
     szr.Add(self.vfoABButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.vfoABButton.SetLabel("A<>B")
+    self.vfoABButton.Enable(False)
     self.vfoABButton.Refresh()
 
     # --- второе окно частоты
@@ -5626,6 +5625,24 @@ class App(wx.App):
     b.idName = "Band " + b.idName
     self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
+
+    # --- кнопка -F
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_down = szr
+    self.Fdown = b = QuiskPushbutton(frame, self.OnBtnFdown, "-F")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fdown, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fdown.SetLabel("-F")
+    self.Fdown.Refresh()
+
+    # --- кнопка +F
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_up = szr
+    self.Fup = b = QuiskPushbutton(frame, self.OnBtnFup, "+F")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fup, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fup.SetLabel("+F")
+    self.Fup.Refresh()
 
     # --- кнопка Split
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
@@ -5891,7 +5908,21 @@ class App(wx.App):
     b.char_shortcut = 'h'
     self.MakeAccel(b)
 
-    # --- кнопки RF
+    # --- кнопка Preamp
+    try:
+      preamp_labels = Hardware.preamp_labels # посмотреть есть ли для этой кнопки упоминание в файле оборудования
+      szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
+      b_preamp = szr #дать своё имя экземпляру кнопки
+      self.preampButton = b = QuiskCheckbutton(frame, Hardware.OnBtnPreamp, "Preamp") #создать экземпляр класса QuiskCheckbutton (находится в quisk_widgets.py)
+      self.idName2Button[b.idName] = b
+      szr.Add(self.preampButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+      self.preampButton.SetLabel(preamp_labels)
+      self.preampButton.Enable(True)
+      self.preampButton.Refresh()
+    except:
+      pass
+
+    # --- кнопки ATT
     try:
       gain_labels = Hardware.rf_gain_labels
     except:
@@ -6202,6 +6233,8 @@ class App(wx.App):
     self.bs0.Add(b_vfoAB, wx.EXPAND)
     self.bs0.Add(b_smeter, wx.EXPAND)
     self.bs0.Add(b_bandupdown, wx.EXPAND)
+    self.bs0.Add(b_f_down, wx.EXPAND)
+    self.bs0.Add(b_f_up, wx.EXPAND)
     self.bs0.Add(b_newsplit, wx.EXPAND)
     self.bs0.Add(b_lockVFO, wx.EXPAND)
     self.bs0.Add(b_lockVFO_RX, wx.EXPAND)
@@ -6286,6 +6319,11 @@ class App(wx.App):
     self.bs4.Add(b_sqlch, wx.EXPAND)
     self.bs4.Add(b_nb, wx.EXPAND)
     self.bs4.Add(b_notch, wx.EXPAND)
+    try:
+      preamp_labels = Hardware.preamp_labels # посмотреть есть ли для этой кнопки упоминание в файле оборудования
+      self.bs4.Add(b_preamp, wx.EXPAND)
+    except:
+      pass
     self.bs4.Add(b_gain, wx.EXPAND)
     self.bs4.Add(b_ant, wx.EXPAND)
     #self.bs4.Add(b_color, wx.EXPAND) # --- не нужно
@@ -6471,7 +6509,8 @@ class App(wx.App):
     try:
       if Hardware.rf_gain == None:
         x = QS.get_smeter() + Hardware.correct_smeter
-      else: x = QS.get_smeter() + Hardware.correct_smeter - Hardware.rf_gain  # S-meter correction for the gain, band, etc.
+      #else: x = QS.get_smeter() + Hardware.correct_smeter - Hardware.rf_gain # S-meter correction for the gain, band, etc # --------------------------- удалено --------- кнопки Pre и ATT --------- 57 RA3PKJ
+      else: x = QS.get_smeter() + Hardware.correct_smeter - Hardware.rf_gain - Hardware.preamp_gain # S-meter correction for the gain, band, etc. # ---- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
     except:
       x = QS.get_smeter() + Hardware.correct_smeter  # S-meter correction for the gain, band, etc.
     self.smeter_db_sum += x		# sum for average
@@ -7117,6 +7156,7 @@ class App(wx.App):
     if aa == False:
       self.split_rxtx = self.splitButton.GetValue() #See that RX2 button turn On or Off?
       if self.split_rxtx: #if button turn On
+        self.vfoABButton.Enable(True)
 
       # --- чтобы избежать возможного совпадения между частотой Rx и частотой Tx при запуске Quisk
         if self.txFreq > -3000 and self.txFreq < 3000 and self.oldRxFreq == 0:
@@ -7135,6 +7175,7 @@ class App(wx.App):
         QS.set_split_rxtx(2) # --- передать в dll значение для её переменной split_rxtx = 2
 
       else: #if button turn off
+        self.vfoABButton.Enable(False)
         #QS.set_split_rxtx(self.split_rxtx_play) # --- не использовать переменную self.split_rxtx_play
         QS.set_split_rxtx(0) # --- передать в dll значение для её переменной split_rxtx = 0
         self.oldRxFreq = self.rxFreq
@@ -7147,6 +7188,14 @@ class App(wx.App):
       self.splitButton.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
 
   # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnFdown(self, event):
+    self.ChangeHwFrequency(self.txFreq - self.freq_step, self.VFO, 'MouseMotion', event=event)
+
+  # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnFup(self, event):
+    self.ChangeHwFrequency(self.txFreq + self.freq_step, self.VFO, 'MouseMotion', event=event)
+
+  # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)
       aa = self.splitButton.GetValue() #проверить кнопку RX2, т.к. нельзя включать Split, если нажата RX2
       if aa == False:
@@ -7154,6 +7203,7 @@ class App(wx.App):
         if self.new_split == False: #кнопка отжата после клика
           self.lockVFOButton_RX.SetValue(False)
           self.lockVFOButton_RX.Enable(False)
+          self.vfoABButton.Enable(False)
           # Rx и Tx меняются местами
           rx = self.rxFreq
           self.rxFreq = self.txFreq
@@ -7166,6 +7216,7 @@ class App(wx.App):
 
         if self.new_split: #кнопка нажата после клика
           self.lockVFOButton_RX.Enable(True)
+          self.vfoABButton.Enable(True)
           if self.mode in ("CWL", "CWU"):
             self.rxFreq = self.txFreq + 1000 # Rx и Tx ниже поменяются местами
           else:

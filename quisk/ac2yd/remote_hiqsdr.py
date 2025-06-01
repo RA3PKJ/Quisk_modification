@@ -7,6 +7,7 @@ class Hardware(Remot, Radio):
   def __init__(self, app, conf):
     Radio.__init__(self, app, conf)
     Remot.__init__(self, app, conf)
+    self.hard_radio = "hiqsdr" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
   def open(self):
     Remot.open(self)
     return "Server: " + Radio.open(self)

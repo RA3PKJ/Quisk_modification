@@ -19,6 +19,7 @@ class Hardware(BaseHardware):
   def __init__(self, app, conf):
     BaseHardware.__init__(self, app, conf)
     self.got_udp_status = ''		# status from UDP receiver
+    self.hard_radio = "hiqsdr" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
 	# want_udp_status is a 14-byte string with numbers in little-endian order:
 	#	[0:2]		'St'
 	#	[2:6]		Rx tune phase
@@ -80,6 +81,11 @@ class Hardware(BaseHardware):
     self.mode = None
     self.usingSpot = False
     self.band = None
+
+    # --------------------------------------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    self.preamp_labels = "Pre +10db"
+    self.preamp_gain = 0
+
     self.rf_gain = 0
     self.sidetone_volume = 0		# sidetone volume 0 to 255
     self.repeater_freq = None		# original repeater output frequency
@@ -92,7 +98,8 @@ class Hardware(BaseHardware):
     except:
       pass
     if conf.use_rx_udp == 2:	# Set to 2 for the HiQSDR
-      self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db')
+      #self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db') # ----- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+      self.rf_gain_labels = ('ATT 0db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # --------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
       self.antenna_labels = ('Ant 1', 'Ant 2')
     self.firmware_version = None	# firmware version is initially unknown
     self.rx_udp_socket = None
@@ -218,25 +225,39 @@ class Hardware(BaseHardware):
       elif self.tx_level > 255:
         self.tx_level = 255
     self.NewUdpStatus()
+  def OnBtnPreamp(self, event): # -------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    btn = event.GetEventObject()
+    value = btn.GetValue() # проверить нажата ли кнопка
+    if value == False:
+      self.HiQSDR_Connector_X1 &= ~0x10
+      self.preamp_gain = 0
+    else:
+      self.HiQSDR_Connector_X1 |= 0x10
+      self.preamp_gain = 10
+    self.NewUdpStatus()
   def OnButtonRfGain(self, event):
     # The HiQSDR attenuator is five bits: 2, 4, 8, 10, 20 dB
     btn = event.GetEventObject()
     n = btn.index
-    self.HiQSDR_Connector_X1 &= ~0x10	# Mask in the preamp bit
+    #self.HiQSDR_Connector_X1 &= ~0x10	# Mask in the preamp bit # ------------------------- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
     if n == 0:		# 0dB
       self.HiQSDR_Attenuator = 0
       self.rf_gain = 0
-    elif n == 1:	# +10
-      self.HiQSDR_Attenuator = 0
-      self.HiQSDR_Connector_X1 |= 0x10
-      self.rf_gain = 10
-    elif n == 2:	# -10
+# ------------------------------------------------------------------------------------------ удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+##    elif n == 1:	# +10
+##      self.HiQSDR_Attenuator = 0
+##      self.HiQSDR_Connector_X1 |= 0x10
+##      self.rf_gain = 10
+    #elif n == 2:	# -10  # --------------------------------------------------------------- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    elif n == 1:	# -10  # ---------------------------------------------------------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
       self.HiQSDR_Attenuator = 0x08
       self.rf_gain = -10
-    elif n == 3:	# -20
+    #elif n == 3:	# -20  # --------------------------------------------------------------- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    elif n == 2:	# -10  # ---------------------------------------------------------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
       self.HiQSDR_Attenuator = 0x10
       self.rf_gain = -20
-    elif n == 4:	# -30
+    #elif n == 4:	# -30  # --------------------------------------------------------------- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    elif n == 3:	# -30  # ---------------------------------------------------------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
       self.HiQSDR_Attenuator = 0x18
       self.rf_gain = -30
     else:

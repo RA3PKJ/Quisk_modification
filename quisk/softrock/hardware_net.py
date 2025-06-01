@@ -13,6 +13,7 @@ import _quisk as QS
 class Hardware(BaseHardware):
   def __init__(self, app, conf):
     BaseHardware.__init__(self, app, conf)
+    self.hard_radio = "softrock" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
     self.vfo = None
     self.ptt_button = 0
     self.usbsr_ip_address = conf.usbsr_ip_address
@@ -32,16 +33,16 @@ class Hardware(BaseHardware):
     pass
   def ChangeFrequency(self, tune, vfo, source='', band='', event=None):
     if self.vfo != vfo:
-       self.SetFreq(vfo) 
+       self.SetFreq(vfo)
        self.vfo = vfo
     return tune, vfo
-  
+
   def ReturnFrequency(self):
     # Return the current tuning and VFO frequency.  If neither have changed,
     # you can return (None, None).  This is called at about 10 Hz by the main.
     # return (tune, vfo)	# return changed frequencies
     return None, None		# frequencies have not changed
- 
+
   def ChangeBand(self, band):
     # band is a string: "60", "40", "WWV", etc.
     pass
@@ -67,7 +68,7 @@ class Hardware(BaseHardware):
       freq = float(re.findall("\d+.\d+", data)[0])
       freq = int(freq * 1.0e6)
       return freq
-  
+
   def SetFreq(self, freq):
     if freq <= 0 or freq > 30000000:
       return
@@ -102,4 +103,4 @@ class Hardware(BaseHardware):
   def OnSpot(self, level):
     self.spot_level = level
 
-   
+

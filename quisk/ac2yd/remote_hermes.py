@@ -7,6 +7,7 @@ class Hardware(Remot, Radio):
   def __init__(self, app, conf):
     Radio.__init__(self, app, conf)
     Remot.__init__(self, app, conf)
+    self.hard_radio = "hermes" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
   def open(self):
     Remot.open(self)
     return "Server: " + Radio.open(self)
@@ -22,4 +23,4 @@ class Hardware(Remot, Radio):
           widg.text_temperature.GetLabel(), widg.text_pa_current.GetLabel(),
           widg.text_fwd_power.GetLabel(), widg.text_swr.GetLabel())
       self.RemoteCtlSend(t)
-    
+

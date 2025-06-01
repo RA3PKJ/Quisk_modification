@@ -7,6 +7,7 @@ from ac2yd.control_common import ControlCommon
 class Hardware(ControlCommon):
   def __init__(self, app, conf):
     ControlCommon.__init__(self, app, conf)
+    self.hard_radio = "hiqsdr" # ------------------------------ добавлено --- встраивание своих CAT-команд для аппаратной панели --- 53 RA3PKJ
     self.index = 0
     self.rx_udp_clock = 122880000
     self.decimations = []		# supported decimation rates
@@ -14,7 +15,8 @@ class Hardware(ControlCommon):
       self.decimations.append(dec * 64)
     self.decimations.append(80)
     self.decimations.append(64)
-    self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    self.preamp_labels = "Pre +10db" # -------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    self.rf_gain_labels = ('ATT 0db', 'ATT +10db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
     self.antenna_labels = ('Ant 1', 'Ant 2') # ------------------------------------ добавлено --- реформа удалённого управления --- 37 RA3PKJ
   def RadioInit(self):	# Send initial parameters not covered by CommonInit()
     pass
@@ -42,6 +44,8 @@ class Hardware(ControlCommon):
     return int(float(self.rx_udp_clock) / dec + 0.5)
   def VarDecimRange(self):
     return (48000, 960000)
+  def OnBtnPreamp(self, event): # -------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    pass
   def OnButtonRfGain(self, event): # ----------------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
     pass
   def OnButtonAntenna(self, event): # ---------------------------------------------- добавлено --- реформа удалённого управления --- 37 RA3PKJ
