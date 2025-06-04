@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено ------------------------------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.41.22 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.42.23 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -2097,9 +2097,9 @@ class GraphDisplay(wx.Window):
         dc.DrawText('Lock', self.tune_tx + x, 90)
     else: # режим одной шторки
       application.lockVFOButton_RX.Enable(False) # отключить кнопку LockRX
-      application.lockVFOButton_TX.SetLabel('LockVFO') # переименовать после перехода в режим одной шторки
+      application.lockVFOButton_TX.SetLabel('LockF') # переименовать после перехода в режим одной шторки
       application.lockVFOButton_TX.Refresh()           # перерисовать кнопку
-      if application.lockVFOButton_TX.GetValue(): # если включен LockVFO
+      if application.lockVFOButton_TX.GetValue(): # если включен LockF
         x, w, rit = self.parent.GetFilterDisplayXWR(rx_filters=True) # получение параметров шторки и смещения шторки приёмника (он же передатчик)
         dc.SetTextForeground('yellow')
         dc.DrawText('Lock', self.tune_tx + x + rit, 90)
@@ -4864,6 +4864,9 @@ class App(wx.App):
     self.bs0 = wx.BoxSizer()
     vertBox.Add(self.bs0, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
     vertBox.AddSpacer(4)
+    self.bs0a = wx.BoxSizer()
+    vertBox.Add(self.bs0a, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+    vertBox.AddSpacer(4)
     self.bs1 = wx.BoxSizer()
     vertBox.Add(self.bs1, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
     vertBox.AddSpacer(5)
@@ -5626,6 +5629,38 @@ class App(wx.App):
     self.idName2Button[b.idName] = b
     szr.Add(b, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
+    # --- кнопка -5
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_minus5 = szr
+    self.Fminus5 = b = QuiskPushbutton(frame, self.OnBtnFminus5, "-5")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fminus5, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fminus5.SetLabel("-5")
+    self.Fminus5.Refresh()
+    # --- кнопка -3
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_minus3 = szr
+    self.Fminus3 = b = QuiskPushbutton(frame, self.OnBtnFminus3, "-3")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fminus3, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fminus3.SetLabel("-3")
+    self.Fminus3.Refresh()
+    # --- кнопка -1
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_minus1 = szr
+    self.Fminus1 = b = QuiskPushbutton(frame, self.OnBtnFminus1, "-1")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fminus1, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fminus1.SetLabel("-1")
+    self.Fminus1.Refresh()
+    # --- кнопка -0.5
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_minus05 = szr
+    self.Fminus05 = b = QuiskPushbutton(frame, self.OnBtnFminus05, "-0.5")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fminus05, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fminus05.SetLabel("-0.5")
+    self.Fminus05.Refresh()
     # --- кнопка -F
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_f_down = szr
@@ -5634,7 +5669,6 @@ class App(wx.App):
     szr.Add(self.Fdown, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.Fdown.SetLabel("-F")
     self.Fdown.Refresh()
-
     # --- кнопка +F
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
     b_f_up = szr
@@ -5643,6 +5677,38 @@ class App(wx.App):
     szr.Add(self.Fup, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     self.Fup.SetLabel("+F")
     self.Fup.Refresh()
+    # --- кнопка +0.5
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_plus05 = szr
+    self.Fplus05 = b = QuiskPushbutton(frame, self.OnBtnFplus05, "+0.5")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fplus05, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fplus05.SetLabel("+0.5")
+    self.Fplus05.Refresh()
+    # --- кнопка +1
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_plus1 = szr
+    self.Fplus1 = b = QuiskPushbutton(frame, self.OnBtnFplus1, "+1")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fplus1, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fplus1.SetLabel("+1")
+    self.Fplus1.Refresh()
+    # --- кнопка +3
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_plus3 = szr
+    self.Fplus3 = b = QuiskPushbutton(frame, self.OnBtnFplus3, "+3")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fplus3, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fplus3.SetLabel("+3")
+    self.Fplus3.Refresh()
+    # --- кнопка +5
+    szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в Sizer
+    b_f_plus5 = szr
+    self.Fplus5 = b = QuiskPushbutton(frame, self.OnBtnFplus5, "+5")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.Fplus5, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.Fplus5.SetLabel("+5")
+    self.Fplus5.Refresh()
 
     # --- кнопка Split
     szr = wx.BoxSizer(wx.HORIZONTAL) # вставить в sizer
@@ -6233,29 +6299,38 @@ class App(wx.App):
     self.bs0.Add(b_vfoAB, wx.EXPAND)
     self.bs0.Add(b_smeter, wx.EXPAND)
     self.bs0.Add(b_bandupdown, wx.EXPAND)
+    self.bs0.Add(b_f_minus5, wx.EXPAND)
+    self.bs0.Add(b_f_minus3, wx.EXPAND)
+    self.bs0.Add(b_f_minus1, wx.EXPAND)
+    self.bs0.Add(b_f_minus05, wx.EXPAND)
     self.bs0.Add(b_f_down, wx.EXPAND)
     self.bs0.Add(b_f_up, wx.EXPAND)
-    self.bs0.Add(b_newsplit, wx.EXPAND)
-    self.bs0.Add(b_lockVFO, wx.EXPAND)
-    self.bs0.Add(b_lockVFO_RX, wx.EXPAND)
-    self.bs0.Add(b_step, wx.EXPAND)
-    self.bs0.Add(b_rit, wx.EXPAND)
-    self.bs0.AddSpacer(10)
-    self.bs0.Add(b_addrx, wx.EXPAND)
+    self.bs0.Add(b_f_plus05, wx.EXPAND)
+    self.bs0.Add(b_f_plus1, wx.EXPAND)
+    self.bs0.Add(b_f_plus3, wx.EXPAND)
+    self.bs0.Add(b_f_plus5, wx.EXPAND)
 
-    # ----------------------------- установка кнопок в сайзер bs1
+    # -------------------- установка кнопок и окошек в сайзер bs0a
     text = wx.StaticText(frame, label="Frequency Memory")
     text.SetForegroundColour(color)
-    self.bs1.Add(text)
-    self.bs1.AddSpacer(3)
-    self.bs1.Add(b_membtn, wx.EXPAND)
-    self.bs1.AddSpacer(11)
+    self.bs0a.Add(text)
+    self.bs0a.AddSpacer(3)
+    self.bs0a.Add(b_membtn, wx.EXPAND)
+    self.bs0a.AddSpacer(11)
     text = wx.StaticText(frame, label="Short Freq Mem")
     text.SetForegroundColour(color)
-    self.bs1.Add(text)
-    self.bs1.AddSpacer(3)
-    self.bs1.Add(b_short_freq, wx.EXPAND)
-    self.bs1.AddSpacer(11)
+    self.bs0a.Add(text)
+    self.bs0a.AddSpacer(3)
+    self.bs0a.Add(b_short_freq, wx.EXPAND)
+    self.bs0a.AddSpacer(11)
+    self.bs0a.Add(b_newsplit, wx.EXPAND)
+    self.bs0a.Add(b_lockVFO, wx.EXPAND)
+    self.bs0a.Add(b_lockVFO_RX, wx.EXPAND)
+    self.bs0a.Add(b_step, wx.EXPAND)
+    self.bs0a.AddSpacer(10)
+    self.bs0a.Add(b_addrx, wx.EXPAND)
+
+    # ----------------------------- установка кнопок в сайзер bs1
     text = wx.StaticText(frame, label="Favorites")
     text.SetForegroundColour(color)
     self.bs1.Add(text)
@@ -6273,6 +6348,12 @@ class App(wx.App):
     self.bs1.Add(text)
     self.bs1.AddSpacer(3)
     self.bs1.Add(b_tmprec, wx.EXPAND)
+    self.bs1.AddSpacer(11)
+    text = wx.StaticText(frame, label="RIT")
+    text.SetForegroundColour(color)
+    self.bs1.Add(text)
+    self.bs1.AddSpacer(3)
+    self.bs1.Add(b_rit, wx.EXPAND)
 
     # -------------------------- установка слайдеров в сайзер bs2
     self.bs2.AddSpacer(9)
@@ -7188,12 +7269,26 @@ class App(wx.App):
       self.splitButton.SetValue(False) # RX2 button turn off (чтобы не допускать параллельное функционирование кнопок Split и RX2)
 
   # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
+  def OnBtnFminus5(self, event):
+    self.ChangeHwFrequency(self.txFreq - 5000, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFminus3(self, event):
+    self.ChangeHwFrequency(self.txFreq - 3000, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFminus1(self, event):
+    self.ChangeHwFrequency(self.txFreq - 1000, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFminus05(self, event):
+    self.ChangeHwFrequency(self.txFreq - 500, self.VFO, 'MouseMotion', event=event)
   def OnBtnFdown(self, event):
     self.ChangeHwFrequency(self.txFreq - self.freq_step, self.VFO, 'MouseMotion', event=event)
-
-  # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnFup(self, event):
     self.ChangeHwFrequency(self.txFreq + self.freq_step, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFplus05(self, event):
+    self.ChangeHwFrequency(self.txFreq + 500, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFplus1(self, event):
+    self.ChangeHwFrequency(self.txFreq + 1000, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFplus3(self, event):
+    self.ChangeHwFrequency(self.txFreq + 3000, self.VFO, 'MouseMotion', event=event)
+  def OnBtnFplus5(self, event):
+    self.ChangeHwFrequency(self.txFreq + 5000, self.VFO, 'MouseMotion', event=event)
 
   # ----------------------------------------------------------------------------- добавлено ---------------- реформа кнопок ---------- 12 RA3PKJ
   def OnBtnNewSplit(self, event): # for the Split (disable RX-sound at TX frequency)

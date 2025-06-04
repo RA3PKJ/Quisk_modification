@@ -276,7 +276,7 @@ class FrequencyDisplaySplitRX2(wx.lib.stattext.GenStaticText):
     self.Bind(wx.EVT_TIMER, self.OnTimer)
     self.repeat_time = 0 # Repeat function is inactive
 
-#----------------------------------------------------------------- добавлено ----------------------- колесо мыши ---------------------------- 1 RA3PKJ
+#---------------------------------------------- добавлено ---------------------- колесо мыши -------------------- 1 RA3PKJ
     if sys.platform.lower().startswith('win'):
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
   def OnEnter(self, event):
@@ -591,7 +591,41 @@ class QuiskText(wx.BoxSizer):
 # GetValue(self), SetValue(self, value):	Get / Set check button state True / False
 # SetIndex(self, index):	For cycle buttons, set the label from its index
 
-class QuiskButtons:
+# НЕ ИСПОЛЬЗУЕТСЯ
+# ------------------------------------ добавлен класс ---------- короткие кнопки фиксированной длины  ------------- 58 RA3PKJ
+##class QuiskButtons_short:
+##  """Base class for special buttons."""
+##  def __init__(self, idName):
+##    self.idName = idName	# idName can be ''
+##    self.up_brush = wx.Brush(conf.color_btn)
+##    r, g, b = self.up_brush.GetColour().Get(False)
+##    r, g, b = min(255,r+32), min(255,g+32), min(255,b+32)
+##    self.down_brush = wx.Brush(wx.Colour(r, g, b))
+##    self.color_disable = conf.color_disable
+##  def InitButtons(self, text, text_color=None):
+##    if text_color:
+##      self.text_color = text_color
+##    else:
+##      self.text_color = conf.color_enable
+##    self.SetBezelWidth(button_bezel)
+##    self.SetBackgroundColour(conf.color_btn)
+##    self.SetUseFocusIndicator(False)
+##    self.decoration = None
+##    self.char_shortcut = ''
+##    self.SetFont(button_font)
+##    if text:
+##      w, h = self.GetTextExtent(text)
+##    else:
+##      w, h = self.GetTextExtent("OK")
+##      self.Disable()	# create a size for null text, but Disable()
+##    #w += button_bezel * 2 + self.GetCharWidth() # --- удалено ----- длина кнопки
+##    w = 30 # ---------------------------------------- взамен-------- длина кнопки
+##    #h = h * 12 // 10 # ----------------------------- удалено ----- высота кнопки
+##    h = h * 12 // 11  # ----------------------------- взамен ------ высота кнопки
+##    h += button_bezel * 2
+##    self.SetSizeHints(w, h, 999, h, 1, 1)
+
+class QuiskButtons: # ------------------------- БАЗОВЫЙ КЛАСС
   """Base class for special buttons."""
   def __init__(self, idName):
     self.idName = idName	# idName can be ''
@@ -617,7 +651,8 @@ class QuiskButtons:
       w, h = self.GetTextExtent("OK")
       self.Disable()	# create a size for null text, but Disable()
     w += button_bezel * 2 + self.GetCharWidth()
-    h = h * 12 // 10
+    #h = h * 12 // 10 # -------------------------------- удалено ------------------- высота кнопок  ------------- 59 RA3PKJ
+    h = h * 12 // 11  # --------------------------------- взамен ------------------- высота кнопок  ------------- 59 RA3PKJ
     h += button_bezel * 2
     self.SetSizeHints(w, h, 999, h, 1, 1)
   def DrawLabel(self, dc, width, height, dx=0, dy=0):	# Override to change Disable text color
@@ -713,6 +748,39 @@ class QuiskBitmapButton(wx.lib.buttons.GenBitmapButton):
       self.OnLeftUp(event)
       self.direction = 1
 
+# НЕ ИСПОЛЬЗУЕТСЯ
+# ------------------------------------ добавлен класс ---------- короткие кнопки фиксированной длины  ------------- 58 RA3PKJ
+##class QuiskPushbutton_short(QuiskButtons_short, wx.lib.buttons.GenButton):
+##  """A plain push button widget."""
+##  def __init__(self, parent, command, text, use_right=False, text_color=None, style=0):
+##    QuiskButtons.__init__(self, text)
+##    wx.lib.buttons.GenButton.__init__(self, parent, -1, text, style=style)
+##    self.command = command
+##    self.Bind(wx.EVT_BUTTON, self.OnButton)
+##    self.InitButtons(text, text_color)
+##    self.direction = 1
+##    if use_right:
+##      self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+##      self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
+##  def OnButton(self, event):
+##    if self.command:
+##      if application.remote_control_head:
+##        application.Hardware.RemoteCtlSend(self.idName + ';1\n')
+##      self.command(event)
+##  def OnRightDown(self, event):
+##    self.direction = -1
+##    self.OnLeftDown(event)
+##  def OnRightUp(self, event):
+##    self.OnLeftUp(event)
+##    self.direction = 1
+##  def SetIndex(self, index):
+##    if self.command and index:
+##      if application.remote_control_head:
+##        application.Hardware.RemoteCtlSend(self.idName + ';1\n')
+##      event = wx.PyEvent()
+##      event.SetEventObject(self)
+##      self.command(event)
+
 class QuiskPushbutton(QuiskButtons, wx.lib.buttons.GenButton):
   """A plain push button widget."""
   def __init__(self, parent, command, text, use_right=False, text_color=None, style=0):
@@ -743,7 +811,6 @@ class QuiskPushbutton(QuiskButtons, wx.lib.buttons.GenButton):
       event = wx.PyEvent()
       event.SetEventObject(self)
       self.command(event)
-
 
 class QuiskRepeatbutton(QuiskButtons, wx.lib.buttons.GenButton):
   """A push button that repeats when held down."""
