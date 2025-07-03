@@ -441,6 +441,9 @@ class SliderBoxHH(SliderBoxH, wx.BoxSizer):
     #self.text_ctrl.SetFont(font)
     self.Add(self.text_ctrl, 0, wx.ALIGN_CENTER)
     self.Add(self.slider, 1, wx.ALIGN_CENTER)
+  # залочивание слайдеров --------------------------------------------- добавлена функция ------------------- CW paddle ------ 60 RA3PKJ
+  def Disable(self):
+    self.slider.Disable()
 
 class SliderBoxV(wx.BoxSizer):
   """A vertical box containing a slider and a text heading"""

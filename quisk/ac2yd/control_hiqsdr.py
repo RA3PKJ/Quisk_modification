@@ -16,7 +16,7 @@ class Hardware(ControlCommon):
     self.decimations.append(80)
     self.decimations.append(64)
     self.preamp_labels = "Pre +10db" # -------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
-    self.rf_gain_labels = ('ATT 0db', 'ATT +10db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
+    self.rf_gain_labels = ('ATT 0db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # --- добавлено --- реформа удалённого управления --- 37 RA3PKJ
     self.antenna_labels = ('Ant 1', 'Ant 2') # ------------------------------------ добавлено --- реформа удалённого управления --- 37 RA3PKJ
   def RadioInit(self):	# Send initial parameters not covered by CommonInit()
     pass

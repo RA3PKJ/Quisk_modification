@@ -17,18 +17,20 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-# ----------------------------------------------------- добавлено ------------------------------------------- заголовок окна -------- 3 RA3PKJ
+# ----------------------------------------------------- добавлено ----------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.42.23 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.42.24 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
 # and to find ./__init__.py and ./help.html.
 import sys, os
 
-# ----------------------------------------------------- добавлено --------------------------------------- автоматика водопада ------- 24 RA3PKJ
+# ----------------------------------------------------- добавлено -------------------- автоматика водопада ------ 24 RA3PKJ
 import numpy as np
 import array
+
+import serial # --------------------------------------- добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
 
 #print ('getcwd', os.getcwd())
 #print ('__file__', __file__)
@@ -1685,6 +1687,84 @@ class ElecraftK4Handler(CatControl):	# Test with telnet localhost 9200
   def TxTransmit(self, base, args):
     self.app.pttButton.SetValue(1, True)
 
+# ------------------------------------------- добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
+# программная CW манипуляция двухвёсельным ключом через программу-посредника
+class OdysseyCWThread1(threading.Thread):
+  def __init__(self, cw_com_method):
+    self.do_init = 1
+    threading.Thread.__init__(self)
+    self.port = ''
+    self.ser = None
+    self.cw_com_method = cw_com_method
+    if conf.odyssey_cw_port1:
+      self.port = conf.odyssey_cw_port1
+    else:
+      self.port = None
+  def run(self):
+    if self.do_init:
+      self.do_init = 0
+      if self.port:
+        try:
+          if self.cw_com_method == 1:
+            self.ser = serial.Serial(port=self.port, timeout=0.01, rtscts=1, dsrdtr=1)
+        except:
+          self.ser = None
+    while self.ser:
+      try:
+        Hardware.odyssey_cw_tx = self.ser.cts
+        Hardware.NewUdpStatus()
+      except: break
+      time.sleep(0.01)
+  def stop(self):
+    if self.ser:
+      self.ser.close()
+      self.ser = None
+
+# ------------------------------------------- добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
+# программная CW манипуляция двухвёсельным ключом без программ-посредников
+class OdysseyCWThread2(threading.Thread):
+  def __init__(self,  cw_com_method):
+    self.do_init = 1
+    threading.Thread.__init__(self)
+    self.port = ''
+    self.ser = None
+    self.cw_com_method = cw_com_method
+    if conf.odyssey_cw_port2:
+      self.port = conf.odyssey_cw_port2
+    else:
+      self.port = None
+  def run(self):
+    if self.do_init:
+      self.do_init = 0
+      if self.port:
+        try:
+          if self.cw_com_method == 2:
+            self.ser = serial.Serial(port=self.port, timeout=0.01, rtscts=1, dsrdtr=1)
+            self.ser.dtr = 1
+        except:
+          self.ser = None
+    while self.ser:
+      try:
+        if self.ser.cts:
+          if conf.options_cw == 0:
+            Hardware.odyssey_cw_tx = 2 # dash
+          elif conf.options_cw == 2 or conf.options_cw == 3:
+            Hardware.odyssey_cw_tx = 4 # dot
+        elif self.ser.dsr:
+          if conf.options_cw == 0:
+            Hardware.odyssey_cw_tx = 4 # dot
+          elif conf.options_cw == 2 or conf.options_cw == 3:
+            Hardware.odyssey_cw_tx = 2 # dash
+        else:
+          Hardware.odyssey_cw_tx = 0
+        Hardware.NewUdpStatus()
+      except: break
+      time.sleep(0.005)
+  def stop(self):
+    if self.ser:
+      self.ser.close()
+      self.ser = None
+
 class SoundThread(threading.Thread):
   """Create a second (non-GUI) thread to read, process and play sound."""
   def __init__(self, samples_from_python):
@@ -2565,11 +2645,12 @@ class GraphScreen(wx.Window):
     self.Bind(wx.EVT_MOTION, self.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, self.OnWheel)
     # handle bandplan info
-    self.bandplanWindow = wx.PopupWindow (parent)
-    self.bandplanInfo = wx.TextCtrl(self.bandplanWindow, style=wx.TE_READONLY)
-    self.bandplanInfo.SetFont(wx.Font(conf.status_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-        wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
-    self.bandplanWindow.Hide();
+# ------------------------------------------------------------ удалено ------------------------------------------ удаление Бенд Плана ---------- 61 RA3PKJ
+##    self.bandplanWindow = wx.PopupWindow (parent)
+##    self.bandplanInfo = wx.TextCtrl(self.bandplanWindow, style=wx.TE_READONLY)
+##    self.bandplanInfo.SetFont(wx.Font(conf.status_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
+##        wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+##    self.bandplanWindow.Hide();
     self.MakeDisplay()
   def MakeDisplay(self):
     self.display = GraphDisplay(self, self.originX, 0, self.graph_width, 5, self.chary)
@@ -3137,36 +3218,38 @@ class GraphScreen(wx.Window):
         application.f_after_2 = self.VFO
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    else: # Bandplan mode message
-      mouse_x, mouse_y = self.GetMousePosition(event)
-      if not self.in_splitter and self.originY <= mouse_y <= self.originY + self.tick and (
-            self.originX <= mouse_x <= self.originX + self.graph_width):
-        dc = wx.ClientDC(self)    # Read the pixel at the mouse position
-        pixel = dc.GetPixel(mouse_x, mouse_y)
-        pixel = "#%02X%02X%02X" % (pixel[0], pixel[1], pixel[2])
-        txt = application.BandPlanC2T.get(pixel, '')
-        if pixel == "#000000":
-          pass
-        elif txt:
-          self.bandplanInfo.Clear()
-          self.bandplanInfo.write(txt)
-          width, height = self.bandplanInfo.GetTextExtent(txt)
-          width += self.bandplanInfo.GetCharWidth() * 2
-          height += self.bandplanInfo.GetCharHeight() // 2
-          self.bandplanInfo.SetSize(wx.Size(width, height))
-          self.bandplanWindow.SetClientSize((width, height))
-          rect = self.GetScreenRect()
-          if mouse_x > self.originX + self.graph_width * 3 // 4:
-            self.bandplanWindow.Move(mouse_x + rect.GetX() - width, mouse_y + rect.GetY() - height * 12 // 10)
-          else:
-            self.bandplanWindow.Move(mouse_x + rect.GetX(), mouse_y + rect.GetY() - height * 12 // 10)
-          if not self.bandplanWindow.IsShown():
-            self.bandplanWindow.Show()
-        else:
-          if self.bandplanWindow.IsShown():
-            self.bandplanWindow.Hide()
-      elif self.bandplanWindow.IsShown():
-        self.bandplanWindow.Hide()
+
+# --------------------------------------------------------------------------------- удалено ------------------------ удаление Бенд Плана ---------- 61 RA3PKJ
+##    else: # Bandplan mode message
+##      mouse_x, mouse_y = self.GetMousePosition(event)
+##      if not self.in_splitter and self.originY <= mouse_y <= self.originY + self.tick and (
+##            self.originX <= mouse_x <= self.originX + self.graph_width):
+##        dc = wx.ClientDC(self)    # Read the pixel at the mouse position
+##        pixel = dc.GetPixel(mouse_x, mouse_y)
+##        pixel = "#%02X%02X%02X" % (pixel[0], pixel[1], pixel[2])
+##        txt = application.BandPlanC2T.get(pixel, '')
+##        if pixel == "#000000":
+##          pass
+##        elif txt:
+##          self.bandplanInfo.Clear()
+##          self.bandplanInfo.write(txt)
+##          width, height = self.bandplanInfo.GetTextExtent(txt)
+##          width += self.bandplanInfo.GetCharWidth() * 2
+##          height += self.bandplanInfo.GetCharHeight() // 2
+##          self.bandplanInfo.SetSize(wx.Size(width, height))
+##          self.bandplanWindow.SetClientSize((width, height))
+##          rect = self.GetScreenRect()
+##          if mouse_x > self.originX + self.graph_width * 3 // 4:
+##            self.bandplanWindow.Move(mouse_x + rect.GetX() - width, mouse_y + rect.GetY() - height * 12 // 10)
+##          else:
+##            self.bandplanWindow.Move(mouse_x + rect.GetX(), mouse_y + rect.GetY() - height * 12 // 10)
+##          if not self.bandplanWindow.IsShown():
+##            self.bandplanWindow.Show()
+##        else:
+##          if self.bandplanWindow.IsShown():
+##            self.bandplanWindow.Hide()
+##      elif self.bandplanWindow.IsShown():
+##        self.bandplanWindow.Hide()
 
   def OnWheel(self, event): # колесо мыши
     # СПРАВКА
@@ -4507,6 +4590,11 @@ class App(wx.App):
     self.quisk_posX = None # позиция X окна
     self.quisk_posY = None # позиция Y окна
 
+    # -------------------------------------------- добавлено -------------- COM-порты для Odyssey --------------- 63 RA3PKJ
+    self.cw_com_method = 0
+    self.ody_cw_thread1 = None
+    self.ody_cw_thread2 = None
+
     self.remote_control_head = False
     self.remote_control_slave = False
     self.keys_down = []
@@ -4716,11 +4804,14 @@ class App(wx.App):
     self.txAudioPreemphFdv = 0
     self.levelSpot = 500			# Spot level control, 0 to 1000
     self.TxLevel = 100 # ----------------------------------- добавлено ------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+    self.DigiTxLev = 100 # --------------------------------- добавлено -------------- Вынос слайдера Digital TxLevel в главное окно --- 62 RA3PKJ
     # --------------------------------------------------------------------------------------------------------------------------------- 51 RA3PKJ
     self.f_before_1 = None # первый аргумент (частота "До") функции ChangeHwFrequency
     self.f_before_2 = None # второй аргумент (частота "До") функции ChangeHwFrequency
     self.f_after_1 = None  # первый аргумент (частота "После") функции ChangeHwFrequency
     self.f_after_2 = None  # второй аргумент (частота "После") функции ChangeHwFrequency
+
+    self.speed_cw = 0 # ------------------------------------ добавлено -------------------------- CW paddle --------------------------- 60 RA3PKJ
 
     self.volumeAudio = 300			# audio volume
     self.VFO = 0					# frequency of the VFO
@@ -5253,6 +5344,15 @@ class App(wx.App):
     msg = QS.open_key(port=conf.quisk_serial_port, cts=conf.quisk_serial_cts, dsr=conf.quisk_serial_dsr)
     if msg:
       print(msg)
+
+# ------------------------------------------------- добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
+    if self.cw_com_method == 1: # подключение paddle ключа через внешнюю CW программу
+      self.ody_cw_thread1 = OdysseyCWThread1(self.cw_com_method)
+      self.ody_cw_thread1.start()
+    if self.cw_com_method == 2: # прямое подключение paddle ключа к Quisk через COM порт
+      self.ody_cw_thread2 = OdysseyCWThread2(self.cw_com_method)
+      self.ody_cw_thread2.start()
+
     self.OpenSound()
     tune, vfo = Hardware.ReturnFrequency()	# Request initial frequency
     if tune is None or vfo is None:		# Set last-used frequency
@@ -5275,7 +5375,7 @@ class App(wx.App):
       self.dxCluster = dxcluster.DxCluster()
       self.dxCluster.start()
     # Create shortcut keys for buttons
-    #if conf.button_layout == 'Large screen':# ------------------------------ удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
+    #if conf.button_layout == 'Large screen':# -- удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
     for button in self.modeButns.GetButtons():	# mode buttons
       self.idName2Button[button.idName] = button
       if button.char_shortcut:
@@ -5288,7 +5388,7 @@ class App(wx.App):
         rid = self.QuiskNewId()
         self.main_frame.Bind(wx.EVT_MENU, self.bandBtnGroup.Shortcut, id=rid)
         self.accel_list.append(wx.AcceleratorEntry(wx.ACCEL_ALT, ord(button.char_shortcut), rid))
-# --------------------------------------------------------------------------- удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
+# ----------------------------------------------- удалено -------------- удаление маленького экрана --------- 16 RA3PKJ
 ##    else:	# Small screen
 ##      for button in self.modeButns.GetButtons():	# mode buttons
 ##        self.idName2Button[button.idName] = self.modeButns
@@ -5301,7 +5401,7 @@ class App(wx.App):
       Hardware.post_open()
     self.StartWsjtx()
 
-    #---------------------------------------- удалено ------------- реформа крутилок ------------- 36 RA3PKJ
+    #--------------------------------------------------- удалено ------------- реформа крутилок ------------- 36 RA3PKJ
 ##    self.midiControls["Tune"]	= (None,		None)
 ##    self.midiControls["Vol"]	= (self.sliderVol,	self.ChangeVolume)
 ##    self.midiControls["STo"]	= (self.sliderSto,	self.ChangeSidetone)
@@ -5309,15 +5409,17 @@ class App(wx.App):
 ##    self.midiControls["Ys"]	= (self.sliderYs,	self.ChangeYscale)
 ##    self.midiControls["Yz"]	= (self.sliderYz,	self.ChangeYzero)
 ##    self.midiControls["Zo"]	= (self.sliderZo,	self.OnChangeZoom)
-    #----------------------------------------- взамен ------------- реформа крутилок ------------- 36 RA3PKJ
+    #---------------------------------------------------- взамен ------------- реформа крутилок ------------- 36 RA3PKJ
     # нельзя заменить Rit на RIT, где-то возникает ошибка - по удалённому управлению не происходит движение крутилки на сервере (при этом сообщение о ошибке не появляется)
     self.midiControls["TxLevel"] = (self.sliderTxLevel, self.OnTxLevel) # --------------- добавлено -------- Вынос слайдера TxLevel в главное окно ---------- 41 RA3PKJ
+    self.midiControls["DigiTx"] = (self.sliderDigiTxLev, self.OnDigiTxLev) # ------------ добавлено ----- Вынос слайдера Digital TxLevel в главное окно ----- 62 RA3PKJ
     self.midiControls["Vox"] = (self.sliderVOX, self.OnLevelVOX) # ---------------------- добавлено -------- Вынос слайдера VOX в главное окно -------------- 42 RA3PKJ
     self.midiControls["Compr"] = (self.CtrlTxAudioClip, self.OnTxAudioClip) # ----------- добавлено -------- Вынос слайдера Clip в главное окно ------------- 43 RA3PKJ
     self.midiControls["MicTone"] = (self.CtrlTxAudioPreemph, self.OnTxAudioPreemph) # --- добавлено -------- Вынос слайдера PreemPhasis в главное окно ------ 39 RA3PKJ
     self.midiControls["Tune"]	= (None,		None)
     self.midiControls["Volume"]	= (self.sliderVol,	self.ChangeVolume)
     self.midiControls["SideTone"]	= (self.sliderSto,	self.ChangeSidetone)
+    self.midiControls["CwSpeed"]	= (self.sliderSpeed,	self.ChangeSpeed) # ----- добавлено ------------------- CW paddle --------------------------- 60 RA3PKJ
     self.midiControls["Rit"]	= (self.ritScale,	self.OnRitScale)
     self.midiControls["Yscale"]	= (self.sliderYs,	self.ChangeYscale)
     self.midiControls["Yshift"]	= (self.sliderYz,	self.ChangeYzero)
@@ -5414,6 +5516,7 @@ class App(wx.App):
       self.main_frame.SetConfigText(self.config_text)
     else:
       self.config_text = "Missing config_text"
+
   def MakeSoundDeviceList(self):
     # Create the list of capture and play devices (play, prefix, description, device, alsa_device, alsa_description).
     # Play is 1 for play, 0 for capture. Prefix is "alsa:", "pulse:", "wasapi:"
@@ -5641,6 +5744,7 @@ class App(wx.App):
                 conf.tx_ip, conf.tx_audio_port,
                 conf.mic_sample_rate, conf.mic_channel_I, conf.mic_channel_Q,
 				0.7, conf.mic_playback_rate)
+
   def OnIdle(self, event):
     if self.screen:
       self.screen.OnIdle(event)
@@ -5660,10 +5764,26 @@ class App(wx.App):
     self.quisk_posX, self.quisk_posY = self.main_frame.GetPosition()
     configure.Settings[4]["QuiskPositionX"] = self.quisk_posX  # сохранение позиции X окна
     configure.Settings[4]["QuiskPositionY"] = self.quisk_posY  # сохранение позиции Y окна
+    configure.Settings[4]["Speed_CW"] = Hardware.speed_cw # --------- добавлено ------------------- CW paddle -------------- 60 RA3PKJ
+
+    configure.Settings[4]["CwComMethod"] = self.cw_com_method # ----- добавлено -------------- COM-порты для Odyssey ------- 63 RA3PKJ
+
     # ----------------------------------------------------------------------------------------------------------- 34 RA3PKJ, 35 RA3PKJ
     self.settings_changed = True
     configure.Configuration.SaveState(self)
     self.settings_changed = False
+
+    # --------------------------------------------------------------- добавлено ---------------- COM-порты для Odyssey ----- 63 RA3PKJ
+    try:
+      if self.ody_cw_thread1:
+        self.ody_cw_thread1.stop()
+    except:
+      pass
+    try:
+      if self.ody_cw_thread2:
+        self.ody_cw_thread2.stop()
+    except:
+      pass
 
     msg = QS.GetQuiskPrintf()
     if msg:
@@ -5708,6 +5828,7 @@ class App(wx.App):
     msg = QS.GetQuiskPrintf()
     if msg:
       print(msg, end='')
+
   def OnBtnOnOff(self, event):
     if event.GetEventObject().GetValue():	# Start samples
       try:
@@ -6057,15 +6178,6 @@ class App(wx.App):
       self.step_btn.SetLabel("Step 50")
     self.step_btn.Refresh()
 
-    # --- кнопка RIT
-    szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
-    b_rit = szr
-    self.ritButton = b = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
-    self.idName2Button[b.idName] = b
-    szr.Add(self.ritButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
-    self.ritButton.SetLabel("RIT %d" % self.ritFreq)
-    self.ritButton.Refresh()
-
     # --- кнопка Add RX
     self.multi_rx_menu = wx.Menu() # --- создание меню
     item = self.multi_rx_menu.AppendRadioItem(-1, 'Play only')
@@ -6143,21 +6255,33 @@ class App(wx.App):
     szr.Add(self.btnTmpRecord, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
     szr.Add(self.btnTmpPlay, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=1)
 
+    # --- кнопка RIT
+    szr = wx.BoxSizer(wx.HORIZONTAL)	# add control to box sizer for centering
+    b_rit = szr
+    self.ritButton = b = QuiskCheckbutton(frame, self.OnBtnRit, "RIT")
+    self.idName2Button[b.idName] = b
+    szr.Add(self.ritButton, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, border=1)
+    self.ritButton.SetLabel("RIT %d" % self.ritFreq)
+    self.ritButton.Refresh()
+
 # --------------------------------------------------------------------------------- реформа крутилок ---------------- 36 RA3PKJ
     # --- создание слайдеров
 
-    self.sliderTxLevel = SliderBoxHH(frame, 'TxLevel', self.TxLevel, 0, 100, self.OnTxLevel, display=False, scale=1) # ---- добавлено --- Вынос слайдера TxLevel в главное окно ------- 41 RA3PKJ
-    # --------------------------------------------------------------------------------------------------------------------- добавлено --- Вынос слайдера VOX в главное окно ----------- 42 RA3PKJ
+    self.sliderTxLevel = SliderBoxHH(frame, 'TxLevel', self.TxLevel, 0, 100, self.OnTxLevel, display=False, scale=1) # ---- добавлено --- Вынос слайдера TxLevel в главное окно ---------- 41 RA3PKJ
+    self.DigiTxLev = conf.digital_tx_level
+    self.sliderDigiTxLev = SliderBoxHH(frame, 'DigiTx', self.DigiTxLev, 0, 100, self.OnDigiTxLev, display=False, scale=1) # добавлено -- Вынос слайдера Digital TxLevel в главное окно --- 62 RA3PKJ
+    # --------------------------------------------------------------------------------------------------------------------- добавлено --- Вынос слайдера VOX в главное окно -------------- 42 RA3PKJ
     self.sliderVOX = SliderBoxHH(frame, 'Vox', self.levelVOX, -40, 0, self.OnLevelVOX, display=False, scale=1)
     self.sliderVOX.SetValue(-40 - self.levelVOX) # --- сделана прямая зависимость
 
-    self.CtrlTxAudioClip = SliderBoxHH(frame, 'Compr', 5, 0, 20, self.OnTxAudioClip, display=False, scale=1) # ------------ добавлено --- Вынос слайдера Clip в главное окно ---------- 43 RA3PKJ
-    self.CtrlTxAudioPreemph = SliderBoxHH(frame, 'MicTone', 0, 0, 100, self.OnTxAudioPreemph, display=False, scale=1) # --- добавлено --- Вынос слайдера PreemPhasis в главное окно --- 39 RA3PKJ
+    self.CtrlTxAudioClip = SliderBoxHH(frame, 'Compr', 5, 0, 20, self.OnTxAudioClip, display=False, scale=1) # ------------ добавлено --- Вынос слайдера Clip в главное окно ------------- 43 RA3PKJ
+    self.CtrlTxAudioPreemph = SliderBoxHH(frame, 'MicTone', 0, 0, 100, self.OnTxAudioPreemph, display=False, scale=1) # --- добавлено --- Вынос слайдера PreemPhasis в главное окно ------ 39 RA3PKJ
 
     self.sliderVol = SliderBoxHH(frame, 'Volume', self.volumeAudio, 0, 1000, self.ChangeVolume, display=False, scale=1)
     self.ChangeVolume()		# set initial volume level
     self.sliderSto = SliderBoxHH(frame, 'SideTone', self.sidetone_volume, 0, 1000, self.ChangeSidetone, display=False, scale=1)
     self.ChangeSidetone()
+    self.sliderSpeed = SliderBoxHH(frame, 'CwSpeed', self.speed_cw, 10, 30, self.ChangeSpeed, display=False, scale=1) # ----- добавлено ------------------- CW paddle -------------------- 60 RA3PKJ
     self.sliderYs = SliderBoxHH(frame, 'Yscale', self.y_scale, 0, 160, self.ChangeYscale, display=False, scale=1)
     self.sliderYz = SliderBoxHH(frame, 'Yshift', self.y_zoom, 0, 160, self.ChangeYzero, display=False, scale=1)
     self.sliderZo = SliderBoxHH(frame, 'Zoom', self.zoom_control, 0, 1000, self.OnChangeZoom, display=False, scale=1)
@@ -6190,6 +6314,20 @@ class App(wx.App):
 ##    b.idName = 'RIT'
 ##    self.idName2Button[b.idName] = b
 
+    # получить при старте скорость CW из файла quisk_settings.py ---- добавлено ---------- CW paddle ---------- 60 RA3PKJ
+    try:
+      self.speed_cw = configure.Settings[4]["Speed_CW"]
+    except:
+      self.speed_cw = 18
+    Hardware.speed_cw = self.speed_cw
+    self.sliderSpeed.SetValue(self.speed_cw) # установить движок слайдера CWspeed
+
+    # ----------------------------------------------- добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
+    try:
+      self.cw_com_method = configure.Settings[4]["CwComMethod"]
+    except:
+      self.cw_com_method = 0
+
     # --- кнопки диапазонов
     for label in conf.bandLabels:
       if isinstance(label, (list, tuple)):
@@ -6211,7 +6349,7 @@ class App(wx.App):
     b.char_shortcut = 'u'
     self.MakeAccel(b) # --- связать горячую клавишу с кнопкой
 
-    # --------------------------------------------------------------------- удалено -------- реформа мышиного управления шторками ---------- 13 RA3PKJ
+    # -------------------------------------- удалено -------- реформа мышиного управления шторками ---------- 13 RA3PKJ
     # if conf.mouse_tune_method:		# Mouse motion changes the VFO frequency as in PowerSDR
       # self.splitButton.Enable(False)
 
@@ -6647,6 +6785,8 @@ class App(wx.App):
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderTxLevel, wx.EXPAND) # ---------------------- добавлено ------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
     self.bs2.AddSpacer(10)
+    self.bs2.Add(self.sliderDigiTxLev, wx.EXPAND) # -------------------- добавлено ----------- Вынос слайдера DigiTxLev в главное окно --- 62 RA3PKJ
+    self.bs2.AddSpacer(10)
     self.bs2.Add(self.sliderVOX, wx.EXPAND) # -------------------------- добавлено -------------- Вынос слайдера VOX в главное окно ------ 42 RA3PKJ
     self.bs2.AddSpacer(10)
     self.bs2.Add(self.CtrlTxAudioClip, wx.EXPAND) # -------------------- добавлено -------------- Вынос слайдера Clip в главное окно ----- 43 RA3PKJ
@@ -6656,6 +6796,7 @@ class App(wx.App):
     # -------------------------- установка слайдеров в сайзер bs2a
     self.bs2a.AddSpacer(10)
     self.bs2a.Add(self.sliderSto, wx.EXPAND)
+    self.bs2a.Add(self.sliderSpeed, wx.EXPAND)
     self.bs2a.AddSpacer(9)
     self.bs2a.Add(self.sliderYs, wx.EXPAND)
     self.bs2a.AddSpacer(10)
@@ -7417,9 +7558,14 @@ class App(wx.App):
       self.txFreq = self.VFO = -1		# demand change
       self.ChangeHwFrequency(tune, vfo, 'NewDecim')
 
-  # ------------------------------------------------- добавлено ------------------------------- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
+  # ------------------------------------------------------------------------ добавлено ---- Вынос слайдера TxLevel в главное окно --- 41 RA3PKJ
   def OnTxLevel(self, event=None):
     application.tx_level = self.sliderTxLevel.GetValue()
+    application.Hardware.SetTxLevel()
+
+  # --------------------------------------------------------------------- добавлено - Вынос слайдера Digital TxLevel в главное окно - 62 RA3PKJ
+  def OnDigiTxLev(self, event=None):
+    application.digital_tx_level = self.sliderDigiTxLev.GetValue()
     application.Hardware.SetTxLevel()
 
   def ChangeVolume(self, event=None):
@@ -7443,6 +7589,16 @@ class App(wx.App):
     QS.set_sidetone(value, x, self.ritFreq, conf.keyupDelay)
     if hasattr(Hardware, 'ChangeSidetone'):
       Hardware.ChangeSidetone(x)
+
+  # обработчик слайдера CWspeed --------------------------------------------------- добавлено --------------- CW paddle ------------- 60 RA3PKJ
+  def ChangeSpeed(self, event=None):
+    self.speed_cw = self.sliderSpeed.GetValue()
+    try:
+      Hardware.speed_cw = self.speed_cw
+      Hardware.NewUdpStatus()
+    except:
+      pass
+
   def OnRitScale(self, event=None):	# Called when the RIT slider is moved
     # Caution: event can be None
     value = self.ritScale.GetValue()

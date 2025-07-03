@@ -5949,10 +5949,10 @@ void quisk_set_play_state(void)
 				quisk_play_state = SOFTWARE_PTT;
 				hermes_mox_bit = 1;
 			}
-			else if (IS_HW_CWKEY) {
+			else if (IS_HW_CWKEY) { // переход на передачу при нажатии ключа, подключённого к плате трансивера
 				Time0 = TimeoutTimer = QuiskTimeSec();
-				quisk_play_state = HARDWARE_CWKEY;
-				set_stone();
+				quisk_play_state = HARDWARE_CWKEY; //флаг состояния	
+				set_stone();		
 				quisk_play_sidetone(&quisk_Playback);
 				hermes_mox_bit = 1;
 			}

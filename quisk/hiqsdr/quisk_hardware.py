@@ -86,6 +86,18 @@ class Hardware(BaseHardware):
     self.preamp_labels = "Pre +10db"
     self.preamp_gain = 0
 
+    # --------------------------------------------------------------------------------------- добавлено --------------- CW paddle ----------- 60 RA3PKJ
+    self.odyssey_cw_tx = 0
+    self.speed_cw = 0
+    self.mode_cw = 0
+    self.weight_cw = 0
+    self.options_cw = 0
+    self.level_STone = 230
+    self.cwTone = 0
+    self.start_cw_delay = 0
+    self.keyupDelay = 0
+    self.cw_udp_socket = None
+
     self.rf_gain = 0
     self.sidetone_volume = 0		# sidetone volume 0 to 255
     self.repeater_freq = None		# original repeater output frequency
@@ -144,14 +156,28 @@ class Hardware(BaseHardware):
       self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
     except:
       import wx
-      dlg = wx.MessageBox('Please check the network adapter setup, LAN-connection and SDR electric power supply', 'Error',
+      dlg = wx.MessageBox('Please check SDR power supply, network adapter setup or LAN-connection', 'Error',
 			     wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
 
-    return QS.open_rx_udp(self.conf.rx_udp_ip, self.conf.rx_udp_port)
+    # открыть udp-порт 48252 ------------ добавлено ----------------------------------------- CW paddle ------------- 60 RA3PKJ
+    try:
+      self.cw_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      self.cw_udp_socket.setblocking(0)
+      self.cw_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 5))
+    except:
+      pass
+
+    return QS.open_rx_udp(self.conf.rx_udp_ip, self.conf.rx_udp_port) # порт 48247 (Rx samples)
+
   def close(self):
     if self.rx_udp_socket:
       self.rx_udp_socket.close()
       self.rx_udp_socket = None
+    # закрыть udp-порт 48252 ------------- добавлено ----------------------------------------- CW paddle ------------- 60 RA3PKJ
+    if self.cw_udp_socket:
+      self.cw_udp_socket.close()
+      self.cw_udp_socket = None
+
   def ReturnFrequency(self):	# Return the current tuning and VFO frequency
     return None, None		# frequencies have not changed
   def ReturnVfoFloat(self, freq=None):	# Return the accurate VFO as a float
@@ -439,6 +465,71 @@ class Hardware(BaseHardware):
           self.PrintStatus(' Send', self.want_udp_status)
       except:
         pass
+
+    # залить в железо настройки CW -------------------  добавлено ------------------------- CW paddle ----------------- 60 RA3PKJ
+    # 1 - 75 (маркер)
+    # 2 - 99 (маркер)
+    # 3 - Key Off = 0, Key On = 1
+    # 4 - Speed 1...60 WPM (dec 1...60)
+    # 5 - Mode: Off - 0, ModeA - 1, ModeB - 2, Demo - 4, ModeA + Demo - 5, ModeB + Demo - 6
+    # 6 - Weight 33...66 % (dec 33...66)
+    # 7 - Options: Off = 0, Spacing - 1, Reverse - 2, Spacing + Reverse - 3
+    # 8 - Level SideTone 0...100 % (dec 0...230) --------------------------------------------- используется по умолчанию по максимуму
+    # 9 - Freq SideTone 200...1000 Hz (dec 20...100)
+    # 10 - Delay On 1...250 ms (dec 1...250)
+    # 11 - Hang Out 10...1000 ms, шаг 10 ms (dec 1...100)
+    # 12 - 0
+    # 13 - 0
+    # 14 - 0
+    # 15 - 0
+    # 16 - 0
+##    if self.conf.odyssey_cw_port:
+##      self.odyssey_cw_port = self.conf.odyssey_cw_port
+##    else:
+##      self.odyssey_cw_port = None
+    if self.conf.mode_cw in (0,1,2,3):
+      self.mode_cw = self.conf.mode_cw
+    else:
+      self.mode_cw = 1
+      #wx.MessageBox('CW Mode parameter must be 0, 1, 2 or 3')
+    if self.conf.weight_cw in range (33, 67):
+      self.weight_cw = self.conf.weight_cw
+    else:
+      self.weight_cw = 50
+      #wx.MessageBox('CW Weight parameter must be in range 33...66 %')
+    if self.conf.options_cw in (0,1,2,3):
+      self.options_cw = self.conf.options_cw
+    else:
+      self.options_cw = 0
+      #wx.MessageBox('CW Options parameter must be 0, 1, 2 or 3')
+    #if self.conf.level_STone in range (1, 101):
+      #self.level_STone = self.conf.level_STone * 7 // 3
+    #else:
+      #self.level_STone = 230
+      #wx.MessageBox('Level of SideTone parameter must be in range 1...100 %')
+    if self.conf.cwTone in range (200, 1001):
+      self.cwTone = self.conf.cwTone // 10
+    else:
+      self.cwTone = 70
+      #wx.MessageBox('Freq of SideTone parameter must be in range 200...1000 Hz')
+    if self.conf.start_cw_delay in range (1, 251):
+      self.start_cw_delay = self.conf.start_cw_delay
+    else:
+      self.start_cw_delay = 15
+      #wx.MessageBox('CW Delay On parameter must be in range 1...250 ms')
+    if self.conf.keyupDelay in range (10, 1001):
+      self.keyupDelay = self.conf.keyupDelay // 10
+    else:
+      self.keyupDelay = 23
+      #wx.MessageBox('CW Break-In parameter must be in range 10...1000 ms')
+    try:
+      if self.cw_udp_socket:
+        cw_set = [75, 99, self.odyssey_cw_tx, self.speed_cw, self.mode_cw, self.weight_cw, self.options_cw, self.level_STone, self.cwTone, self.start_cw_delay, self.keyupDelay, 0, 0, 0, 0, 0]
+        s = bytearray(cw_set)
+        self.cw_udp_socket.send(s)
+    except:
+      pass
+
   def SetVNA(self, key_down=None, vna_start=None, vna_stop=None, vna_count=None, do_tx=False):
     if key_down is None:
       pass

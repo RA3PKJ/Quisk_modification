@@ -2504,14 +2504,18 @@ to the amplitude and phase. Click here for an adjustment screen."
     #help_text = "This controls the Tx level for non-digital modes. It is usually 100%."
     #c1, btn = self.AddTextSliderHelp(1, "Tx level %d%%  ", 100, 0, 100, self.OnTxLevel, help_text, span=2)
     #self.NextRow()
+    # ---------------------------------------------------- удалено ----------------------- Вынос слайдера Digital TxLevel в главное окно --- 62 RA3PKJ
+    #level = conf.digital_tx_level
+    #help_text = "This controls the TX level for digital modes. Digital modes require greater linearity, and the digital level is often 25%."
+    #c2, btn = self.AddTextSliderHelp(1, "Digital Tx level %d%%  ", level, 0, level, self.OnDigitalTxLevel, help_text, span=2)
 
-    level = conf.digital_tx_level
-    help_text = "This controls the TX level for digital modes. Digital modes require greater linearity, and the digital level is often 25%."
-    c2, btn = self.AddTextSliderHelp(1, "Digital Tx level %d%%  ", level, 0, level, self.OnDigitalTxLevel, help_text, span=2)
-    if not hasattr(application.Hardware, "SetTxLevel"):
-      #c1.slider.Enable(0) # ----------------------------- удалено ---------------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
-      c2.slider.Enable(0)
-    self.NextRow()
+    # ---------------------------------------------------- удалено ---------------------------- Вынос слайдера TxLevel в главное окно ------ 41 RA3PKJ
+    # ---------------------------------------------------- удалено ----------------------- Вынос слайдера Digital TxLevel в главное окно --- 62 RA3PKJ
+    #if not hasattr(application.Hardware, "SetTxLevel"):
+      #c1.slider.Enable(0)
+      #c2.slider.Enable(0)
+    #self.NextRow()
+
     #### Make controls SECOND column
     self.row = 3
     self.AddTextL(4, "Configuration for the file record button:  " + conf.Xbtn_text_file_rec, span=2)
@@ -2593,10 +2597,11 @@ The CW message will then repeat. A time of zero means no repeat.'
   #def OnTxLevel(self, event):
     #application.tx_level = event.GetEventObject().GetValue()
     #application.Hardware.SetTxLevel()
+  # ---------------------------------------------------- удалено ----------------------- Вынос слайдера Digital TxLevel в главное окно --- 62 RA3PKJ
+  #def OnDigitalTxLevel(self, event):
+    #application.digital_tx_level = event.GetEventObject().GetValue()
+    #application.Hardware.SetTxLevel()
 
-  def OnDigitalTxLevel(self, event):
-    application.digital_tx_level = event.GetEventObject().GetValue()
-    application.Hardware.SetTxLevel()
   def OnBtnPhase(self, event):
     btn = event.GetEventObject()
     if btn.GetLabel()[0:2] == 'Tx':
@@ -2955,19 +2960,55 @@ class Radios(BaseWindow):	# The "Radios" first-level page
     self.start_radio.SetSelection(index)
 
 class RadioSection(BaseWindow):		# The pages for each section in the second-level notebook for each radio
-  help_cw = \
-  'If your CW key is not connected to your radio hardware, you can connect the key to Quisk using a serial port or MIDI. '\
-  'For the serial port, enter the serial port name and either CTS or DSR for the key. '\
+  # ------------------------------------------ добавлено -------------------------- CW paddle --------------------------- 60 RA3PKJ
+  # ------------------------------------------ добавлено -------------------------- CW paddle --------------------------- 60 RA3PKJ
+  help_cw_general = \
+  'Connect straight or iambic (only Odyssey radio) CW key to your hardware. '\
+  'Also you may connect key to external CW program (like CwType) and then use a serial port for connecting to this program. '\
   'You can use MIDI for keying. See the "Keys" screen . '\
-  'If you turn on the Quisk internal sidetone, be sure to use the Fast Sound setting for Windows. '\
-  'And for Linux, use Alsa for the radio sound output. '\
-  'Reduce the hardware poll time for faster response.'
+  'Use the Fast Sound setting for Windows. '\
+  'And for Linux, use Alsa for the radio sound output.'
+
+  help_cw_odyssey = \
+  'Connect straight or iambic CW key to your hardware. '\
+  'Also you may connect key to external CW program (like CwType) and then use a serial port for connecting to this program. '\
+  'Use the Fast Sound setting for Windows. '\
+  'And for Linux, use Alsa for the radio sound output.'
+
+  help_cw = \
+  'Connect CW key to external CW program (like CwType) and use a serial port for connecting to this program. '\
+  'Use the Fast Sound setting for Windows. '\
+  'And for Linux, use Alsa for the radio sound output.'
+
   def __init__(self, parent, radio_name, section, names):
     BaseWindow.__init__(self, parent)
     self.radio_name = radio_name
     self.section = section
     self.names = names
     self.MakeControls()
+
+# ------------------------------------------ добавлено ------------------- COM-порты для Odyssey ----- 63 RA3PKJ
+  def OdysseyCOMradioButtons0(self, event):
+    if event:
+      self.rb0.SetValue(True)
+      application.cw_com_method = 0
+  def OdysseyCOMradioButtons1(self, event):
+    #name = conf.odyssey_cw_port1
+    if event:
+      #if name in ('odyssey_cw_port1', ):
+      #setattr(conf, name, True)
+      #application.ImmediateChange(name)
+      self.rb1.SetValue(True)
+      application.cw_com_method = 1
+  def OdysseyCOMradioButtons2(self, event):
+    #name = conf.odyssey_cw_port2
+    if event:
+      #if name in ('odyssey_cw_port2', ):
+      #setattr(conf, name, True)
+      #application.ImmediateChange(name)
+      self.rb2.SetValue(True)
+      application.cw_com_method = 2
+
   def MakeControls(self):
     self.num_cols = 8
     #self.MarkCols()
@@ -2990,16 +3031,64 @@ class RadioSection(BaseWindow):		# The pages for each section in the second-leve
         item = self.AddPushButtonR(7, "Change..", self.OnButtonChangeFavorites, border=0)
         self.row = row
       else:
-        if name == "keyupDelay":
+
+        # ------------------------------------ добавлено -------------------------- CW paddle --------------------------- 60 RA3PKJ
+        if name == "use_fast_sound":
+          if col != 1:
+            col = 1
+            self.NextRow()
+          self.AddTextCHelp(1, "General CW Settings", self.help_cw_general, 8)
+          col = 1
+          self.NextRow()
+          self.NextRow()
+
+        # ------------------------------------ добавлено -------------------------- CW paddle --------------------------- 60 RA3PKJ
+        if name == "odyssey_cw_port1":
           if col != 1:
             col = 1
             self.NextRow()
           self.NextRow()
           self.NextRow()
-          self.AddTextCHelp(1, "CW Settings for Remote and Local Operation", self.help_cw, 8)
+          self.AddTextCHelp(1, "Additional CW Settings for radio like Odyssey", self.help_cw_odyssey, 8)
           col = 1
           self.NextRow()
           self.NextRow()
+
+          # ----------------------------------- добавлено --------------------- COM-порты для Odyssey ------------------- 63 RA3PKJ
+          self.rb0 = self.AddRadioButton(1, "No active COM", self.OdysseyCOMradioButtons0)
+          if application.cw_com_method == 0:
+            self.rb0.SetValue(True)
+          self.rb1 = self.AddRadioButton(2, "Active COM to external program", self.OdysseyCOMradioButtons1)
+          if application.cw_com_method == 1:
+            if conf.odyssey_cw_port1 in ("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9"):
+              self.rb1.SetValue(True)
+            else:
+              self.rb1.SetValue(False)
+              self.rb0.SetValue(True)
+              application.cw_com_method = 0
+          self.NextRow()
+          self.rb2 = self.AddRadioButton(2, "Active COM for direct paddle key", self.OdysseyCOMradioButtons2)
+          if application.cw_com_method == 2:
+            if conf.odyssey_cw_port2 in ("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9"):
+              self.rb2.SetValue(True)
+            else:
+              self.rb2.SetValue(False)
+              self.rb0.SetValue(True)
+              application.cw_com_method = 0
+          self.NextRow()
+          self.NextRow()
+
+        if name == "quisk_serial_cts":
+          if col != 1:
+            col = 1
+            self.NextRow()
+          self.NextRow()
+          self.NextRow()
+          self.AddTextCHelp(1, "CW software manipulation for another radio (not Odyssey)", self.help_cw, 8)
+          col = 1
+          self.NextRow()
+          self.NextRow()
+
         if fmt[0:4] in ('dict', 'list'):
           continue
         if name[0:4] == platform_ignore:

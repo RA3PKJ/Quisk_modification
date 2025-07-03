@@ -1569,30 +1569,10 @@ win_hamlib_com3_name = ""
 
 
 
-
 # ------------------------------------------------------ добавлено ----------------------------------- CW --------------------- 50 RA3PKJ
 ################ CW
-## keyupDelay            Keyup delay msecs, integer
-# This is the key hang time for semi-breakin CW. It is the time in milliseconds
-# from the last CW key release until changing to receive.
-# It only operates in CW mode.
-# Changes are immediate (no need to restart).
-keyupDelay = 150
 
-## cwTone               CW tone frequency in Hertz, integer
-# This is the CW tone frequency in Hertz.
-# Changes are immediate (no need to restart).
-cwTone = 600
-#cwTone = 400
-#cwTone = 800
-
-# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
-# ## use_sidetone                Use sidetone, integer choice
-# # This controls whether Quisk will display a sidetone volume control
-# # and generate a CW sidetone.
-# #use_sidetone = 0
-# ------------------------------------------------------ взамен -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
-use_sidetone = 1
+# General CW Settings ---------------------------------- добавлено -------------------------------- CW paddle ----------------- 60 RA3PKJ
 
 ## use_fast_sound        Use fast sound, boolean
 # This turns on the new faster sound system which provides a much faster and more useful sidetone
@@ -1601,23 +1581,97 @@ use_sidetone = 1
 use_fast_sound = False
 #use_fast_sound = True
 
-## lin_quisk_serial_port            Quisk serial port, text
-# This is the serial port used for a CW key and a PTT connection.
-# Changes are immediate (no need to restart).
-lin_quisk_serial_port = ""
-#lin_quisk_serial_port = "/dev/ttyUSB0"
-#lin_quisk_serial_port = "/dev/ttyUSB1"
+## start_cw_delay            CW On Delay ms, integer
+# 1...250 ms. Задержка появления сигнала на выходе передатчика, обычно 15 мс. Эта задержка необходима для предотвращения обгорания контактов антенного реле в усилителе мощности.
+start_cw_delay = 15
 
-## win_quisk_serial_port            Quisk serial port, text
-# This is the serial port used for a CW key and a PTT connection.
-# Changes are immediate (no need to restart).
-win_quisk_serial_port = ""
-#win_quisk_serial_port = "COM6"
-#win_quisk_serial_port = "COM7"
+## cwTone            CW tone frequency Hz, integer
+# 200...1000 Hz.
+cwTone = 700
+
+## keyupDelay            CW Break-In ms, integer
+# 10...1000 ms. Время удержания передатчика в режиме передачи после прекращения манипуляции, предотвращает частое переключение реле передатчика между телеграфными посылками. Дополнительно,
+# во время этой задержки, отключается звук в наушниках, что предотвращает прием собственного сигнала передатчика, задержанного в SDR программе.
+keyupDelay = 230
+
+
+
+# CW Settings like Odyssey ----------------------------- добавлено -------------------------------- CW paddle ----------------- 60 RA3PKJ
+
+## odyssey_cw_port1            Port to external CW program, text
+# Выбор COM-порта для CW манипуляции из внешней программы. Порт в Quisk должен быть COM1...COM9.
+# Для связи Quisk с внешней программой необходимо создать пару портов при помощи соответствующего софта и указать
+# во внешней программе сигналы управления: DTR = PTT и RTS = CW.
+odyssey_cw_port1 = ""
+#odyssey_cw_port1 = "COM1"
+#odyssey_cw_port1 = "COM2"
+#odyssey_cw_port1 = "COM3"
+#odyssey_cw_port1 = "COM4"
+#odyssey_cw_port1 = "COM5"
+#odyssey_cw_port1 = "COM6"
+#odyssey_cw_port1 = "COM7"
+#odyssey_cw_port1 = "COM8"
+#odyssey_cw_port1 = "COM9"
+
+## mode_cw            CW Mode, integer
+# 0 = Straight Key, 1 = Iambic mode A, 2 = Iambic mode B, 3 = Demo. Манипулятор подключить к контактам на плате.
+# Mode A и мode B это режимы ямбического ключа. Если не выбран ни один из этих режимов, то режим вертикального ключа.
+# Разница между режимами А и В заключается в различном поведении при отпускании одновременно замкнутых
+# контактов Dot Dash. В режиме В, при отпускании во время передачи тире будет автоматически сформирована дополнительная точка.
+# Подробнее читайте здесь http://www.palm-radio.de/pdf/IambicPaddleModeAorBfunction-1.pdf
+# В режиме Demo сигнал управления усилителем не будет переводить его в режим передачи, при этом сама плата трансивера будет
+# работать как обычно - на выходе передатчика будет сигнал. Это может быть полезно во время настройки или для обучения.
+#mode_cw = 0
+mode_cw = 1
+#mode_cw = 2
+#mode_cw = 3
+
+## odyssey_cw_port2             Port for direct paddle key, text
+# Выбор COM-порта для прямой CW манипуляции paddle ключом. Порт должен быть COM1...COM9.
+# CTS = Dash, DSR = Dot, DTR = общий.
+# Некоторые настройки в таком режиме не оказывают влияние.
+odyssey_cw_port2 = ""
+#odyssey_cw_port2 = "COM1"
+#odyssey_cw_port2 = "COM2"
+#odyssey_cw_port2 = "COM3"
+#odyssey_cw_port2 = "COM4"
+#odyssey_cw_port2 = "COM5"
+#odyssey_cw_port2 = "COM6"
+#odyssey_cw_port2 = "COM7"
+#odyssey_cw_port2 = "COM8"
+#odyssey_cw_port2 = "COM9"
+
+## weight_cw            CW Weight %, integer
+# 33...66 %. Значение длительности тире в периоде тире-пауза, который равен трем периодам точки. По умолчанию это 50%, что означает длительность тире
+# как половина от периода, то есть длительность тире равна длительности паузы после него. Изменяя это значение можно менять
+# длительность тире, при этом общая скорость манипуляции меняться не будет.
+weight_cw = 50
+
+## options_cw            CW Options, integer
+# 0 = Off, 1 = Spacing, 2 = Reverse, 3 = Spacing + Reverse. В режиме Spasing, если во время манипуляции сделать паузу более чем длительность точки,
+# это будет воспринято как факт паузы между словами, пауза будет сгенерирована автоматически в течение трех периодов точки.
+# Знак, введенный во время этой паузы, будет запомнен и передан автоматически после паузы.
+# Таким образом, паузы между словами будут сгенерированы автоматически и будут иметь одинаковую длительность.
+# Reverse меняет местами Dot и Dash (точки и тире).
+options_cw = 0
+#options_cw = 1
+#options_cw = 2
+#options_cw = 3
+
+# ------------------------------ не нужно
+# ## level_STone            Level of SideTone %, integer
+# # 1...100 %. Уровень громкости самопрослушки при манипуляции.
+# # Максимальное значение громкости определяется минимальным установленным в программе SDR.
+# # Таким образом, если регулировать уровень в одном месте, то в другом нужно поставить максимальный уровень или близкий к этому.
+# level_STone = 100
+
+
+
+# Software CW Settings ---------------------------------- добавлено -------------------------------- CW paddle ----------------- 60 RA3PKJ
 
 quisk_serial_port = ""
 
-## quisk_serial_cts    Use CTS for, text choice
+## quisk_serial_cts    Use CTS for, text
 # You can use the CTS signal of the serial port for a CW key or for push-to-talk PTT.
 # If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
 # and similarly for "when high".
@@ -1628,7 +1682,36 @@ quisk_serial_cts = "None"
 #quisk_serial_cts = "PTT when high"
 #quisk_serial_cts = "PTT when low"
 
-## quisk_serial_dsr    Use DSR for, text choice
+# ----------------------------------------------------- удалено -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+# ## use_sidetone                Use sidetone, integer choice
+# # This controls whether Quisk will display a sidetone volume control
+# # and generate a CW sidetone.
+# #use_sidetone = 0
+# ------------------------------------------------------ взамен -------------------------- инициализация скрытых кнопок -------- 18 RA3PKJ
+use_sidetone = 1
+
+## lin_quisk_serial_port            CW serial port, text
+# This is the serial port used for a CW key and a PTT connection.
+# Changes are immediate (no need to restart).
+lin_quisk_serial_port = ""
+#lin_quisk_serial_port = "/dev/ttyUSB0"
+#lin_quisk_serial_port = "/dev/ttyUSB1"
+
+## win_quisk_serial_port            CW serial port, text
+# This is the serial port used for a CW key and a PTT connection.
+# Changes are immediate (no need to restart).
+win_quisk_serial_port = ""
+#win_quisk_serial_port = "COM1"
+#win_quisk_serial_port = "COM2"
+#win_quisk_serial_port = "COM3"
+#win_quisk_serial_port = "COM4"
+#win_quisk_serial_port = "COM5"
+#win_quisk_serial_port = "COM6"
+#win_quisk_serial_port = "COM7"
+#win_quisk_serial_port = "COM8"
+#win_quisk_serial_port = "COM9"
+
+## quisk_serial_dsr    Use DSR for, text
 # You can use the DSR signal of the serial port for a CW key or for push-to-talk PTT.
 # If "when low", the CW key or PTT is asserted (transmitting) if the voltage on the pin is low,
 # and similarly for "when high".
@@ -1639,15 +1722,8 @@ quisk_serial_dsr = "None"
 #quisk_serial_dsr = "PTT when high"
 #quisk_serial_dsr = "PTT when low"
 
-## start_cw_delay            Start CW delay msec, integer
-# Quisk generates its own CW waveform when keyed by the serial port or MIDI.  Quisk delays this CW waveform
-# so that when changing from Rx to Tx there is time for relays to switch and power amps to turn on.
-# The CW key timing is preserved.  This is the delay in milliseconds from the first
-# CW key press until RF output. The delay can be zero to 250 milliseconds.
-# If the key is attached to the hardware and the hardware generates the CW, Quisk can not implement this delay.
-# Changes are immediate (no need to restart).
-start_cw_delay = 15
 # ---------------------------------------------------------------------------------------------------------------------------------
+
 
 
 
