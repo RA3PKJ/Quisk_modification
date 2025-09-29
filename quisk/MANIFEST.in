@@ -10,4 +10,5 @@ graft    softrock
 graft    soapypkg
 graft    sdrmicronpkg
 graft    perseuspkg
+graft    wdsp
 global-exclude *.pyc
