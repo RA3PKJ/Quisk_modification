@@ -471,9 +471,9 @@ class Hardware(BaseHardware):
     # 2 - 99 (маркер)
     # 3 - Key Off = 0, Key On = 1
     # 4 - Speed 1...60 WPM (dec 1...60)
-    # 5 - Mode: Off - 0, ModeA - 1, ModeB - 2, Demo - 4, ModeA + Demo - 5, ModeB + Demo - 6
+    # 5 - Mode: 0 = straight Key, 1 = iambic ModeA, 2 = iambic ModeB, 4 = straight Key + Demo, 5 = ModeA + Demo, 6 = ModeB + Demo
     # 6 - Weight 33...66 % (dec 33...66)
-    # 7 - Options: Off = 0, Spacing - 1, Reverse - 2, Spacing + Reverse - 3
+    # 7 - Options: 0 = No, 1 = Spacing, 2 = Reverse, 3 = Spacing + Reverse
     # 8 - Level SideTone 0...100 % (dec 0...230) --------------------------------------------- используется по умолчанию по максимуму
     # 9 - Freq SideTone 200...1000 Hz (dec 20...100)
     # 10 - Delay On 1...250 ms (dec 1...250)
@@ -487,7 +487,7 @@ class Hardware(BaseHardware):
 ##      self.odyssey_cw_port = self.conf.odyssey_cw_port
 ##    else:
 ##      self.odyssey_cw_port = None
-    if self.conf.mode_cw in (0,1,2,3):
+    if self.conf.mode_cw in (0,1,2,4,5,6):
       self.mode_cw = self.conf.mode_cw
     else:
       self.mode_cw = 1

@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено ----------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.43.25 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.44.26 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -2315,19 +2315,34 @@ class TopScreen(wx.Window):
     Xpos = 0 # X-position
     Ypos = 2  # Y-position
     # ------------------------------------------------------------------------------------------------------------- версия
-    dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
-    dc.SetTextForeground('white')
+    dc.SetFont(wx.Font(11, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    dc.SetTextForeground('yellow')
     Xpos = Xpos + 5
     dc.DrawText(version_quisk, Xpos, Ypos - 1)
     # --------------------------------------------------------------------------------------------------------- Fast sound
     dc.SetFont(wx.Font(9, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
-    Xpos = Xpos + 250
+    Xpos = Xpos + 300
     if conf.use_fast_sound:
       dc.SetTextForeground('#00FF00')
       dc.DrawText('Fast sound ON', Xpos, Ypos)
     else:
       dc.SetTextForeground('#777777')
       dc.DrawText('Fast sound OFF', Xpos, Ypos)
+    # --------------------------------------------------------------------------------------------------------- CW mode
+    dc.SetFont(wx.Font(9, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+    Xpos = Xpos + 100
+    if conf.mode_cw == 0 or conf.mode_cw == 4:
+      dc.SetTextForeground('#00FF00')
+      dc.DrawText('CW straight Key', Xpos, Ypos)
+    elif conf.mode_cw == 1 or conf.mode_cw == 5:
+      dc.SetTextForeground('#00FF00')
+      dc.DrawText('CW iambic ModeA', Xpos, Ypos)
+    elif conf.mode_cw == 2 or conf.mode_cw == 6:
+      dc.SetTextForeground('#00FF00')
+      dc.DrawText('CW iambic ModeB', Xpos, Ypos)
+    else:
+      dc.SetTextForeground('#00FF00')
+      dc.DrawText('CW iambic ModeA', Xpos, Ypos)
     # ----------------------------------------------------------------------------------------------- разделительная линия
     dc.SetPen(wx.Pen('#888888', 1))
     dc.DrawLine(0, Ypos + 17, self.width, Ypos + 17)
@@ -8152,6 +8167,13 @@ class App(wx.App):
 # ------------------------------------------------------------------------------ добавлено ------------------ CW Training ---------- 52 RA3PKJ
   def OnBtnCWtrain(self, event):
     if self.CWtrainButton.GetValue(): # кнопка нажата
+    #для одиссеевских прошивок (KeyMaster)
+      try:
+        conf.mode_cw = conf.mode_cw + 4
+        Hardware.NewUdpStatus()
+      except:
+        pass
+    #для прошивок от DL2STG
       self.cts_old = conf.quisk_serial_cts
       self.dsr_old = conf.quisk_serial_dsr
       if conf.quisk_serial_cts[0:4] == "PTT " and conf.quisk_serial_dsr[0:4] == "PTT ":
@@ -8171,6 +8193,13 @@ class App(wx.App):
       else:
         return
     else: # кнопка отпущена
+    #для одиссеевских прошивок (KeyMaster)
+      try:
+        conf.mode_cw = conf.mode_cw - 4
+        Hardware.NewUdpStatus()
+      except:
+        pass
+    #для прошивок от DL2STG
       conf.quisk_serial_cts = self.cts_old
       conf.quisk_serial_dsr = self.dsr_old
     self.ImmediateChange("quisk_serial_cts")
