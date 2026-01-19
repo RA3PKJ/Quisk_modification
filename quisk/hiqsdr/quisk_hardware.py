@@ -82,11 +82,11 @@ class Hardware(BaseHardware):
     self.usingSpot = False
     self.band = None
 
-    # --------------------------------------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+    # ------------------------------------------------------------------------------------- добавлено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
     self.preamp_labels = "Pre +10db"
     self.preamp_gain = 0
 
-    # --------------------------------------------------------------------------------------- добавлено --------------- CW paddle ----------- 60 RA3PKJ
+    # ------------------------------------------------------------------------------------- добавлено --------------- CW paddle ----------- 60 RA3PKJ
     self.odyssey_cw_tx = 0
     self.speed_cw = 0
     self.mode_cw = 0
@@ -97,6 +97,12 @@ class Hardware(BaseHardware):
     self.start_cw_delay = 0
     self.keyupDelay = 0
     self.cw_udp_socket = None
+
+    # --------------------------------------------------------------------------------- добавлено ------------- SWR, Power --------------- 64 RA3PKJ
+    self.swr_udp_socket = None
+    self.swr_forward = None
+    self.swr_tx = None
+    self.swr_alarm = None
 
     self.rf_gain = 0
     self.sidetone_volume = 0		# sidetone volume 0 to 255
@@ -110,8 +116,8 @@ class Hardware(BaseHardware):
     except:
       pass
     if conf.use_rx_udp == 2:	# Set to 2 for the HiQSDR
-      #self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db') # ----- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
-      self.rf_gain_labels = ('ATT 0db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # --------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+      #self.rf_gain_labels = ('RF 0db', 'RF +10db', 'RF -10db', 'RF -20db', 'RF -30db') # --- удалено ---------- кнопки Pre и ATT --------- 57 RA3PKJ
+      self.rf_gain_labels = ('ATT 0db', 'ATT -10db', 'ATT -20db', 'ATT -30db') # ------------- взамен ---------- кнопки Pre и ATT --------- 57 RA3PKJ
       self.antenna_labels = ('Ant 1', 'Ant 2')
     self.firmware_version = None	# firmware version is initially unknown
     self.rx_udp_socket = None
@@ -150,8 +156,8 @@ class Hardware(BaseHardware):
     self.rx_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     self.rx_udp_socket.setblocking(0)
 
-    #self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1)) # --- удалено --- ошибка настройки сетевого адаптера --- 11 RA3PKJ
-    # ---------------------------------------------------------------------------------- взамен --- ошибка настройки сетевого адаптера --- 11 RA3PKJ
+    #self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1)) # -- удалено -- ошибка настройки сетевого адаптера ---- 11 RA3PKJ
+    # --------------------------------------------------------------------------------- взамен -- ошибка настройки сетевого адаптера ---- 11 RA3PKJ
     try:
       self.rx_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 1))
     except:
@@ -159,11 +165,19 @@ class Hardware(BaseHardware):
       dlg = wx.MessageBox('Please check SDR power supply, network adapter setup or LAN-connection', 'Error',
 			     wx.OK | wx.OK_DEFAULT | wx.ICON_ERROR)
 
-    # открыть udp-порт 48252 ------------ добавлено ----------------------------------------- CW paddle ------------- 60 RA3PKJ
+    # Quisk - клиент, железо - сервер, соединение с udp-портом 48252 ----------------- добавлено ------------ CW paddle ----------------- 60 RA3PKJ
+    self.cw_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.cw_udp_socket.setblocking(0)
     try:
-      self.cw_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      self.cw_udp_socket.setblocking(0)
       self.cw_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 5))
+    except:
+      pass
+
+    # Quisk - клиент, железо - сервер, соединение с udp-портом 48254 ------------------ добавлено ------------ SWR, Power --------------- 64 RA3PKJ
+    self.swr_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.swr_udp_socket.setblocking(0)
+    try:
+      self.swr_udp_socket.connect((self.conf.rx_udp_ip, self.conf.rx_udp_port + 7))
     except:
       pass
 
@@ -173,10 +187,14 @@ class Hardware(BaseHardware):
     if self.rx_udp_socket:
       self.rx_udp_socket.close()
       self.rx_udp_socket = None
-    # закрыть udp-порт 48252 ------------- добавлено ----------------------------------------- CW paddle ------------- 60 RA3PKJ
+    # закрыть udp-порт 48252 ---------------------------------------------------------- добавлено ------------- CW paddle --------------- 60 RA3PKJ
     if self.cw_udp_socket:
       self.cw_udp_socket.close()
       self.cw_udp_socket = None
+    # закрыть udp-порт 48254 ---------------------------------------------------------- добавлено ------------- SWR, Power -------------- 64 RA3PKJ
+    if self.swr_udp_socket:
+      self.swr_udp_socket.close()
+      self.swr_udp_socket = None
 
   def ReturnFrequency(self):	# Return the current tuning and VFO frequency
     return None, None		# frequencies have not changed
@@ -312,6 +330,23 @@ class Hardware(BaseHardware):
     self.sidetone_volume = int(value * 255.1)		# Change 0.0-1.0 to 0-255
     self.NewUdpStatus()
   def HeartBeat(self):
+    # -------------------------------------------------------------------------------------- добавлено ------------- SWR, Power --------------- 64 RA3PKJ
+    try:
+      if self.swr_udp_socket:
+        data = self.swr_udp_socket.recv(1024)
+        self.swr_forward = data[0]
+        swr_back = data[1]
+        self.swr_alarm = data[2]
+        empty_1 = data[3] # пустой
+        if self.swr_forward > swr_back:
+          swr_0 = swr_back / self.swr_forward
+          swr_1 = (1 + swr_0) / (1 - swr_0)
+          self.swr_tx = round(swr_1, 3)
+        else:
+          self.swr_tx = None
+    except:
+      pass
+
     if self.sndp_active:	# AE4JY Simple Network Discovery Protocol - attempt to set the FPGA IP address
       try:
         if DEBUG: print("Sndp send")
@@ -466,7 +501,7 @@ class Hardware(BaseHardware):
       except:
         pass
 
-    # залить в железо настройки CW -------------------  добавлено ------------------------- CW paddle ----------------- 60 RA3PKJ
+    # залить в железо настройки CW -----------------------------------------  добавлено ------------------------- CW paddle ----------------- 60 RA3PKJ
     # 1 - 75 (маркер)
     # 2 - 99 (маркер)
     # 3 - Key Off = 0, Key On = 1
@@ -527,6 +562,15 @@ class Hardware(BaseHardware):
         cw_set = [75, 99, self.odyssey_cw_tx, self.speed_cw, self.mode_cw, self.weight_cw, self.options_cw, self.level_STone, self.cwTone, self.start_cw_delay, self.keyupDelay, 0, 0, 0, 0, 0]
         s = bytearray(cw_set)
         self.cw_udp_socket.send(s)
+    except:
+      pass
+
+    # -------------------------------------------------------------------------------------- добавлено ------------- SWR, Power --------------- 64 RA3PKJ
+    try:
+      if self.swr_udp_socket:
+        swr_set = [22, 88] # опознавательные (я выбрал произвольно в качестве "пароля") байты, отсылаемые в трансивер. Трансивер узнает адрес и порт отправителя, т.е. компьютера.
+        s = bytearray(swr_set)
+        self.swr_udp_socket.send(s)
     except:
       pass
 

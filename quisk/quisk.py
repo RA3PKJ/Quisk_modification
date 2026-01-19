@@ -19,7 +19,7 @@ from __future__ import division
 
 # ----------------------------------------------------- добавлено ----------------------- заголовок окна -------- 3 RA3PKJ
 global version_quisk
-version_quisk = 'QUISK 4.2.44.26 by N7DDC, RA3PKJ'
+version_quisk = 'QUISK 4.2.44.27 by N7DDC, RA3PKJ'
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages,
 # to load other extension modules that link against _quisk.so, to find shared libraries *.dll and *.so,
@@ -2343,6 +2343,7 @@ class TopScreen(wx.Window):
     else:
       dc.SetTextForeground('#00FF00')
       dc.DrawText('CW iambic ModeA', Xpos, Ypos)
+
     # ----------------------------------------------------------------------------------------------- разделительная линия
     dc.SetPen(wx.Pen('#888888', 1))
     dc.DrawLine(0, Ypos + 17, self.width, Ypos + 17)
@@ -2519,6 +2520,7 @@ class GraphDisplay(wx.Window):
       dc.DrawText('+60', SmtrX + 253, 10)
 
       # ---------------------------------------------------------------------- добавлено ------------------------- вынос из малого окошка ------- 8 RA3PKJ
+      dc.SetFont(wx.Font(11, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
       dc.SetTextForeground('yellow')
       dc.DrawText(("%7.2f dBm" % application.smeter_db), SmtrX+320, 10) #показать строку децибеллов
       if application.bandscope_flag:
@@ -2530,6 +2532,26 @@ class GraphDisplay(wx.Window):
         pass
       else:
         dc.DrawText(application.measure_audio_str + ' uV', SmtrX+450, 10) #показать строку напряжения аудио
+
+      # --------------------------------------------------------------------- добавлено -------------------- SWR, Power ------------------------- 64 RA3PKJ
+      # Power, SWR:
+      if Hardware.swr_forward or Hardware.swr_forward == 0:
+        dc.SetTextForeground('#FFFFFF')
+        dc.DrawText('TX_Power=' + str(Hardware.swr_forward) + 'W', SmtrX+570, 10)
+        dc.DrawText('SWR=' + str(Hardware.swr_tx), SmtrX+720, 10)
+      else:
+        dc.SetTextForeground('#AAAAAA')
+        dc.DrawText('TX_Power=None', SmtrX+570, 10)
+        dc.DrawText('SWR=None', SmtrX+720, 10)
+      # SWR ALARM:
+      if Hardware.swr_alarm == 1:
+        dc.SetTextForeground('#FF8888')
+        dc.SetFont(wx.Font(50, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, False, conf.quisk_typeface))
+        dc.DrawText('SWR HIGH', 200, 90)
+      else:
+        dc.DrawText('', 200, 90)
+
+
 
     if application.tx_inhibit:
       dc.SetFont(self.font)
@@ -3340,8 +3362,22 @@ class GraphScreen(wx.Window):
         freq = freq // wm * wm
       else:		# freq can be negative when the VFO is zero
         freq = - (- freq // wm * wm)
+
       tune = freq - self.VFO
+      # отскок шторки на середину панорамы после приближения шторки к краю панорамы
+      if application.newsplitButton.GetValue() or application.splitButton.GetValue():
+        pass
+      else:
+        d = self.sample_rate * 45 // 100
+        if -d <= tune <= d:    # Frequency is on-screen
+          #vfo = self.VFO
+          pass
+        else:                    # Change the VFO
+          vfo = (freq // 5000) * 5000 - 5000
+          tune = freq - vfo
+          self.VFO = vfo
       self.ChangeHwFrequency(tune, self.VFO, 'MouseWheel', event=event)
+
       # ----------------------------------------------------------------------------------- добавлено -------- кнопки f_Before и f_After --------- 51 RA3PKJ
       application.f_after_1 = tune
       application.f_after_2 = self.VFO
